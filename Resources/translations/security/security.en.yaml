@@ -1,0 +1,27 @@
+# Role
+
+ROLE_WB_PACKAGE:
+  name: 'Packaging Wildberries orders'
+  desc: 'Wildberries supplies and order packaging'
+
+# Rules
+
+ROLE_WB_PACKAGE_INDEX:
+  name: 'View'
+  desc: ''
+
+ROLE_WB_PACKAGE_OPEN:
+  name: 'Open delivery'
+  desc: ''
+
+ROLE_WB_PACKAGE_CLOSE:
+  name: 'Close delivery'
+  desc: ''
+
+ROLE_WB_PACKAGE_ADD:
+  name: 'Add order'
+  desc: ''
+
+ROLE_WB_PACKAGE_DELETE:
+  name: 'Delete'
+  desc: ''

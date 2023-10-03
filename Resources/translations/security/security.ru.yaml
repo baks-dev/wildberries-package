@@ -1,0 +1,25 @@
+# Роль
+
+ROLE_WB_PACKAGE:
+  name: 'Упаковка заказов Wildberries'
+  desc: 'Поставки Wildberries и упаковка заказов '
+
+ROLE_WB_PACKAGE_INDEX:
+  name: 'Просмотр'
+  desc: ''
+
+ROLE_WB_PACKAGE_OPEN:
+  name: 'Открыть поставку'
+  desc: ''
+
+ROLE_WB_PACKAGE_CLOSE:
+  name: 'Закрыть поставку'
+  desc: ''
+
+ROLE_WB_PACKAGE_ADD:
+  name: 'Добавить заказ'
+  desc: ''
+
+ROLE_WB_PACKAGE_DELETE:
+  name: 'Удалить'
+  desc: ''

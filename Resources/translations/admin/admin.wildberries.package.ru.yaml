@@ -1,0 +1,32 @@
+admin:
+  page:
+    index: 'Упаковка заказов Wildberries'
+    open: 'Открыть поставку Wildberries'
+    close: 'Закрыть поставку Wildberries'
+    delete: 'Удалить поставку Wildberries'
+    add: 'Добавить в поставку Wildberries'
+
+
+  breadcrumb:
+    index: 'Упаковка заказов Wildberries'
+    open: 'Открыть поставку Wildberries'
+    close: 'Закрыть поставку Wildberries'
+    delete: 'Удалить поставку Wildberries'
+    add: 'Добавить в поставку Wildberries'
+
+  success:
+    open: 'Поставка успешно открыта'
+    close: 'Поставка успешно закрыта'
+    delete: 'Поставка успешно удалена'
+    restore: 'Поставка успешно успешно восстановлена'
+    add: 'Заказы успешно добавлены'
+
+
+  danger:
+    open: '%s: Ошибка при открытии поставки'
+    close: '%s: Ошибка при закрытии поставки'
+    delete: '%s: Ошибка при удалении поставки'
+    restore: '%s: Ошибка при восстановлении поставки'
+    add: '%s: Ошибка при добавлении заказов в поставку'
+
+
