@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\UseCase\Supply\Open;
 
 use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
@@ -56,12 +57,13 @@ final class WbSupplyOpenHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
+
         $this->entityManager->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(
             message: new WbSupplyMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: 'wildberries-products',
+        transport: (string) $command->getProfile(),
         );
 
         return $this->main;

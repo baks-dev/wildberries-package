@@ -37,20 +37,15 @@ final class WbSupplyConstDTO implements WbSupplyConstInterface
      * Профиль пользователя (владелец)
      */
     #[Assert\Uuid]
-    private ?UserProfileUid $profile = null;
+    #[Assert\NotBlank]
+    private readonly UserProfileUid $profile;
 
     /**
      * Profile
      */
-    public function getProfile(): ?UserProfileUid
+    public function getProfile(): UserProfileUid
     {
         return $this->profile;
-    }
-
-    public function setProfile(?UserProfileUid $profile): self
-    {
-        $this->profile = $profile;
-        return $this;
     }
 
 }

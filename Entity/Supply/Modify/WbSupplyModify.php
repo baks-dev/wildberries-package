@@ -26,13 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Entity\Supply\Modify;
 
 
-use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Type\Id\UserUid;
 use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
 use BaksDev\Core\Type\Ip\IpAddress;
 use BaksDev\Core\Type\Modify\ModifyAction;
 use BaksDev\Core\Type\Modify\ModifyActionEnum;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -45,6 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: 'wb_supply_modify')]
 #[ORM\Index(columns: ['action'])]
+#[ORM\Index(columns: ['mod_date'])]
 class WbSupplyModify extends EntityEvent
 {
     public const TABLE = 'wb_supply_modify';
@@ -106,6 +106,8 @@ class WbSupplyModify extends EntityEvent
 
     public function getDto($dto): mixed
     {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
         if($dto instanceof WbSupplyModifyInterface)
         {
             return parent::getDto($dto);
@@ -116,7 +118,7 @@ class WbSupplyModify extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof WbSupplyModifyInterface)
+        if($dto instanceof WbSupplyModifyInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

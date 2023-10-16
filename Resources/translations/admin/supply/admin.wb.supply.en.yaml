@@ -1,0 +1,34 @@
+admin:
+  page:
+    index: 'Wildberries supplies'
+    new: 'Open supply of Wildberries'
+    close: 'Close supply of Wildberries'
+    delete: 'Delete delivery of Wildberries'
+
+
+  breadcrumb:
+    index: 'Packaging Wildberries orders'
+    new: 'Open supply of Wildberries'
+    close: 'Close supply of Wildberries'
+    delete: 'Delete delivery of Wildberries'
+
+
+  success:
+    new: 'Delivery opened successfully'
+    close: 'Delivery successfully closed'
+    delete: 'The delivery was successfully deleted'
+    restore: 'The delivery was successfully restored successfully'
+
+
+  danger:
+    new: '%s: Error opening delivery'
+    close: '%s: Error closing delivery'
+    delete: '%s: Error deleting delivery'
+    restore: '%s: Error while restoring delivery'
+
+
+new: 'Waiting for ID...'
+open: 'Open'
+close: 'Waiting for QR code...'
+complete: 'Complete'
+error: 'Error'

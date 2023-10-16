@@ -23,11 +23,11 @@
 
 namespace BaksDev\Wildberries\Package\Repository\Supply\AllWbSupply;
 
-use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface AllWbSupplyInterface
 {
     /** Метод возвращает пагинатор WbSupply */
-    public function fetchAllWbSupplyAssociative(SearchDTO $search): PaginatorInterface;
+    public function fetchAllWbSupplyAssociative(UserProfileUid $profile): PaginatorInterface;
 }

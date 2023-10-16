@@ -25,13 +25,12 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Entity\Supply\Const;
 
-use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
+use BaksDev\Core\Entity\EntityReadonly;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -40,7 +39,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'wb_supply_const')]
-class WbSupplyConst extends EntityState
+#[ORM\Index(columns: ['profile'])]
+class WbSupplyConst extends EntityReadonly
 {
     public const TABLE = 'wb_supply_const';
 
@@ -51,27 +51,43 @@ class WbSupplyConst extends EntityState
     #[Assert\Uuid]
     #[ORM\Id]
     #[ORM\Column(type: WbSupplyUid::TYPE)]
-    private WbSupplyUid $id;
+    private readonly WbSupplyUid $main;
+
+    /** ID события */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\OneToOne(inversedBy: 'const', targetEntity: WbSupplyEvent::class)]
+    #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
+    private WbSupplyEvent $event;
 
     /**
      * Профиль пользователя (владелец)
      */
-    #[ORM\Column(type: UserProfileUid::TYPE, nullable: true)]
-    private ?UserProfileUid $profile = null;
+    #[ORM\Column(type: UserProfileUid::TYPE)]
+    private readonly UserProfileUid $profile;
+
+
+    /** Общее количество заказов в поставке */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $total = 0;
 
 
     public function __construct(WbSupplyEvent $event)
     {
-        $this->id = $event->getMain();
+        $this->event = $event;
+        $this->main = $event->getMain();
     }
 
     public function __toString(): string
     {
-        return (string) $this->id;
+        return (string) $this->main;
     }
+    
 
     public function getDto($dto): mixed
     {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
         if($dto instanceof WbSupplyConstInterface)
         {
             return parent::getDto($dto);
@@ -82,12 +98,20 @@ class WbSupplyConst extends EntityState
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof WbSupplyConstInterface)
+        if($dto instanceof WbSupplyConstInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }
 
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
+    /**
+     * Total
+     */
+    public function getTotal(): int
+    {
+        return $this->total;
     }
 
 }

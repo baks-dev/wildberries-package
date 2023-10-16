@@ -4,18 +4,8 @@ ROLE_WB_PACKAGE:
   name: 'Packaging Wildberries orders'
   desc: 'Wildberries supplies and order packaging'
 
-# Rules
-
 ROLE_WB_PACKAGE_INDEX:
   name: 'View'
-  desc: ''
-
-ROLE_WB_PACKAGE_OPEN:
-  name: 'Open delivery'
-  desc: ''
-
-ROLE_WB_PACKAGE_CLOSE:
-  name: 'Close delivery'
   desc: ''
 
 ROLE_WB_PACKAGE_ADD:
@@ -23,5 +13,35 @@ ROLE_WB_PACKAGE_ADD:
   desc: ''
 
 ROLE_WB_PACKAGE_DELETE:
-  name: 'Delete'
+  name: 'Delete order'
+  desc: ''
+
+ROLE_WB_PACKAGE_PRINT:
+  name: 'Print'
+  desc: ''
+
+
+
+ROLE_WB_SUPPLY:
+  name: 'Wildberries supplies'
+  desc: 'Wildberries supplies'
+
+ROLE_WB_SUPPLY_INDEX:
+  name: 'View'
+  desc: ''
+
+ROLE_WB_SUPPLY_NEW:
+  name: 'Open delivery'
+  desc: ''
+
+ROLE_WB_SUPPLY_CLOSE:
+  name: 'Close delivery'
+  desc: ''
+
+ROLE_WB_SUPPLY_DELETE:
+  name: 'Delete delivery'
+  desc: ''
+
+ROLE_WB_SUPPLY_PRINT:
+  name: 'Print'
   desc: ''

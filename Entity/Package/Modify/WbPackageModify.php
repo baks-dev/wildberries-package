@@ -26,13 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Entity\Package\Modify;
 
 
-use BaksDev\Users\User\Entity\User;
-use BaksDev\Users\User\Type\Id\UserUid;
 use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
 use BaksDev\Core\Type\Ip\IpAddress;
 use BaksDev\Core\Type\Modify\ModifyAction;
 use BaksDev\Core\Type\Modify\ModifyActionEnum;
+use BaksDev\Users\User\Entity\User;
+use BaksDev\Users\User\Type\Id\UserUid;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -106,6 +105,8 @@ class WbPackageModify extends EntityEvent
 
     public function getDto($dto): mixed
     {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
         if($dto instanceof WbPackageModifyInterface)
         {
             return parent::getDto($dto);
@@ -116,7 +117,7 @@ class WbPackageModify extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof WbPackageModifyInterface)
+        if($dto instanceof WbPackageModifyInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

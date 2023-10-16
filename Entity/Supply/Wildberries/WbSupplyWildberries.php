@@ -18,92 +18,103 @@
 
 namespace BaksDev\Wildberries\Package\Entity\Supply\Wildberries;
 
+use BaksDev\Core\Entity\EntityReadonly;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
-use App\Module\Wildberries\Orders\Supplys\Supply\Type\Uid\SupplyUid;
-use Doctrine\ORM\Mapping as ORM;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use Doctrine\DBAL\Types\Types;
-
-use BaksDev\Core\Entity\EntityEvent;
-use Exception;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /* WbSupply */
 
 #[ORM\Entity]
 #[ORM\Table(name: 'wb_supply_wildberries')]
-// #[ORM\Index(columns: ['column'])]
-class WbSupplyWildberries extends EntityEvent
+class WbSupplyWildberries extends EntityReadonly
 {
     public const TABLE = 'wb_supply_wildberries';
-    
-    /** ID события */
+
+    /**
+     * Идентификатор WbSupply
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
     #[ORM\Id]
-    #[ORM\OneToOne(inversedBy: 'wb', targetEntity: WbSupplyEvent::class)]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id')]
+    #[ORM\Column(type: WbSupplyUid::TYPE)]
+    private WbSupplyUid $main;
+
+    /**
+     * ID события
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\OneToOne(inversedBy: 'wildberries', targetEntity: WbSupplyEvent::class)]
+    #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private WbSupplyEvent $event;
-    
-    /** Идентификатор поставки @example WB-GI-1234567 */
-    #[ORM\Column(type: Types::STRING, length: 15, nullable: true)]
-    private ?string $identifier = null;
-    
-    /** Стикер SVG (Штрихкод) поставки */
+
+
+    /**
+     * Идентификатор поставки @example WB-GI-1234567
+     */
+    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::STRING, length: 15)]
+    private string $identifier;
+
+    /**
+     * Стикер SVG (Штрихкод) поставки
+     */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $sticker = null;
-    
-    
-    /** column */
-    //    #[ORM\Column(type: Types::TEXT)]
-    //    private ?string $string;
-    
+
     public function __construct(WbSupplyEvent $event)
     {
         $this->event = $event;
-    }
-    
-    /**
-     * @return string|null
-     */
-    public function getIdentifier() : ?string
-    {
-        return $this->identifier;
-    }
-    
-    /**
-     * @return string|null
-     */
-    public function getSticker() : ?string
-    {
-        return $this->sticker;
+        $this->main = $event->getMain();
+        //$this->id = new WbSupplyEventUid();
     }
 
-    
-    
-    /**
-     * Метод заполняет объект DTO свойствами сущности и возвращает
-     * @throws Exception
-     */
-    public function getDto($dto) : mixed
+    public function __toString(): string
     {
+        return (string) $this->main;
+    }
+
+    public function getDto($dto): mixed
+    {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
         if($dto instanceof WbSupplyWildberriesInterface)
         {
             return parent::getDto($dto);
         }
-        
+
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
-    
-    /**
-     * Метод присваивает свойствам значения из объекта DTO
-     * @throws Exception
-     */
-    public function setEntity($dto) : mixed
+
+
+    public function setEntity($dto): mixed
     {
-        if($dto instanceof WbSupplyWildberriesInterface)
+        if($dto instanceof WbSupplyWildberriesInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }
-        
+
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
-    
+
+    /**
+     * Identifier
+     */
+    public function getIdentifier(): string
+    {
+        return $this->identifier;
+    }
+
+    /**
+     * Sticker
+     */
+    public function getSticker(): string
+    {
+        return $this->sticker;
+    }
+
 }

@@ -25,48 +25,70 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Controller\Admin\Supply;
 
+use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Wildberries\Package\Forms\Supply\SupplyFilter\SupplyFilterDTO;
+use BaksDev\Wildberries\Package\Forms\Supply\SupplyFilter\SupplyFilterForm;
 use BaksDev\Wildberries\Package\Repository\Supply\AllWbSupply\AllWbSupplyInterface;
+use DateInterval;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use BaksDev\Core\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_SUPPLY')]
 final class IndexController extends AbstractController
 {
+    /**
+     * Список поставок Wildberries
+     */
     #[Route('/admin/wb/supplys/{page<\d+>}', name: 'admin.supply.index', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
         AllWbSupplyInterface $allWbSupply,
+
         int $page = 0,
     ): Response
     {
-
-        dd(45454);
-
         // Поиск
         $search = new SearchDTO();
         $searchForm = $this->createForm(SearchForm::class, $search);
         $searchForm->handleRequest($request);
 
-
         // Фильтр
-        // $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        // $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        // $filterForm->handleRequest($request);
+        $filter = new SupplyFilterDTO($request);
+        $filterForm = $this->createForm(SupplyFilterForm::class, $filter);
+        $filterForm->handleRequest($request);
+
+        if($filterForm->isSubmitted())
+        {
+            if($filterForm->get('back')->isClicked())
+            {
+                $filter->setDate($filter->getDate()?->sub(new DateInterval('P1D')));
+                return $this->redirectToReferer();
+            }
+
+            if($filterForm->get('next')->isClicked())
+            {
+                $filter->setDate($filter->getDate()?->add(new DateInterval('P1D')));
+                return $this->redirectToReferer();
+            }
+        }
 
         // Получаем список
-        $WbSupply = $allWbSupply->fetchAllWbSupplyAssociative($search);
+        $WbSupply = $allWbSupply
+            ->setSearch($search)
+            ->setFilter($filter)
+            ->fetchAllWbSupplyAssociative($this->getProfileUid());
 
         return $this->render(
             [
                 'query' => $WbSupply,
                 'search' => $searchForm->createView(),
+                'filter' => $filterForm->createView(),
             ]
         );
     }

@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Listeners\Event;
 
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbPackageStatus\Collection\WbSupplyStatusCollection;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusCollection;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatusType;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -59,5 +59,4 @@ final class WbSupplyStatusListener
     {
         $this->collection->cases();
     }
-
 }

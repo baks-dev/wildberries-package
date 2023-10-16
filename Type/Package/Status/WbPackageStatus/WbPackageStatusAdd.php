@@ -34,7 +34,12 @@ final class WbPackageStatusAdd implements WbPackageStatusInterface
     /**
      * Статус Добавлен в поставку Wildberries
      */
-    public const STATUS = 'new';
+    public const STATUS = 'add';
+
+    public function __toString(): string
+    {
+        return self::STATUS;
+    }
 
     /**
      * Возвращает значение (value)

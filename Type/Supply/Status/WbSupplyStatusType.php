@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Type\Supply\Status;
 
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusInterface;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\StringType;
 use InvalidArgumentException;
@@ -34,18 +35,18 @@ final class WbSupplyStatusType extends StringType
 {
     public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
     {
-        return $value instanceof WbSupplyStatus ? $value->getOrderStatusValue() : $value;
+        return $value instanceof WbSupplyStatus ? $value->getWbSupplyStatus() : $value;
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
-        foreach ($this->getOrderStatus() as $status) {
+        foreach ($this->getDeclaredType() as $status) {
             if ($status::STATUS === $value) {
                 return new WbSupplyStatus(new $status());
             }
         }
 
-        throw new InvalidArgumentException(sprintf('Not found WbPackageStatus %s', $value));
+        throw new InvalidArgumentException(sprintf('Not found WbSupplyStatus %s', $value));
     }
 
     public function getName(): string
@@ -53,12 +54,12 @@ final class WbSupplyStatusType extends StringType
         return WbSupplyStatus::TYPE;
     }
 
-    public function getOrderStatus(): array
+    public function getDeclaredType(): array
     {
         return array_filter(
             get_declared_classes(),
             static function ($className) {
-                return in_array(OrderStatusInterface::class, class_implements($className), true);
+                return in_array(WbSupplyStatusInterface::class, class_implements($className), true);
             }
         );
     }

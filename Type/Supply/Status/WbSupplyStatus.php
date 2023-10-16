@@ -25,30 +25,52 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Type\Supply\Status;
 
-use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusInterface;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusInterface;
+use InvalidArgumentException;
 
 final class WbSupplyStatus
 {
     public const TYPE = 'wb_supply_status';
 
-    private ?OrderStatusInterface $status = null;
+    private ?WbSupplyStatusInterface $status = null;
 
-    public function __construct(self|string|OrderStatusInterface $status)
+    public function __construct(WbSupplyStatusInterface|self|string $status)
     {
-        if ($status instanceof OrderStatusInterface)
-        {
-            $this->status = $status;
-        }
-
-        if ($status instanceof $this)
-        {
-            $this->status = $status->getOrderStatus();
-        }
-
         if(is_string($status) && class_exists($status))
         {
-            $this->status = new $status();
+            $instance = new $status();
+
+            if($instance instanceof WbSupplyStatusInterface)
+            {
+                $this->status = $instance;
+                return;
+            }
         }
+
+        if($status instanceof WbSupplyStatusInterface)
+        {
+            $this->status = $status;
+            return;
+        }
+
+        if($status instanceof self)
+        {
+            $this->status = $status->getWbSupplyStatus();
+            return;
+        }
+
+
+        /** @var WbSupplyStatusInterface $device */
+        foreach(self::getDeclared() as $declare)
+        {
+            if($declare::equals($status))
+            {
+                $this->status = new $declare;
+                return;
+            }
+        }
+
+        throw new InvalidArgumentException(sprintf('Not found WbSupplyStatus %s', $status));
 
     }
 
@@ -58,30 +80,31 @@ final class WbSupplyStatus
     }
 
     /** Возвращает значение (value) страны String */
-    public function getOrderStatus(): OrderStatusInterface
+    public function getWbSupplyStatus(): WbSupplyStatusInterface
     {
         return $this->status;
     }
 
     /** Возвращает значение (value) страны String */
-    public function getOrderStatusValue(): ?string
+    public function getWbSupplyStatusValue(): ?string
     {
         return $this->status?->getValue();
     }
 
-    /** Возвращает код цвета */
-    public function getColor(): string
+
+    public static function getDeclared(): array
     {
-        return $this->status::color();
+        return array_filter(
+            get_declared_classes(),
+            static function($className) {
+                return in_array(WbSupplyStatusInterface::class, class_implements($className), true);
+            }
+        );
     }
 
-    public function equals(OrderStatusInterface|string $status) : bool
+    public function equals(mixed $status): bool
     {
-        if($status instanceof OrderStatusInterface)
-        {
-            return $this->status?->getValue() === $status->getValue();
-        }
-        
-        return $this->status?->getValue() === $status;
+        $status = new self($status);
+        return $this->status?->getValue() === $status->getWbSupplyStatusValue();
     }
 }

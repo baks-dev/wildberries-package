@@ -25,20 +25,15 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Entity\Supply\Event;
 
-use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Core\Type\Modify\ModifyAction;
-use BaksDev\Core\Type\Modify\ModifyActionEnum;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use Doctrine\Common\Collections\Collection;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\DBAL\Types\Types;
-use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -47,7 +42,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'wb_supply_event')]
-#[ORM\Index(columns: ['profile', 'status'])]
+#[ORM\Index(columns: ['status'])]
 class WbSupplyEvent extends EntityEvent
 {
     public const TABLE = 'wb_supply_event';
@@ -75,26 +70,27 @@ class WbSupplyEvent extends EntityEvent
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyModify::class, cascade: ['all'])]
     private WbSupplyModify $modify;
 
-
-    /**
-     * Профиль пользователя (владелец)
-     */
-    #[ORM\Column(type: UserProfileUid::TYPE)]
-    private UserProfileUid $profile;
-
-
     /**
      * Статус поставки
      */
+    #[Assert\NotBlank]
     #[ORM\Column(type: WbSupplyStatus::TYPE)]
     private WbSupplyStatus $status;
 
+    /**
+     * Константы сущности
+     */
+    #[Assert\Valid]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyConst::class, cascade: ['all'])]
+    private ?WbSupplyConst $const = null;
+
 
     /**
-     * Константа
+     * Поставка Wildberries
      */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyConst::class, cascade: ['all'])]
-    private WbSupplyConst $const;
+    #[Assert\Valid]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyWildberries::class, cascade: ['all'])]
+    private ?WbSupplyWildberries $wildberries = null;
 
 
     public function __construct()
@@ -103,18 +99,36 @@ class WbSupplyEvent extends EntityEvent
         $this->modify = new WbSupplyModify($this);
     }
 
-    /**
-     * Идентификатор События
-     */
-
     public function __clone()
     {
-        $this->id = new WbSupplyEventUid();
+        $this->id = clone $this->id;
     }
 
     public function __toString(): string
     {
         return (string) $this->id;
+    }
+
+    public function getDto($dto): mixed
+    {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
+        if($dto instanceof WbSupplyEventInterface)
+        {
+            return parent::getDto($dto);
+        }
+
+        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
+    public function setEntity($dto): mixed
+    {
+        if($dto instanceof WbSupplyEventInterface || $dto instanceof self)
+        {
+            return parent::setEntity($dto);
+        }
+
+        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
     public function getId(): WbSupplyEventUid
@@ -136,50 +150,29 @@ class WbSupplyEvent extends EntityEvent
         return $this->main;
     }
 
-    public function getDto($dto): mixed
+    /**
+     * Status
+     */
+    public function getStatus(): WbSupplyStatus
     {
-        if($dto instanceof WbSupplyEventInterface)
-        {
-            return parent::getDto($dto);
-        }
-
-        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+        return $this->status;
     }
 
-    public function setEntity($dto): mixed
+    /**
+     * Wildberries
+     */
+    public function getIdentifier(): ?string
     {
-        if($dto instanceof WbSupplyEventInterface)
-        {
-            return parent::setEntity($dto);
-        }
+        return $this->wildberries?->getIdentifier();
+    }
 
-        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    /**
+     * Total
+     */
+    public function getTotal(): int
+    {
+        return $this->const->getTotal();
     }
 
 
-    //	public function isModifyActionEquals(ModifyActionEnum $action) : bool
-    //	{
-    //		return $this->modify->equals($action);
-    //	}
-
-    //	public function getUploadClass() : WbSupplyImage
-    //	{
-    //		return $this->image ?: $this->image = new WbSupplyImage($this);
-    //	}
-
-    //	public function getNameByLocale(Locale $locale) : ?string
-    //	{
-    //		$name = null;
-    //		
-    //		/** @var WbSupplyTrans $trans */
-    //		foreach($this->translate as $trans)
-    //		{
-    //			if($name = $trans->name($locale))
-    //			{
-    //				break;
-    //			}
-    //		}
-    //		
-    //		return $name;
-    //	}
 }

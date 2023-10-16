@@ -1,0 +1,64 @@
+<?php
+/*
+ *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is furnished
+ *  to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+
+declare(strict_types=1);
+
+namespace BaksDev\Wildberries\Package\UseCase\Package\Print;
+
+use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
+use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
+use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
+use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Messenger\Package\WbPackageMessage;
+use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
+use DomainException;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+#[AsMessageHandler]
+final class PrintWbPackageHandler extends AbstractHandler
+{
+    public function __invoke(PrintWbPackageDTO $command): void
+    {
+        /* Валидация DTO  */
+        $this->validatorCollection->add($command);
+
+        $this->entityManager->clear();
+        $WbPackageSupply = $this->entityManager->getRepository(WbPackageSupply::class)->find($command->getMain());
+
+        if($this->validatorCollection->add($WbPackageSupply, context: [__FILE__.':'.__LINE__]))
+        {
+            $WbPackageSupply->setEntity($command);
+
+            /* Валидация всех объектов */
+            if($this->validatorCollection->isInvalid())
+            {
+                return;
+            }
+
+            $this->entityManager->flush();
+        }
+    }
+}

@@ -25,15 +25,27 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Repository\Supply\AllWbSupply;
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
+use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
+use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
+use BaksDev\Wildberries\Package\Forms\Supply\SupplyFilter\SupplyFilterDTO;
+use DateTimeImmutable;
 
 final class AllWbSupply implements AllWbSupplyInterface
 {
     private PaginatorInterface $paginator;
+
     private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?SupplyFilterDTO $filter = null;
+    private SearchDTO $search;
+
 
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
@@ -44,25 +56,106 @@ final class AllWbSupply implements AllWbSupplyInterface
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
-    /** Метод возвращает пагинатор WbSupply */
-    public function fetchAllWbSupplyAssociative(SearchDTO $search): PaginatorInterface
+    public function setFilter(SupplyFilterDTO $filter): self
+    {
+        $this->filter = $filter;
+        return $this;
+    }
+
+    public function setSearch(SearchDTO $search): self
+    {
+        $this->search = $search;
+        return $this;
+    }
+
+
+    /**
+     * Метод возвращает пагинатор WbSupply
+     */
+
+    public function fetchAllWbSupplyAssociative(UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb->select('*');
-        $qb->from(WbSupply::TABLE, 'wb_supply');
 
-        /* Поиск */
-        if($search->getQuery())
+        $qb
+            ->addSelect('supply_const.total')
+            ->from(WbSupplyConst::TABLE, 'supply_const')
+            ->where('supply_const.profile = :profile')
+            ->setParameter('profile', $profile, UserProfileUid::TYPE);
+
+        $qb
+            ->addSelect('supply.id')
+            ->addSelect('supply.event')
+            ->join(
+                'supply_const',
+                WbSupply::TABLE,
+                'supply',
+                'supply.id = supply_const.main'
+            );
+
+
+        $qb
+            ->addSelect('event.status')
+            ->leftJoin(
+                'supply',
+                WbSupplyEvent::TABLE,
+                'event',
+                'event.id = supply.event'
+            );
+
+        $qb
+            ->addSelect('modify.mod_date AS supply_date')
+            ->leftJoin(
+                'supply',
+                WbSupplyModify::TABLE,
+                'modify',
+                'modify.event = supply.event'
+            );
+
+
+        /**
+         * Фильтр по дате
+         */
+
+        if(!$this->search?->getQuery() && $this->filter?->getDate())
         {
-            //            $this->DBALQueryBuilder
-            //                ->createSearchQueryBuilder($search)
-            //                
-            //                ->addSearchEqualUid('product.id')
-            //
-            //                ->addSearchLike('product_trans.name')
+            $date = $this->filter?->getDate() ?: new DateTimeImmutable();
+
+            // Начало дня
+            $startOfDay = $date->setTime(0, 0, 0);
+            // Конец дня
+            $endOfDay = $date->setTime(23, 59, 59);
+
+            //($date ? ' AND part_modify.mod_date = :date' : '')
+            $qb->andWhere('modify.mod_date BETWEEN :start AND :end');
+
+            $qb->setParameter('start', $startOfDay->format("Y-m-d H:i:s"));
+            $qb->setParameter('end', $endOfDay->format("Y-m-d H:i:s"));
+        }
 
 
+        $qb
+            ->addSelect('wb.identifier')
+            ->addSelect('wb.sticker')
+            ->leftJoin(
+                'supply',
+                WbSupplyWildberries::TABLE,
+                'wb',
+                'wb.main = supply.id'
+            );
+
+
+        $qb->orderBy('modify.mod_date', 'DESC');
+
+        if($this->search?->getQuery())
+        {
+
+            $qb
+                ->createSearchQueryBuilder($this->search)
+                ->addSearchEqualUid('supply.id')
+                ->addSearchEqualUid('supply.event')
+                ->addSearchLike('wb.identifier');
         }
 
         return $this->paginator->fetchAllAssociative($qb);

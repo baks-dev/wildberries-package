@@ -51,6 +51,11 @@ class WbSupply
         $this->id = new WbSupplyUid();
     }
 
+    public function __toString(): string
+    {
+        return (string) $this->id;
+    }
+
     public function getId() : WbSupplyUid
     {
         return $this->id;

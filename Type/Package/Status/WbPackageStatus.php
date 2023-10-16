@@ -25,17 +25,17 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Type\Package\Status;
 
-use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusInterface;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\Collection\WbPackageStatusInterface;
 
 final class WbPackageStatus
 {
     public const TYPE = 'wb_package_status';
 
-    private ?OrderStatusInterface $status = null;
+    private ?WbPackageStatusInterface $status = null;
 
-    public function __construct(self|string|OrderStatusInterface $status)
+    public function __construct(self|string|WbPackageStatusInterface $status)
     {
-        if ($status instanceof OrderStatusInterface)
+        if ($status instanceof WbPackageStatusInterface)
         {
             $this->status = $status;
         }
@@ -57,13 +57,13 @@ final class WbPackageStatus
     }
 
     /** Возвращает значение (value) страны String */
-    public function getOrderStatus(): OrderStatusInterface
+    public function getOrderStatus(): WbPackageStatusInterface
     {
         return $this->status;
     }
 
     /** Возвращает значение (value) страны String */
-    public function getOrderStatusValue(): ?string
+    public function getWbPackageStatusValue(): ?string
     {
         return $this->status?->getValue();
     }
@@ -74,9 +74,14 @@ final class WbPackageStatus
         return $this->status::color();
     }
 
-    public function equals(OrderStatusInterface|string $status) : bool
+    public function equals(WbPackageStatusInterface|string $status) : bool
     {
-        if($status instanceof OrderStatusInterface)
+        if(is_string($status) && class_exists($status))
+        {
+            $status = new $status();
+        }
+
+        if($status instanceof WbPackageStatusInterface)
         {
             return $this->status?->getValue() === $status->getValue();
         }

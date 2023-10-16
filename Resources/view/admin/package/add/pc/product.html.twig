@@ -1,0 +1,102 @@
+{% set identifier = card.id %}
+
+{% if card.product_offer_uid %}
+    {% set identifier = card.product_offer_uid %}
+{% endif %}
+
+{% if card.product_variation_uid %}
+    {% set identifier = card.product_variation_uid %}
+{% endif %}
+
+{% if card.product_modification_uid %}
+    {% set identifier = card.product_modification_uid %}
+{% endif %}
+
+
+
+<div id="{{ card.id }}" class="d-flex gap-3 align-items-center mb-2">
+
+    {# Обложка #}
+    {% set image_path = '/assets/img/blank.svg' %}
+
+    {% if card.product_image_ext is defined and card.product_image_ext is not null %}
+        {% set img_host =  card.product_image_cdn == true  ? CDN_HOST : '' %}
+        {% set img_dir = card.product_image %}
+        {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ card.product_image_ext %}
+        {% set image_path = img_host ~ img_dir ~ img_file %}
+    {% endif %}
+
+
+    <button class="btn btn-link icon bg-cover rounded-2 lazy img-product m-0"
+            style="width: 55px; height: 70px; background-image: url({{ image_path }});"
+    >
+    </button>
+
+    <div class="w-100">
+
+        <div class="fw-bolder">{{ card.product_name }}</div>
+
+        <div>
+            {% if card.product_offer_name %}
+                <small class="opacity-50">{{ card.product_offer_name }}:</small> &nbsp;
+                <strong>{{ card.product_offer_value|call_twig_func(card.product_offer_reference) }} {{ card.product_offer_postfix }}</strong>&nbsp;
+            {% endif %}
+
+            {% if card.product_variation_name %}
+                <small class="opacity-50">{{ card.product_variation_name }}:</small> &nbsp;
+                <strong>{{ card.product_variation_value|call_twig_func(card.product_variation_reference) }} {{ card.product_variation_postfix }}</strong>&nbsp;
+            {% endif %}
+
+            {% if card.product_modification_name %}
+                <small class="opacity-50">{{ card.product_modification_name }}:</small> &nbsp;
+                <strong>{{ card.product_modification_value|call_twig_func(card.product_modification_reference) }} {{ card.product_modification_postfix }}</strong>&nbsp;
+            {% endif %}
+
+        </div>
+
+        <div>
+            <small class="opacity-50">Количество в заказов:</small> &nbsp;
+            <strong>{{ card.product_total }}</strong> шт.
+        </div>
+
+    </div>
+
+    <div class="w-50">
+
+        {% set isSticker = (card.sticker is defined and card.sticker == true) %}
+
+        <button
+
+                {% if isSticker == false %}
+                    id="print-{{ card.id }}"
+                {% endif %}
+
+                class="btn btn-sm {{ isSticker ? 'btn-primary': 'btn-danger' }}  modal-link"
+                data-href="{{ path('WildberriesPackage:admin.package.print', { id : card.id }) }}"
+                data-bs-toggle="modal"
+                data-bs-target="#modal"
+                {{ isSticker ?: 'disabled="disabled"' }}
+        >
+
+            {% if isSticker %}
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-printer-fill" viewBox="0 0 16 16">
+                    <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+                    <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                </svg>
+
+            {% else %}
+
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                      style="display: block !important;"></span>
+                <span class="visually-hidden">Loading...</span>
+
+            {% endif %}
+
+        </button>
+
+
+    </div>
+
+</div>

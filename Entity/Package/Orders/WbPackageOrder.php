@@ -19,11 +19,11 @@
 namespace BaksDev\Wildberries\Package\Entity\Package\Orders;
 
 
+use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
 use Doctrine\ORM\Mapping as ORM;
-use BaksDev\Core\Entity\EntityEvent;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -36,6 +36,16 @@ class WbPackageOrder extends EntityEvent
 {
     public const TABLE = 'wb_package_order';
 
+
+    /**
+     * ID заказа
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    #[ORM\Id]
+    #[ORM\Column(type: OrderUid::TYPE)]
+    private OrderUid $id;
+
     /**
      * Связь на событие
      */
@@ -46,14 +56,6 @@ class WbPackageOrder extends EntityEvent
     #[ORM\JoinColumn(name: 'event', referencedColumnName: "id", nullable: false)]
     private WbPackageEvent $event;
 
-    /**
-     * ID заказа
-     */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    #[ORM\Id]
-    #[ORM\Column(type: OrderUid::TYPE)]
-    private OrderUid $ord;
 
     /**
      * Статус отправки заказа
@@ -68,9 +70,16 @@ class WbPackageOrder extends EntityEvent
         $this->event = $event;
     }
 
+    public function __toString(): string
+    {
+        return (string) $this->event;
+    }
+
     public function getDto($dto): mixed
     {
-        if($dto instanceof WbPackageOrderInterfaface)
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
+        if($dto instanceof WbPackageOrderInterface)
         {
             return parent::getDto($dto);
         }
@@ -81,7 +90,7 @@ class WbPackageOrder extends EntityEvent
 
     public function setEntity($dto): mixed
     {
-        if($dto instanceof WbPackageOrderInterfaface)
+        if($dto instanceof WbPackageOrderInterface || $dto instanceof self)
         {
             return parent::setEntity($dto);
         }

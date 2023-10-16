@@ -1,0 +1,35 @@
+admin:
+  page:
+    index: 'Поставки Wildberries'
+    new: 'Открыть поставку Wildberries'
+    close: 'Закрыть поставку Wildberries'
+    delete: 'Удалить поставку Wildberries'
+
+
+  breadcrumb:
+    index: 'Список поставок Wildberries'
+    new: 'Открыть поставку Wildberries'
+    close: 'Закрыть поставку Wildberries'
+    delete: 'Удалить поставку Wildberries'
+    complete: 'Поставка Wildberries'
+
+  success:
+    new: 'Поставка успешно открыта'
+    close: 'Поставка успешно закрыта'
+    complete: 'Стикер поставки успешно обновлен'
+    delete: 'Поставка успешно удалена'
+    restore: 'Поставка успешно успешно восстановлена'
+
+
+  danger:
+    new: '%s: Ошибка при открытии поставки'
+    close: '%s: Ошибка при закрытии поставки'
+    delete: '%s: Ошибка при удалении поставки'
+    restore: '%s: Ошибка при восстановлении поставки'
+
+
+new: 'Ожидает идентификатор ...'
+open: 'Открыта'
+close: 'Ожидается QR-код ...'
+complete: 'Укомплектована'
+error: 'Ошибка'

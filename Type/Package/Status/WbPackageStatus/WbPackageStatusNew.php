@@ -36,6 +36,10 @@ final class WbPackageStatusNew implements WbPackageStatusInterface
      */
     public const STATUS = 'new';
 
+    public function __toString(): string
+    {
+        return self::STATUS;
+    }
 
     /**
      * Возвращает значение (value)

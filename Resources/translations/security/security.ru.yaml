@@ -1,19 +1,11 @@
 # Роль
 
 ROLE_WB_PACKAGE:
-  name: 'Упаковка заказов Wildberries'
-  desc: 'Поставки Wildberries и упаковка заказов '
+  name: 'Упаковка заказов'
+  desc: 'Упаковка заказов Wildberries'
 
 ROLE_WB_PACKAGE_INDEX:
   name: 'Просмотр'
-  desc: ''
-
-ROLE_WB_PACKAGE_OPEN:
-  name: 'Открыть поставку'
-  desc: ''
-
-ROLE_WB_PACKAGE_CLOSE:
-  name: 'Закрыть поставку'
   desc: ''
 
 ROLE_WB_PACKAGE_ADD:
@@ -21,5 +13,35 @@ ROLE_WB_PACKAGE_ADD:
   desc: ''
 
 ROLE_WB_PACKAGE_DELETE:
-  name: 'Удалить'
+  name: 'Удалить заказ'
+  desc: ''
+
+ROLE_WB_PACKAGE_PRINT:
+  name: 'Печать'
+  desc: ''
+
+
+
+ROLE_WB_SUPPLY:
+  name: 'Поставки'
+  desc: 'Поставки Wildberries'
+
+ROLE_WB_SUPPLY_INDEX:
+  name: 'Просмотр'
+  desc: ''
+
+ROLE_WB_SUPPLY_NEW:
+  name: 'Открыть поставку'
+  desc: ''
+
+ROLE_WB_SUPPLY_CLOSE:
+  name: 'Закрыть поставку'
+  desc: ''
+
+ROLE_WB_SUPPLY_DELETE:
+  name: 'Удалить поставку'
+  desc: ''
+
+ROLE_WB_SUPPLY_PRINT:
+  name: 'Печать'
   desc: ''

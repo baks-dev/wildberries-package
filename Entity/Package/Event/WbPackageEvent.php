@@ -25,19 +25,16 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Entity\Package\Event;
 
-use BaksDev\Core\Type\Locale\Locale;
-use BaksDev\Core\Type\Modify\ModifyAction;
-use BaksDev\Core\Type\Modify\ModifyActionEnum;
+use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Wildberries\Package\Entity\Package\Modify\WbPackageModify;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
+use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
-use BaksDev\Core\Entity\EntityEvent;
-use BaksDev\Core\Entity\EntityState;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -46,7 +43,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'wb_package_event')]
-#[ORM\Index(columns: ['print'])]
 class WbPackageEvent extends EntityEvent
 {
     public const TABLE = 'wb_package_event';
@@ -74,7 +70,6 @@ class WbPackageEvent extends EntityEvent
     #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbPackageModify::class, cascade: ['all'])]
     private WbPackageModify $modify;
 
-
     /**
      * Заказы, добавленные в поставку
      */
@@ -82,17 +77,23 @@ class WbPackageEvent extends EntityEvent
     private Collection $ord;
 
     /**
-     * Статус печати стикеров упаковки
+     * Общее количество заказов в паковке
      */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $print = false;
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private int $total = 0;
+
+    /**
+     * Поставка
+     */
+    #[Assert\Valid]
+    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbPackageSupply::class, cascade: ['all'])]
+    private WbPackageSupply $supply;
 
 
     public function __construct()
     {
         $this->id = new WbPackageEventUid();
         $this->modify = new WbPackageModify($this);
-
     }
 
     public function __clone()
@@ -103,6 +104,28 @@ class WbPackageEvent extends EntityEvent
     public function __toString(): string
     {
         return (string) $this->id;
+    }
+
+    public function getDto($dto): mixed
+    {
+        $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;
+
+        if($dto instanceof WbPackageEventInterface)
+        {
+            return parent::getDto($dto);
+        }
+
+        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
+    public function setEntity($dto): mixed
+    {
+        if($dto instanceof WbPackageEventInterface || $dto instanceof self)
+        {
+            return parent::setEntity($dto);
+        }
+
+        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
     public function getId(): WbPackageEventUid
@@ -120,23 +143,4 @@ class WbPackageEvent extends EntityEvent
         $this->main = $main instanceof WbPackage ? $main->getId() : $main;
     }
 
-    public function getDto($dto): mixed
-    {
-        if($dto instanceof WbPackageEventInterface)
-        {
-            return parent::getDto($dto);
-        }
-
-        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
-    }
-
-    public function setEntity($dto): mixed
-    {
-        if($dto instanceof WbPackageEventInterface)
-        {
-            return parent::setEntity($dto);
-        }
-
-        throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
-    }
 }

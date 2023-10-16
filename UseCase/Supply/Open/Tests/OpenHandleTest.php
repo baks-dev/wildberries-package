@@ -23,78 +23,55 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Products\UseCase\Barcode\NewEdit\Tests;
+namespace BaksDev\Wildberries\Package\UseCase\Supply\Open\Tests;
 
-use BaksDev\Products\Category\Type\Id\ProductCategoryUid;
-use BaksDev\Products\Category\Type\Section\Field\Id\ProductCategorySectionFieldUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use BaksDev\Wildberries\Package\UseCase\Supply\Open\Const\WbSupplyConstDTO;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusCollection;
+use BaksDev\Wildberries\Package\UseCase\Supply\New\Tests\NewHandleTest;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenHandler;
-use BaksDev\Wildberries\Products\Entity\Barcode\WbBarcode;
-use BaksDev\Wildberries\Products\UseCase\Barcode\NewEdit\Custom\WbBarcodeCustomDTO;
-use BaksDev\Wildberries\Products\UseCase\Barcode\NewEdit\Property\WbBarcodePropertyDTO;
-use BaksDev\Wildberries\Products\UseCase\Barcode\NewEdit\WbBarcodeHandler;
-use Doctrine\ORM\EntityManagerInterface;
+use BaksDev\Wildberries\Package\UseCase\Supply\Open\Wildberries\WbSupplyWildberriesDTO;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
 /**
  * @group wildberries-package
  * @group wildberries-package-supply
+ *
+ * @depends BaksDev\Wildberries\Package\UseCase\Supply\New\Tests\NewHandleTest::class
+ *
+ * @see     NewHandleTest
  */
 #[When(env: 'test')]
 final class OpenHandleTest extends KernelTestCase
 {
-    /**
-     * This method is called before the first test of this test class is run.
-     */
-    public static function setUpBeforeClass(): void
-    {
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get(EntityManagerInterface::class);
-
-        $WbSupply = $em->getRepository(WbSupply::class)
-            ->findOneBy(['id' => WbSupplyUid::TEST]);
-
-        if($WbSupply)
-        {
-            $em->remove($WbSupply);
-
-            /* WbBarcodeEvent */
-
-            $WbSupplyEventCollection = $em->getRepository(WbSupplyEvent::class)
-                ->findBy(['main' => WbSupplyUid::TEST]);
-
-            foreach($WbSupplyEventCollection as $remove)
-            {
-                $em->remove($remove);
-            }
-
-            $em->flush();
-        }
-    }
-
 
     public function testUseCase(): void
     {
+        /**
+         * Инициируем статус для итератора тегов
+         * @var WbSupplyStatusCollection $WbSupplyStatus
+         */
+        $WbSupplyStatus = self::getContainer()->get(WbSupplyStatusCollection::class);
+        $WbSupplyStatus->cases();
+
+        /** @var WbSupplyCurrentEventInterface $WbSupplyCurrent */
+        $WbSupplyCurrent = self::getContainer()->get(WbSupplyCurrentEventInterface::class);
+        $WbSupplyEvent = $WbSupplyCurrent->findWbSupplyEvent(new WbSupplyUid());
+        self::assertNotNull($WbSupplyEvent);
+
         $WbSupplyOpenDTO = new WbSupplyOpenDTO();
-
-        $UserProfileUid = new UserProfileUid();
-        $WbSupplyOpenDTO->setProfile(new UserProfileUid());
-        self::assertSame($UserProfileUid, $WbSupplyOpenDTO->getProfile());
+        $WbSupplyEvent->getDto($WbSupplyOpenDTO);
 
 
-        /** @var WbSupplyConstDTO $WbSupplyConstDTO */
+        /** @var WbSupplyWildberriesDTO $WbSupplyWildberriesDTO */
 
+        $WbSupplyWildberriesDTO = $WbSupplyOpenDTO->getWildberries();
+        $WbSupplyWildberriesDTO->setIdentifier('LmnIjwQsdI');
 
-        $WbSupplyConstDTO = $WbSupplyOpenDTO->getConst();
-
-        $WbSupplyConstDTO->setProfile($UserProfileUid);
-        self::assertSame($UserProfileUid, $WbSupplyOpenDTO->getProfile());
 
         /** @var WbSupplyOpenHandler $WbSupplyOpenHandler */
         $WbSupplyOpenHandler = self::getContainer()->get(WbSupplyOpenHandler::class);
@@ -104,12 +81,5 @@ final class OpenHandleTest extends KernelTestCase
 
     }
 
-    public function testComplete(): void
-    {
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get(EntityManagerInterface::class);
-        $WbSupply = $em->getRepository(WbSupply::class)
-            ->find(WbSupplyUid::TEST);
-        self::assertNotNull($WbSupply);
-    }
+
 }

@@ -28,7 +28,7 @@ namespace BaksDev\Wildberries\Package\UseCase\Supply\Open;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbPackageStatus\WbSupplyStatusOpen;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusOpen;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -39,15 +39,8 @@ final class WbSupplyOpenDTO implements WbSupplyEventInterface
      * Идентификатор события
      */
     #[Assert\Uuid]
-    #[Assert\IsNull]
-    private ?WbSupplyEventUid $id = null;
-
-    /**
-     * Профиль пользователя (владелец)
-     */
-    #[Assert\Uuid]
     #[Assert\NotBlank]
-    private UserProfileUid $profile;
+    private readonly WbSupplyEventUid $id;
 
     /**
      * Статус поставки
@@ -61,34 +54,27 @@ final class WbSupplyOpenDTO implements WbSupplyEventInterface
     #[Assert\Valid]
     private Const\WbSupplyConstDTO $const;
 
+    /**
+     * Wildberries
+     */
+    #[Assert\Valid]
+    private Wildberries\WbSupplyWildberriesDTO $wildberries;
+
 
     public function __construct() {
         $this->status = new WbSupplyStatus(WbSupplyStatusOpen::class);
+        $this->wildberries = new Wildberries\WbSupplyWildberriesDTO();
         $this->const = new Const\WbSupplyConstDTO();
     }
 
     /**
      * Идентификатор события
      */
-    public function getEvent(): ?WbSupplyEventUid
+    public function getEvent(): WbSupplyEventUid
     {
         return $this->id;
     }
 
-
-    /**
-     * Profile
-     */
-    public function getProfile(): UserProfileUid
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(UserProfileUid $profile): self
-    {
-        $this->profile = $profile;
-        return $this;
-    }
 
     /**
      * Status
@@ -98,13 +84,21 @@ final class WbSupplyOpenDTO implements WbSupplyEventInterface
         return $this->status;
     }
 
+    /**
+     * Wildberries
+     */
+    public function getWildberries(): Wildberries\WbSupplyWildberriesDTO
+    {
+        return $this->wildberries;
+    }
+
 
     /**
-     * Const
+     * Profile
      */
-    public function getConst(): Const\WbSupplyConstDTO
+    public function getProfile(): UserProfileUid
     {
-        return $this->const;
+        return $this->const->getProfile();
     }
 
 }

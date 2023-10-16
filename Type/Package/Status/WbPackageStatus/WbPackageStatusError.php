@@ -36,6 +36,10 @@ final class WbPackageStatusError implements WbPackageStatusInterface
      */
     public const STATUS = 'error';
 
+    public function __toString(): string
+    {
+        return self::STATUS;
+    }
 
     /**
      * Возвращает значение (value)
