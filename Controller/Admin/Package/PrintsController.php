@@ -74,7 +74,7 @@ final class PrintsController extends AbstractController
 
         if(!$orders)
         {
-            return $this->redirectToRoute('WildberriesPackage:admin.supply.detail', ['id' => $wbSupply->getId()]);
+            return $this->redirectToRoute('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()]);
         }
 
         /** Получаем все заказы и их упаковки, которые не напечатаны */

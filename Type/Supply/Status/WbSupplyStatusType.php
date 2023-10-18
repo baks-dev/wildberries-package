@@ -35,33 +35,17 @@ final class WbSupplyStatusType extends StringType
 {
     public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
     {
-        return $value instanceof WbSupplyStatus ? $value->getWbSupplyStatus() : $value;
+        return (string) $value;
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
-        foreach ($this->getDeclaredType() as $status) {
-            if ($status::STATUS === $value) {
-                return new WbSupplyStatus(new $status());
-            }
-        }
-
-        throw new InvalidArgumentException(sprintf('Not found WbSupplyStatus %s', $value));
+        return new WbSupplyStatus($value);
     }
 
     public function getName(): string
     {
         return WbSupplyStatus::TYPE;
-    }
-
-    public function getDeclaredType(): array
-    {
-        return array_filter(
-            get_declared_classes(),
-            static function ($className) {
-                return in_array(WbSupplyStatusInterface::class, class_implements($className), true);
-            }
-        );
     }
 
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool

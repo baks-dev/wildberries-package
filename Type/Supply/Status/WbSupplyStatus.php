@@ -32,7 +32,7 @@ final class WbSupplyStatus
 {
     public const TYPE = 'wb_supply_status';
 
-    private ?WbSupplyStatusInterface $status = null;
+    private WbSupplyStatusInterface $status;
 
     public function __construct(WbSupplyStatusInterface|self|string $status)
     {
@@ -59,8 +59,7 @@ final class WbSupplyStatus
             return;
         }
 
-
-        /** @var WbSupplyStatusInterface $device */
+        /** @var WbSupplyStatusInterface $declare */
         foreach(self::getDeclared() as $declare)
         {
             if($declare::equals($status))
@@ -76,19 +75,19 @@ final class WbSupplyStatus
 
     public function __toString(): string
     {
-        return $this->status ? $this->status->getValue() : '';
+        return $this->status->getValue();
     }
 
-    /** Возвращает значение (value) страны String */
+
     public function getWbSupplyStatus(): WbSupplyStatusInterface
     {
         return $this->status;
     }
 
-    /** Возвращает значение (value) страны String */
-    public function getWbSupplyStatusValue(): ?string
+
+    public function getWbSupplyStatusValue(): string
     {
-        return $this->status?->getValue();
+        return $this->status->getValue();
     }
 
 
@@ -105,6 +104,7 @@ final class WbSupplyStatus
     public function equals(mixed $status): bool
     {
         $status = new self($status);
-        return $this->status?->getValue() === $status->getWbSupplyStatusValue();
+
+        return $this->getWbSupplyStatusValue() === $status->getWbSupplyStatusValue();
     }
 }

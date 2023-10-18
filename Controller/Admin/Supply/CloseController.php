@@ -72,7 +72,7 @@ final class CloseController extends AbstractController
 
         // Форма
         $form = $this->createForm(WbSupplyCloseForm::class, $WbSupplyCloseDTO, [
-            'action' => $this->generateUrl('WildberriesPackage:admin.supply.close', ['id' => $WbSupply->getId()]),
+            'action' => $this->generateUrl('wildberries-package:admin.supply.close', ['id' => $WbSupply->getId()]),
         ]);
         $form->handleRequest($request);
 

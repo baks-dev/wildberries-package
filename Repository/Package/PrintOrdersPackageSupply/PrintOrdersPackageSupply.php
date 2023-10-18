@@ -279,7 +279,7 @@ final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterfac
 
 
         return $qb
-            //->enableCache('WildberriesPackage', 3600)
+            //->enableCache('wildberries-package', 3600)
             ->fetchAllAssociative();
     }
 
@@ -554,7 +554,7 @@ final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterfac
 
 
         return $qb
-            //->enableCache('WildberriesPackage', 3600)
+            //->enableCache('wildberries-package', 3600)
             ->fetchAllAssociative();
     }
 

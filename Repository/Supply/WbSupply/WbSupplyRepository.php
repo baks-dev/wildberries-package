@@ -103,7 +103,7 @@ final class WbSupplyRepository implements WbSupplyRepositoryInterface
         $qb->setMaxResults(1);
 
         return $qb
-            ->enableCache('WildberriesPackage', 3600)
+            ->enableCache('wildberries-package', 3600)
             ->fetchAssociative();
     }
 }

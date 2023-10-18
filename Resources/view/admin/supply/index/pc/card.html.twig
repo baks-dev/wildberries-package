@@ -19,7 +19,7 @@
               title='{{ item.sticker ? 'QR поставки' : 'close'|trans }}'
         >
                 <button
-                        data-href="{{ item.sticker ? path('WildberriesPackage:admin.supply.print', { id : item.id }) }}"
+                        data-href="{{ item.sticker ? path('wildberries-package:admin.supply.print', { id : item.id }) }}"
                         class="btn-link btn p-0 icon {{ item.sticker ? 'modal-link': 'text-muted'  }}"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
@@ -41,7 +41,7 @@
     </td>
 
     <td class="w-100">
-        <a href="{{ path('WildberriesPackage:admin.supply.detail', { id: item.id }) }}"
+        <a href="{{ path('wildberries-package:admin.supply.detail', { id: item.id }) }}"
            class="fw-bolder mb-1 text-decoration-none product-name">
             {{ item.identifier ?: 'new'|trans }}
         </a>

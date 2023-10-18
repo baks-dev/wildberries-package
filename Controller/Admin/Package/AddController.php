@@ -87,7 +87,7 @@ final class AddController extends AbstractController
 
         // Форма
         $form = $this->createForm(AddOrdersPackageForm::class, $PackageOrdersDTO, [
-            'action' => $this->generateUrl('WildberriesPackage:admin.package.add'),
+            'action' => $this->generateUrl('wildberries-package:admin.package.add'),
         ]);
 
         $form->handleRequest($request);
@@ -114,7 +114,7 @@ final class AddController extends AbstractController
                 return $this->errorController('Supply');
             }
 
-            $WbPackage = new WbPackageDTO();
+            $WbPackage = new WbPackageDTO($this->getProfileUid());
             $WbPackage->setPackageSupply($WbSupplyUid);
 
             $orders = $wbOrdersByProduct->findOldWbOrders(
@@ -163,7 +163,7 @@ final class AddController extends AbstractController
                     status: $request->isXmlHttpRequest() ? 200 : 302 // не делаем редирект в случае AJAX
                 );
 
-                return $request->isXmlHttpRequest() ? $return : $this->redirectToRoute('WildberriesPackage:admin.package.index');
+                return $request->isXmlHttpRequest() ? $return : $this->redirectToRoute('wildberries-package:admin.package.index');
             }
 
             $this->addFlash(
@@ -172,7 +172,7 @@ final class AddController extends AbstractController
                 'admin.wb.package
                 ', $handle);
 
-            return $this->redirectToRoute('WildberriesPackage:admin.package.index');
+            return $this->redirectToRoute('wildberries-package:admin.package.index');
         }
 
         return $this->render([
@@ -191,6 +191,6 @@ final class AddController extends AbstractController
             $code
         );
 
-        return $this->redirectToRoute('WildberriesPackage:admin.package.index');
+        return $this->redirectToRoute('wildberries-package:admin.package.index');
     }
 }

@@ -75,7 +75,7 @@ final class DetailComtroller extends AbstractController
 
         $filter = new WbOrdersProductFilterDTO($request);
         $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('WildberriesPackage:admin.supply.detail', ['id' => $wbSupply->getId()]),
+            'action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()]),
         ]);
         $filterForm->handleRequest($request);
         !$filterForm->isSubmitted()?:$this->redirectToReferer();

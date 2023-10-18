@@ -82,7 +82,7 @@ final class IndexController extends AbstractController
         $filter = new WbOrdersProductFilterDTO($request);
 
         $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('WildberriesManufacture:admin.index'),
+            'action' => $this->generateUrl('wildberries-manufacture:admin.index'),
         ]);
         $filterForm->handleRequest($request);
         !$filterForm->isSubmitted() ?: $this->redirectToReferer();

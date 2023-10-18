@@ -1,7 +1,7 @@
 {
   "namespaces": [
     {
-      "namespace": "WildberriesPackage",
+      "namespace": "wildberries-package",
       "path": "Resources/view"
     }
   ]

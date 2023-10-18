@@ -70,10 +70,15 @@ final class WbPackageDTO implements WbPackageEventInterface
     #[Assert\Valid]
     private Supply\WbPackageSupplyDTO $supply;
 
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private readonly UserProfileUid $profile;
 
-    public function __construct() {
+
+    public function __construct(UserProfileUid $profile) {
         $this->ord = new ArrayCollection();
         $this->supply = new Supply\WbPackageSupplyDTO();
+        $this->profile = $profile;
     }
 
     public function getEvent(): ?WbPackageEventUid
@@ -137,6 +142,14 @@ final class WbPackageDTO implements WbPackageEventInterface
     public function getTotal(): int
     {
         return $this->total;
+    }
+
+    /**
+     * Profile
+     */
+    public function getProfile(): UserProfileUid
+    {
+        return $this->profile;
     }
 
 }

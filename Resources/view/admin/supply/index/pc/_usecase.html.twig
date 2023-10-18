@@ -22,7 +22,7 @@
 
         {# Редактировать #}
         {# <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-            <a href="{{ path('ManufacturePart:admin.newedit.edit', {id: identifier }) }}"
+            <a href="{{ path('manufacture-part:admin.newedit.edit', {id: identifier }) }}"
                class="text-decoration-none text-dark w-100 modal-link"
                data-bs-toggle="modal"
                data-bs-target="#modal"
@@ -36,7 +36,7 @@
 
             {#{% if  is_granted(ROLE~'_ACTION') or is_granted('ROLE_ADMIN') %}
                 <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                    <a href="{{ path('ManufacturePart:admin.action', { id: item.id }) }}"
+                    <a href="{{ path('manufacture-part:admin.action', { id: item.id }) }}"
                        class="text-decoration-none text-dark w-100 modal-link"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
@@ -51,7 +51,7 @@
         {# Удалить #}
         {#{% if ( item.status != 'completed' and is_granted(ROLE~'_DELETE') ) or is_granted('ROLE_ADMIN') %}
             <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
-                <a href="{{ path('ManufacturePart:admin.delete', { id: item.id }) }}"
+                <a href="{{ path('manufacture-part:admin.delete', { id: item.id }) }}"
                    class="text-decoration-none text-dark w-100 modal-link"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"

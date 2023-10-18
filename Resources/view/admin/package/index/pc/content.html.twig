@@ -19,7 +19,7 @@
             </div>
 
 
-            <button {# href="{{ path('ProductStocks:admin.purchase.index') }}" #}
+            <button {# href="{{ path('products-stocks:admin.purchase.index') }}" #}
                     class="btn btn-light opacity-25"
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
@@ -33,7 +33,7 @@
             </button>
 
 
-            <a href="{{ path('WildberriesPackage:admin.supply.index') }}"
+            <a href="{{ path('wildberries-package:admin.supply.index') }}"
                class="btn btn-light"
                data-bs-toggle="tooltip"
                data-bs-placement="bottom"
@@ -48,7 +48,7 @@
             </a>
 
             {#{% if opens %}
-                <a href="{{ path('WildberriesManufacture:admin.newedit.new') }}"
+                <a href="{{ path('wildberries-manufacture:admin.newedit.new') }}"
                    class="btn modal-btn modal-link btn-primary text-nowrap" data-bs-toggle="modal"
                    data-bs-target="#modal"
                    title="Открыть производственную партию">
@@ -70,7 +70,7 @@
                     У Вас нет открытых посавок Wildberries
                 </span>
 
-                <a href="{{ path('WildberriesPackage:admin.supply.new') }}"
+                <a href="{{ path('wildberries-package:admin.supply.new') }}"
                    class="btn btn-primary text-nowrap"
                    data-bs-toggle="tooltip"
                    data-bs-placement="bottom"

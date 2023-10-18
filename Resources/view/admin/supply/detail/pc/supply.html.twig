@@ -34,7 +34,7 @@
                       title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
                 <button
                         id="supply-{{ supply.id }}"
-                        data-href="{{ path('WildberriesPackage:admin.supply.print', { id : supply.id }) }}"
+                        data-href="{{ path('wildberries-package:admin.supply.print', { id : supply.id }) }}"
                         {% if supply.sticker is null %}
                             disabled="disabled"
                         {% endif %}
@@ -59,7 +59,7 @@
             <div>
                 <div><small class="opacity-50">Номер:</small> &nbsp;
 
-                    <a href="{{ path('WildberriesPackage:admin.supply.detail', { id: supply.id}) }}"
+                    <a href="{{ path('wildberries-package:admin.supply.detail', { id: supply.id}) }}"
                        class="fw-bolder text-decoration-none">
                         {{ supply.identifier }}
                     </a>
@@ -80,7 +80,7 @@
 
             {# Список продукции для печати #}
            {# {% for card in print %}
-                {{ include('@WildberriesPackage/admin/package/add/pc/product.html.twig') }}
+                {{ include('@wildberries-package/admin/package/add/pc/product.html.twig') }}
             {% endfor %}#}
         </div>
 
@@ -94,7 +94,7 @@
                      title="Отправить поставку на склад Wildberries"
                 >
 
-                    <a href="{{ path('WildberriesPackage:admin.supply.close', { id: supply.id }) }}"
+                    <a href="{{ path('wildberries-package:admin.supply.close', { id: supply.id }) }}"
                        id="close_supply_btn"
                        class="btn modal-btn btn-danger modal-link text-nowrap"
                        data-bs-toggle="modal"

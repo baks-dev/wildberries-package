@@ -49,7 +49,7 @@ final class Role implements RoleInterface //, MenuAdminInterface
 //    /** Метод возвращает PATH раздела */
 //    public function getPath(): string
 //    {
-//        return 'WildberriesPackage:admin.supply.index';
+//        return 'wildberries-package:admin.supply.index';
 //    }
 //
 //    /**

@@ -40,13 +40,7 @@ final class WbPackageStatusType extends StringType
 
     public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
-        foreach ($this->getDeclaredType() as $status) {
-            if ($status::STATUS === $value) {
-                return new WbPackageStatus(new $status());
-            }
-        }
-
-        throw new InvalidArgumentException(sprintf('Not found WbPackageStatus %s', $value));
+        return new WbPackageStatus($value);
     }
 
     public function getName(): string

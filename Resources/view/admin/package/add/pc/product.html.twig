@@ -72,7 +72,7 @@
                 {% endif %}
 
                 class="btn btn-sm {{ isSticker ? 'btn-primary': 'btn-danger' }}  modal-link"
-                data-href="{{ path('WildberriesPackage:admin.package.print', { id : card.id }) }}"
+                data-href="{{ path('wildberries-package:admin.package.print', { id : card.id }) }}"
                 data-bs-toggle="modal"
                 data-bs-target="#modal"
                 {{ isSticker ?: 'disabled="disabled"' }}

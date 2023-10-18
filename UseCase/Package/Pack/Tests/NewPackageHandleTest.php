@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\UseCase\Package\Pack\Tests;
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
@@ -84,7 +85,7 @@ final class NewPackageHandleTest extends KernelTestCase
         /** @var WbPackageDTO $WbPackageDTO */
 
         $WbSupplyUid = new WbSupplyUid();
-        $WbPackageDTO = new WbPackageDTO();
+        $WbPackageDTO = new WbPackageDTO(new UserProfileUid());
         $WbPackageDTO->setPackageSupply($WbSupplyUid);
 
 

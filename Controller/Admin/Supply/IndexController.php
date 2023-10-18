@@ -49,7 +49,6 @@ final class IndexController extends AbstractController
     public function index(
         Request $request,
         AllWbSupplyInterface $allWbSupply,
-
         int $page = 0,
     ): Response
     {

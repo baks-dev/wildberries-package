@@ -138,7 +138,7 @@
                             <span>Арт:&nbsp;</span>
 
                             <form method="post"
-                                  action='{{ path('WildberriesPackage:admin.supply.detail', { id: supply.id }) }}'
+                                  action='{{ path('wildberries-package:admin.supply.detail', { id: supply.id }) }}'
                                   class="p-0">
                                 <input type="hidden" name="search_form[query]" value="{{ item.product_article }}">
                                 <button type="submit" class="btn btn-link text-decoration-none btn-sm p-0 border-0">
@@ -155,7 +155,7 @@
                             title='Печать стикеров заказа'
                     >
 
-                    <a href="{{ path('WildberriesOrders:admin.print', { id: item.order_id }) }}"
+                    <a href="{{ path('wildberries-orders:admin.print', { id: item.order_id }) }}"
 
                        class="{{ item.print == false ? 'btn-warning' : 'btn-primary' }} btn btn-sm modal-link {{ item.print == false ? 'text-warning' }}"
                        data-bs-toggle="modal"

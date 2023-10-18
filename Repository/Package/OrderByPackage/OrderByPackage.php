@@ -136,7 +136,7 @@ final class OrderByPackage implements OrderByPackageInterface
             );
 
         return $qb
-            ->enableCache('WildberriesPackage')
+            ->enableCache('wildberries-package')
             ->fetchAllAssociative();
     }
 

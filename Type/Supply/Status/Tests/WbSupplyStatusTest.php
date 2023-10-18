@@ -39,12 +39,14 @@ use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageSta
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusCollection;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatusType;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\Orders\WbPackageOrderDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\Supply\WbPackageSupplyDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageHandler;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
@@ -67,10 +69,24 @@ final class WbSupplyStatusTest extends KernelTestCase
         {
             $WbSupplyStatus = new WbSupplyStatus($case->getValue());
 
-            self::assertTrue($WbSupplyStatus->equals($case::class)); // немспейс класса
+            self::assertTrue($WbSupplyStatus->equals($case)); // объект интерфейса
+            self::assertTrue($WbSupplyStatus->equals($case::class)); // немспейс интерфейса
             self::assertTrue($WbSupplyStatus->equals($case->getValue())); // срока
-            self::assertTrue($WbSupplyStatus->equals($WbSupplyStatus)); // объект WbSupplyStatus
-            self::assertTrue($WbSupplyStatus->equals($case)); // объект WbSupplyStatusInterface
+            self::assertTrue($WbSupplyStatus->equals($WbSupplyStatus)); // объект класса
+
+
+
+            $WbSupplyStatusType = new WbSupplyStatusType();
+            $platform = $this->getMockForAbstractClass(AbstractPlatform::class);
+
+            $convertToDatabase = $WbSupplyStatusType->convertToDatabaseValue($WbSupplyStatus, $platform);
+            self::assertEquals($WbSupplyStatus->getWbSupplyStatusValue(), $convertToDatabase);
+
+            $convertToPHP = $WbSupplyStatusType->convertToPHPValue($convertToDatabase, $platform);
+            self::assertInstanceOf(WbSupplyStatus::class, $convertToPHP);
+            self::assertEquals($case, $convertToPHP->getWbSupplyStatus());
+
         }
+
     }
 }

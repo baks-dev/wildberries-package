@@ -26,66 +26,85 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Type\Package\Status;
 
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\Collection\WbPackageStatusInterface;
+use InvalidArgumentException;
 
 final class WbPackageStatus
 {
     public const TYPE = 'wb_package_status';
 
-    private ?WbPackageStatusInterface $status = null;
+    private WbPackageStatusInterface $status;
 
-    public function __construct(self|string|WbPackageStatusInterface $status)
-    {
-        if ($status instanceof WbPackageStatusInterface)
-        {
-            $this->status = $status;
-        }
-
-        if ($status instanceof $this)
-        {
-            $this->status = $status->getOrderStatus();
-        }
-
-        if(is_string($status) && class_exists($status))
-        {
-            $this->status = new $status();
-        }
-    }
-
-    public function __toString(): string
-    {
-        return $this->status ? $this->status->getValue() : '';
-    }
-
-    /** Возвращает значение (value) страны String */
-    public function getOrderStatus(): WbPackageStatusInterface
-    {
-        return $this->status;
-    }
-
-    /** Возвращает значение (value) страны String */
-    public function getWbPackageStatusValue(): ?string
-    {
-        return $this->status?->getValue();
-    }
-
-    /** Возвращает код цвета */
-    public function getColor(): string
-    {
-        return $this->status::color();
-    }
-
-    public function equals(WbPackageStatusInterface|string $status) : bool
+    public function __construct(WbPackageStatusInterface|self|string $status)
     {
         if(is_string($status) && class_exists($status))
         {
-            $status = new $status();
+            $instance = new $status();
+
+            if($instance instanceof WbPackageStatusInterface)
+            {
+                $this->status = $instance;
+                return;
+            }
         }
 
         if($status instanceof WbPackageStatusInterface)
         {
-            return $this->status?->getValue() === $status->getValue();
+            $this->status = $status;
+            return;
         }
-        
-        return $this->status?->getValue() === $status;
+
+        if($status instanceof self)
+        {
+            $this->status = $status->getWbPackageStatus();
+            return;
+        }
+
+        /** @var WbPackageStatusInterface $declare */
+        foreach(self::getDeclared() as $declare)
+        {
+            if($declare::equals($status))
+            {
+                $this->status = new $declare;
+                return;
+            }
+        }
+
+        throw new InvalidArgumentException(sprintf('Not found WbPackageStatus %s', $status));
+
     }
+
+    public function __toString(): string
+    {
+        return $this->status->getValue();
+    }
+
+
+    public function getWbPackageStatus(): WbPackageStatusInterface
+    {
+        return $this->status;
+    }
+
+
+    public function getWbPackageStatusValue(): string
+    {
+        return $this->status->getValue();
+    }
+
+    public static function getDeclared(): array
+    {
+        return array_filter(
+            get_declared_classes(),
+            static function($className) {
+                return in_array(WbPackageStatusInterface::class, class_implements($className), true);
+            }
+        );
+    }
+
+    public function equals(mixed $status): bool
+    {
+        $status = new self($status);
+
+        return $this->getWbPackageStatusValue() === $status->getWbPackageStatusValue();
+    }
+
 }
