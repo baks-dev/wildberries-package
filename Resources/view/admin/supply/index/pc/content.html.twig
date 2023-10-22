@@ -139,7 +139,6 @@
                     <tbody>
 
                     {% for item in query.data %}
-                        {# {{ dump(item) }} #}
                         {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
                     {% endfor %}
 

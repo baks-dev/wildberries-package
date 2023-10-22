@@ -49,7 +49,7 @@ final class DeleteController extends AbstractController
     ): Response
     {
 
-        dd(212132);
+        dd('/admin/wb/supply/delete');
 
         $WbSupplyDeleteDTO = new WbSupplyDeleteDTO();
         $WbSupplyEvent->getDto($WbSupplyDeleteDTO);
