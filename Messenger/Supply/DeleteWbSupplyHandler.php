@@ -35,6 +35,7 @@ use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyC
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use BaksDev\Wildberries\Package\UseCase\Supply\Close\WbSupplyCloseDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Close\WbSupplyCloseHandler;
+use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -48,11 +49,11 @@ final class DeleteWbSupplyHandler
     private ORMQueryBuilder $ORMQueryBuilder;
 
     public function __construct(
-        OpenWbSupplyInterface $openWbSupply,
-        WildberriesSupplyDelete $wildberriesSupplyDelete,
+        OpenWbSupplyInterface         $openWbSupply,
+        WildberriesSupplyDelete       $wildberriesSupplyDelete,
         WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $messageDispatchLogger,
-        ORMQueryBuilder $ORMQueryBuilder
+        LoggerInterface               $messageDispatchLogger,
+        ORMQueryBuilder               $ORMQueryBuilder
     )
     {
         $this->messageDispatchLogger = $messageDispatchLogger;
@@ -68,8 +69,7 @@ final class DeleteWbSupplyHandler
      */
     public function __invoke(WbSupplyMessage $message): void
     {
-        if(Kernel::isTestEnvironment())
-        {
+        if(Kernel::isTestEnvironment()) {
             return;
         }
 
@@ -82,25 +82,34 @@ final class DeleteWbSupplyHandler
             !$Event ||
             $Event->getTotal() !== 0 ||
             !$Event->getStatus()->equals(WbSupplyStatusClose::STATUS)
-        )
-        {
+        ) {
             return;
         }
 
         /* Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
         $UserProfileUid = $this->openWbSupply->getWbSupply($message->getId());
 
-        if(!$UserProfileUid || !$UserProfileUid->getAttr())
-        {
+        if(!$UserProfileUid || !$UserProfileUid->getAttr()) {
             return;
         }
 
-        /* Закрываем поставку Wildberries Api */
-        $this->wildberriesSupplyDelete
-            ->profile($UserProfileUid)
-            ->withSupply($UserProfileUid->getAttr())
-            ->delete();
 
+        try {
+
+            /* Закрываем поставку Wildberries Api */
+            $this->wildberriesSupplyDelete
+                ->profile($UserProfileUid)
+                ->withSupply($UserProfileUid->getAttr())
+                ->delete();
+
+        } catch(DomainException $exception) {
+            $this->messageDispatchLogger->critical('Возникла проблема с удалением поставки Wildberries',
+                [
+                    'supply' => $UserProfileUid->getAttr(),
+                    'exception' => $exception,
+                    __FILE__ . ':' . __LINE__,
+                ]);
+        }
 
         /** Удаляем системную поставку */
         $EntityManager = $this->ORMQueryBuilder->getEntityManager();
@@ -109,12 +118,10 @@ final class DeleteWbSupplyHandler
         $EntityManager->flush();
 
 
-
-
-        $this->messageDispatchLogger->info('Удалили поставку Wildberries с нулевыми заказами',
+        $this->messageDispatchLogger->info('Удалили поставку с нулевыми заказами',
             [
                 'supply' => $UserProfileUid->getAttr(),
-                __FILE__.':'.__LINE__,
+                __FILE__ . ':' . __LINE__,
             ]);
     }
 

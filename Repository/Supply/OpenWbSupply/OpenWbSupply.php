@@ -174,7 +174,7 @@ final class OpenWbSupply implements OpenWbSupplyInterface
         $qb->setMaxResults(1);
 
         return $qb
-            ->enableCache('wildberries-package', 3600)
+            ->enableCache((string) $profile, 3600)
             ->fetchAssociative();
     }
 }

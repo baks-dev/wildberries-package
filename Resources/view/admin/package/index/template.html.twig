@@ -102,6 +102,16 @@ setTimeout(function SpgGHaQzun() {
 
 			  centrifuge.newSubscription('{{ opens.id }}').on('publication', function (ctx) {
 
+
+                        /** Если передан идентификатор поставки */
+                       if (ctx.data.number)
+                      {
+                          let number = document.getElementById('number-{{ opens.id }}');
+                          number.innerText = ctx.data.number;
+                          return;
+                      }
+
+
                   if (ctx.data.identifier && ctx.data.identifier === 'complete')
                       {
                           let $supply = document.getElementById('supply-{{ opens.id }}');
@@ -118,6 +128,10 @@ setTimeout(function SpgGHaQzun() {
 
                           return;
                       }
+
+
+
+
 
                   let identifier = ctx.data.identifier;
 
@@ -142,6 +156,8 @@ setTimeout(function SpgGHaQzun() {
             centrifuge.connect();
 
 		{% endif %}
+
+
 
         /** обновляем кнопку печати после обновления стикером */
 		centrifuge.newSubscription('publish').on('publication', function (ctx) {

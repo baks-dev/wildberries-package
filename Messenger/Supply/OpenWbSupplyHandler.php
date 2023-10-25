@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
 use App\Kernel;
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Wildberries\Api\Token\Supplies\SupplyOpen\WildberriesSupplyOpen;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
@@ -45,13 +46,15 @@ final class OpenWbSupplyHandler
     private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
     private WildberriesSupplyOpen $wildberriesSupplyOpen;
     private OpenWbSupplyInterface $openWbSupply;
+    private CentrifugoPublishInterface $CentrifugoPublish;
 
     public function __construct(
         OpenWbSupplyInterface $openWbSupply,
         WildberriesSupplyOpen $wildberriesSupplyOpen,
         WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         LoggerInterface $messageDispatchLogger,
-        WbSupplyOpenHandler $wbSupplyOpenHandler
+        WbSupplyOpenHandler $wbSupplyOpenHandler,
+        CentrifugoPublishInterface $CentrifugoPublish
     )
     {
         $this->messageDispatchLogger = $messageDispatchLogger;
@@ -59,6 +62,7 @@ final class OpenWbSupplyHandler
         $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
         $this->wildberriesSupplyOpen = $wildberriesSupplyOpen;
         $this->openWbSupply = $openWbSupply;
+        $this->CentrifugoPublish = $CentrifugoPublish;
     }
 
     /**
@@ -112,6 +116,12 @@ final class OpenWbSupplyHandler
                 'identifier' => $WildberriesSupplyOpenDTO->getIdentifier(),
                 __FILE__.':'.__LINE__,
             ]);
+
+        /** Отправляем сокет с идентификатором поставки */
+        $this->CentrifugoPublish
+            ->addData(['number' => $WildberriesSupplyOpenDTO->getIdentifier()]) // ID упаковки
+            ->send((string) $message->getId());
+
     }
 
 }

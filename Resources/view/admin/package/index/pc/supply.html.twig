@@ -58,11 +58,18 @@
             </div>
 
             <div>
-                <div><small class="opacity-50">Номер:</small> &nbsp;
+                <div>
+                    <small class="opacity-50">Номер:</small> &nbsp;
 
-                    <a href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
-                       class="fw-bolder text-decoration-none">
-                        {{ opens.identifier }}
+
+                    <a
+                        {% if opens.identifier is empty %}
+                            id="number-{{ opens.id }}"
+                        {% endif %}
+                        href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
+                        class="fw-bolder text-decoration-none"
+                    >
+                        {{ opens.identifier ?: 'Ожидается ...' }}
                     </a>
                 </div>
 
@@ -131,17 +138,17 @@
 
             </div>
         {% else %}
-        <div class="text-end"
-        >
-            <a href="{{ path('wildberries-package:admin.supply.new') }}"
-               class="btn btn-primary text-nowrap"
-               data-bs-toggle="tooltip"
-               data-bs-placement="bottom"
-               data-bs-delay='{"show":600,"hide":100}'
-               title="Открыть новую поставку Wildberries">
-                Открыть новую поставку
-            </a>
-        </div>
+            <div class="text-end"
+            >
+                <a href="{{ path('wildberries-package:admin.supply.new') }}"
+                   class="btn btn-primary text-nowrap"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="bottom"
+                   data-bs-delay='{"show":600,"hide":100}'
+                   title="Открыть новую поставку Wildberries">
+                    Открыть новую поставку
+                </a>
+            </div>
         {% endif %}
 
 
