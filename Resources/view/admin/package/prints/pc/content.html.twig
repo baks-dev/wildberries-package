@@ -6,14 +6,14 @@
         <div style="width: 5cm; margin-left: 0.7cm;">
             <div class="text-center w-100">
                 <img src="data:image/svg+xml;base64,{{ card.sticker }}"
-                     style="height: 3cm; padding-top: 0;"
+                     style="height: 4cm; padding-top: 0;"
                      alt="sticker"/>
             </div>
         </div>
 
-        <div style="page-break-after: always !important;"></div>
-
         {% for i in 1..card.barcode_counter %}
+
+            <div style="page-break-after: always !important;"></div>
 
             <div style="width: 5cm; margin-left: 0.7cm; margin-top: 0.3cm;">
 
@@ -28,9 +28,9 @@
                 </div>
             </div>
 
-            {% if not loop.last %}
+           {# {% if not loop.last %}
                 <div style="page-break-after: always !important;"></div>
-            {% endif %}
+            {% endif %}#}
 
         {% endfor %}
 
