@@ -46,7 +46,9 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModific
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
+use BaksDev\Wildberries\Orders\Entity\Event\WbOrdersEvent;
 use BaksDev\Wildberries\Orders\Entity\Sticker\WbOrdersSticker;
+use BaksDev\Wildberries\Orders\Entity\WbOrders;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
@@ -85,11 +87,11 @@ final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterfac
             ->addSelect('package_event.main AS package_id')
             ->addSelect('package_event.total AS product_total')
             ->leftJoin(
-            'package_supply',
-            WbPackageEvent::TABLE,
-            'package_event',
-            'package_event.id = package_supply.event'
-        );
+                'package_supply',
+                WbPackageEvent::TABLE,
+                'package_event',
+                'package_event.id = package_supply.event'
+            );
 
         $qb->leftJoin(
             'package_supply',
@@ -117,10 +119,31 @@ final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterfac
             );
 
 
+
+        $qb
+            ->leftJoin(
+                'ord',
+                WbOrders::TABLE,
+                'wb_orders',
+                'wb_orders.id = ord.id'
+            );
+
+        $qb
+            ->addSelect('wb_orders_event.barcode')
+            ->leftJoin(
+                'wb_orders',
+                WbOrdersEvent::TABLE,
+                'wb_orders_event',
+                'wb_orders_event.id = wb_orders.event'
+            );
+
+
+
+
         $qb
             ->addSelect('ord_product.product AS product_event')
-//            ->addSelect('ord_product.offer AS product_offer')
-//            ->addSelect('ord_product.variation AS product_variation')
+            //            ->addSelect('ord_product.offer AS product_offer')
+            //            ->addSelect('ord_product.variation AS product_variation')
             ->leftJoin(
                 'ord',
                 OrderProduct::TABLE,
@@ -247,22 +270,23 @@ final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterfac
         );
 
 
-//        $qb->leftJoin(
-//            'ord_product',
-//            ProductModification::TABLE,
-//            'product_modification',
-//            'product_modification.id = ord_product.modification'
-//        );
+        //        $qb->leftJoin(
+        //            'ord_product',
+        //            ProductModification::TABLE,
+        //            'product_modification',
+        //            'product_modification.id = ord_product.modification'
+        //        );
 
 
-        $qb
-            ->addSelect('card_variation.barcode')
-            ->leftJoin(
-                'product_variation',
-                WbProductCardVariation::TABLE,
-                'card_variation',
-                'card_variation.variation = product_variation.const'
-            );
+
+        //        $qb
+        //            ->addSelect('card_variation.barcode')
+        //            ->leftJoin(
+        //                'product_variation',
+        //                WbProductCardVariation::TABLE,
+        //                'card_variation',
+        //                'card_variation.variation = product_variation.const'
+        //            );
 
 
         $qb->addSelect(
@@ -329,11 +353,11 @@ final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterfac
                 END AS sticker
             ')
             ->leftJoin(
-            'package_orders',
-            WbOrdersSticker::TABLE,
-            'ord_sticker',
-            'ord_sticker.main = package_orders.id'
-        );
+                'package_orders',
+                WbOrdersSticker::TABLE,
+                'ord_sticker',
+                'ord_sticker.main = package_orders.id'
+            );
 
 
 

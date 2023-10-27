@@ -40,6 +40,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
+use BaksDev\Wildberries\Orders\Entity\Event\WbOrdersEvent;
 use BaksDev\Wildberries\Orders\Entity\Sticker\WbOrdersSticker;
 use BaksDev\Wildberries\Orders\Entity\WbOrders;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
@@ -107,7 +108,6 @@ final class OrderByPackage implements OrderByPackageInterface
                 'ord.id = package_order.id'
             );
 
-
         $qb
             ->addSelect('ord_product.product AS product_event')
             ->addSelect('ord_product.offer AS product_offer')
@@ -119,21 +119,25 @@ final class OrderByPackage implements OrderByPackageInterface
                 'ord_product.event = ord.event'
             );
 
+
         $qb
-            ->leftJoin('ord_product',
-                ProductVariation::TABLE,
-                'product_variation',
-                'product_variation.id = ord_product.variation'
+            ->leftJoin(
+                'package_order',
+                WbOrders::TABLE,
+                'wb_orders',
+                'wb_orders.id = package_order.id'
             );
 
         $qb
-            ->addSelect('card_variation.barcode')
+            ->addSelect('wb_orders_event.barcode')
             ->leftJoin(
-                'product_variation',
-                WbProductCardVariation::TABLE,
-                'card_variation',
-                'card_variation.variation = product_variation.const'
+                'wb_orders',
+                WbOrdersEvent::TABLE,
+                'wb_orders_event',
+                'wb_orders_event.id = wb_orders.event'
             );
+
+
 
         return $qb
             ->enableCache('wildberries-package')

@@ -89,12 +89,13 @@ final class PrintsController extends AbstractController
 
             /* Генерируем боковые стикеры */
             $BarcodeGenerator = new BarcodeGeneratorSVG();
-            $prints[$key]['barcode_sticker'] = $BarcodeGenerator->getBarcode(
+            $prints[$key]['barcode_sticker'] = base64_encode(
+                $BarcodeGenerator->getBarcode(
                 $order['barcode'],
                 $BarcodeGenerator::TYPE_CODE_128,
                 2,
                 60
-            );
+            ));
 
             $prints[$key]['barcode_property'] = null;
 

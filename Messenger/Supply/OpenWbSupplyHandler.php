@@ -117,10 +117,12 @@ final class OpenWbSupplyHandler
                 __FILE__.':'.__LINE__,
             ]);
 
+
+
         /** Отправляем сокет с идентификатором поставки */
         $this->CentrifugoPublish
             ->addData(['number' => $WildberriesSupplyOpenDTO->getIdentifier()]) // ID упаковки
-            ->send((string) $message->getId());
+            ->send((string) $message->getId(), 1);
 
     }
 

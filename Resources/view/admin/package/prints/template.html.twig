@@ -1,3 +1,4 @@
+
 {# ---- ШАБЛОН ------------------------------------------------------------ #}
 {% extends Template('/admin/base.html.twig') %}
 
@@ -11,6 +12,7 @@
 	{{ include(_self|replace({ "template.html.twig": baks_settings.device~"/content.html.twig" })) }}
 {% endblock %}
 
+
 {% block javascript %}
-<script async nonce="{{ csp_nonce() }}" src="/assets/ls/print.min.js?v={{ version }}"></script>
+<script async nonce="{{ csp_nonce() }}" src="/assets/js/print.min.js?v={{ version }}"></script>
 {% endblock %}
