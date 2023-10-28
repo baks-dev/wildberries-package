@@ -131,7 +131,7 @@ final class CompleteWbSupplyHandler
         /** Отправляем сокет комплектации */
         $this->CentrifugoPublish
             ->addData(['identifier' => 'complete']) // ID упаковки
-            ->send((string) $message->getId(), 1);
+            ->send((string) $message->getId(), 4);
 
         $this->messageDispatchLogger->info('Присвоили стикер и укомплектовали поставку',
             [

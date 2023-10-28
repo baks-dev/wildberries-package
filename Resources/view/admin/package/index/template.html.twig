@@ -95,13 +95,12 @@ setTimeout(function SpgGHaQzun() {
                 debug: false,
             });
 
+сиреневый
 
 
-
-		{% if opens %}
+		{% if opens.status is defined and opens.status != 'complete' %}
 
 			  centrifuge.newSubscription('{{ opens.id }}').on('publication', function (ctx) {
-
 
                         /** Если передан идентификатор поставки */
                        if (ctx.data.number)
@@ -130,9 +129,6 @@ setTimeout(function SpgGHaQzun() {
                       }
 
 
-
-
-
                   let identifier = ctx.data.identifier;
 
 
@@ -152,8 +148,6 @@ setTimeout(function SpgGHaQzun() {
                     });
 
             }).subscribe();
-
-            centrifuge.connect();
 
 		{% endif %}
 
