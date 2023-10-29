@@ -139,7 +139,7 @@ class WbPackageModify extends EntityEvent
         $this->usr = $usr instanceof User ? $usr->getId() : $usr;
     }
 
-    public function equals(ModifyActionEnum $action): bool
+    public function equals(mixed $action): bool
     {
         return $this->action->equals($action);
     }

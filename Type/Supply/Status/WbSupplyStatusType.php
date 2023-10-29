@@ -40,7 +40,7 @@ final class WbSupplyStatusType extends StringType
 
     public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
-        return new WbSupplyStatus($value);
+        return !empty($value) ? new WbSupplyStatus($value) : null;
     }
 
     public function getName(): string

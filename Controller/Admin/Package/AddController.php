@@ -153,7 +153,6 @@ final class AddController extends AbstractController
                     ->addData(['total' => $PackageOrdersDTO->getTotal()]) // количество для суммы всех товаров
                     ->send((string) $WbSupplyUid);
 
-
                 $CentrifugoPublish->send('publish');
 
                 $return = $this->addFlash(

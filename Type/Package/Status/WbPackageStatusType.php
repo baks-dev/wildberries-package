@@ -35,12 +35,12 @@ final class WbPackageStatusType extends StringType
 {
     public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
     {
-        return $value instanceof WbPackageStatus ? $value->getWbPackageStatusValue() : $value;
+        return (string) $value;
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
-        return new WbPackageStatus($value);
+        return !empty($value) ? new WbPackageStatus($value) : null;
     }
 
     public function getName(): string
