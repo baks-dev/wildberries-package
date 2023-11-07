@@ -51,7 +51,7 @@ final class WbPackageHandler extends AbstractHandler
         }
         catch(DomainException $errorUniqid)
         {
-            return $errorUniqid;
+            return $errorUniqid->getMessage();
         }
 
         /* Валидация всех объектов */
