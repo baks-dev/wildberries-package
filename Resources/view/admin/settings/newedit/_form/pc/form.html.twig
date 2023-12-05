@@ -1,0 +1,47 @@
+{% trans_default_domain 'admin.wb.products.settings' %}
+
+<div class="d-flex gap-2">
+
+    <div class="d-flex flex-column gap-2 w-100 mb-2">
+        {# Настройки локали #}
+
+
+
+        {# {{ form_row(form.country, { label: 'Страна-изготовитель', placeholder: 'Выберите поле из списка...'}) }} #}
+
+
+
+        {# НАСТРОЙКИ ЛОКАЛИ ПОСАДОЧНЫХ БЛОКОВ #}
+        {% for property in form.property %}
+
+
+
+            <div class="d-flex mb-1 gap-2 align-items-end rounded-3"
+                 style='background-color: {{ property.vars.data.required ? '#fff2f2' : property.vars.data.field is null ? '#fffaef' : '#f8f8f8' }}'
+            >
+
+                {% set unit = property.vars.data.unit ? ' ('~property.vars.data.unit~').' : '' %}
+                {% set popular = property.vars.data.popular ? '<span class="badge text-bg-primary me-1">Популярное</span> ' : '' %}
+
+
+                <div class="p-3 w-100 opacity-100">
+                    {{ popular|raw }}
+
+                    {{ form_label(property.field, property.vars.data.type ~ unit) }}
+
+                    {{ form_widget(property.field, {
+                        placeholder: 'Выберите поле из списка...',
+                        attr: { 'data-select' : 'select2', class:  'mb-0'  }
+                    }) }}
+                </div>
+
+
+            </div>
+
+        {% endfor %}
+    </div>
+
+</div>
+
+
+

@@ -1,0 +1,24 @@
+admin:
+  page:
+    index: 'Setting up Wildberries barcodes'
+    new: 'Add Wildberries barcode setting'
+    edit: 'Edit Wildberries barcode settings'
+    delete: 'Delete Wildberries barcode setting'
+
+  breadcrumb:
+    index: 'Setting up Wildberries product card barcodes'
+    new: 'Add barcode settings for Wildberries product cards'
+    edit: 'Edit the barcode settings for the Wildberries product card'
+    delete: 'Delete the Wildberries product card barcode setting'
+
+  success:
+    new: 'Wildberries barcode settings added'
+    edit: 'Wildberries barcode settings have been successfully updated'
+    delete: 'Wildberries barcode settings have been successfully deleted'
+    restore: 'Wildberries barcode settings have been successfully restored'
+
+  danger:
+    new: '%s: Error when adding barcode settings for Wildberries product cards'
+    edit: '%s: Error when updating the Wildberries product card barcode settings'
+    delete: '%s: Error when updating the Wildberries product card barcode settings'
+    restore: '%s: Error when restoring the Wildberries product card barcode settings'

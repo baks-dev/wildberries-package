@@ -1,0 +1,32 @@
+admin:
+  page:
+    index: 'Карточки товаров Wildberries'
+    new: 'Добавить карточку '
+    edit: 'Редактировать карточку'
+    update: 'Обновить карточку Wildberries'
+    delete: 'Удалить карточку '
+    get: 'Получить новые карточки Wildberries'
+
+  breadcrumb:
+    index: 'Карточки товаров Wildberries'
+    new: 'Добавить карточку товара Wildberries'
+    edit: 'Редактировать карточку товара Wildberries'
+    update: 'Обновить карточку товара Wildberries'
+    delete: 'Удалить карточку товара Wildberries'
+    restore: 'Восстановить карточку товара Wildberries'
+
+  success:
+    new: 'Карточка товара Wildberries успешно добавлена'
+    edit: 'Карточка товара Wildberries успешно обновлена'
+    update: 'Карточка товара Wildberries успешно добавлена в очередь для обновления'
+    delete: 'Карточка товара Wildberries успешно удалена'
+    restore: 'Карточка товара Wildberries восстановлена'
+    get: 'Обновление корточек Wildberries добавлено в очередь'
+
+  danger:
+    new: '%s: Ошибка при добавлении карточки товара Wildberries'
+    edit: '%s: Ошибка при обновлении карточки товара Wildberries'
+    update: '%s: Ошибка при обновлении карточки товара Wildberries'
+    delete: '%s: Ошибка при удалении карточки товара Wildberries'
+    restore:  '%s: Ошибка при восстановлении карточки товара Wildberries'
+    get: 'Уже было обновление! Повторите попытку через 5 минут!'
