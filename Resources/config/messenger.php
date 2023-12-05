@@ -40,5 +40,4 @@ return static function (FrameworkConfig $framework) {
         ->multiplier(3)
         ->service(null)
     ;
-
 };
