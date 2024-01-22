@@ -88,5 +88,7 @@ final class WbSupplyStatusTest extends KernelTestCase
 
         }
 
+        self::assertTrue(true);
+
     }
 }

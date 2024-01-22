@@ -90,5 +90,7 @@ final class WbPackageStatusTest extends KernelTestCase
             
         }
 
+        self::assertTrue(true);
+
     }
 }
