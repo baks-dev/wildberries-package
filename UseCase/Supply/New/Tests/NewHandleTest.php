@@ -76,6 +76,7 @@ final class NewHandleTest extends KernelTestCase
         }
 
         $em->flush();
+        $em->clear();
     }
 
 
@@ -99,6 +100,8 @@ final class NewHandleTest extends KernelTestCase
 
     }
 
+
+
     public function testComplete(): void
     {
         /** @var EntityManagerInterface $em */
@@ -106,5 +109,8 @@ final class NewHandleTest extends KernelTestCase
         $WbSupply = $em->getRepository(WbSupply::class)
             ->find(WbSupplyUid::TEST);
         self::assertNotNull($WbSupply);
+
+        $em->clear();
+
     }
 }

@@ -127,6 +127,9 @@ final class DeleteHandleTest extends KernelTestCase
             ->find(WbSupplyUid::TEST);
         self::assertNull($WbSupplyEvent);
 
+        $em->clear();
+        //$em->close();
+
     }
 
     public static function tearDownAfterClass(): void
@@ -151,5 +154,8 @@ final class DeleteHandleTest extends KernelTestCase
         }
 
         $em->flush();
+
+        $em->clear();
+        //$em->close();
     }
 }

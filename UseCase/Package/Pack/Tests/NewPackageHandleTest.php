@@ -76,6 +76,7 @@ final class NewPackageHandleTest extends KernelTestCase
         }
 
         $em->flush();
+        $em->clear();
     }
 
 
@@ -121,5 +122,8 @@ final class NewPackageHandleTest extends KernelTestCase
         $WbPackage = $em->getRepository(WbPackage::class)
             ->find(WbPackageUid::TEST);
         self::assertNotNull($WbPackage);
+
+        $em->clear();
+        //$em->close();
     }
 }

@@ -78,6 +78,9 @@ final class UpdatePackageOrderStatusHandleTest extends KernelTestCase
         $WbPackage = $em->getRepository(WbPackage::class)
             ->find(WbPackageUid::TEST);
         self::assertNotNull($WbPackage);
+
+        $em->clear();
+        //$em->close();
     }
 
 
@@ -103,6 +106,8 @@ final class UpdatePackageOrderStatusHandleTest extends KernelTestCase
         }
 
         $em->flush();
+        $em->clear();
+        //$em->close();
     }
 
 
