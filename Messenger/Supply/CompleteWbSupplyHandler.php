@@ -42,7 +42,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 1)]
 final class CompleteWbSupplyHandler
 {
-    private LoggerInterface $messageDispatchLogger;
+    private LoggerInterface $logger;
     private WbSupplyStickerHandler $WbSupplyStickerHandler;
     private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
     private WildberriesSupplySticker $wildberriesSupplySticker;
@@ -53,13 +53,13 @@ final class CompleteWbSupplyHandler
     public function __construct(
         OpenWbSupplyInterface $openWbSupply,
         WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $wildberriesPackageLogger,
         WbSupplyStickerHandler $WbSupplyStickerHandler,
         WildberriesSupplySticker $wildberriesSupplySticker,
         CentrifugoPublishInterface $CentrifugoPublish
     )
     {
-        $this->messageDispatchLogger = $messageDispatchLogger;
+        $this->logger = $wildberriesPackageLogger;
         $this->WbSupplyStickerHandler = $WbSupplyStickerHandler;
         $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
         $this->wildberriesSupplySticker = $wildberriesSupplySticker;
@@ -105,7 +105,7 @@ final class CompleteWbSupplyHandler
 
         if($WildberriesSupplyStickerDTO->getIdentifier() !== $UserProfileUid->getAttr())
         {
-            $this->messageDispatchLogger->critical('Не соответствует идентификатор поставки',
+            $this->logger->critical('Не соответствует идентификатор поставки',
                 [
                     'expected' => $UserProfileUid->getAttr(),
                     'received' => $WildberriesSupplyStickerDTO->getIdentifier(),
@@ -133,7 +133,7 @@ final class CompleteWbSupplyHandler
             ->addData(['identifier' => 'complete']) // ID упаковки
             ->send((string) $message->getId(), 4);
 
-        $this->messageDispatchLogger->info('Присвоили стикер и укомплектовали поставку',
+        $this->logger->info('Присвоили стикер и укомплектовали поставку',
             [
                 'identifier' => $WildberriesSupplyStickerDTO->getIdentifier(),
                 __FILE__.':'.__LINE__,

@@ -42,7 +42,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 99)] // высокий приоритет - выполняется первым
 final class DeleteWbSupplyHandler
 {
-    private LoggerInterface $messageDispatchLogger;
+    private LoggerInterface $logger;
     private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
     private OpenWbSupplyInterface $openWbSupply;
     private WildberriesSupplyDelete $wildberriesSupplyDelete;
@@ -52,11 +52,11 @@ final class DeleteWbSupplyHandler
         OpenWbSupplyInterface         $openWbSupply,
         WildberriesSupplyDelete       $wildberriesSupplyDelete,
         WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface               $messageDispatchLogger,
+        LoggerInterface               $wildberriesPackageLogger,
         ORMQueryBuilder               $ORMQueryBuilder
     )
     {
-        $this->messageDispatchLogger = $messageDispatchLogger;
+        $this->logger = $wildberriesPackageLogger;
         $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
         $this->openWbSupply = $openWbSupply;
         $this->wildberriesSupplyDelete = $wildberriesSupplyDelete;
@@ -103,7 +103,7 @@ final class DeleteWbSupplyHandler
                 ->delete();
 
         } catch(DomainException $exception) {
-            $this->messageDispatchLogger->critical('Возникла проблема с удалением поставки Wildberries',
+            $this->logger->critical('Возникла проблема с удалением поставки Wildberries',
                 [
                     'supply' => $UserProfileUid->getAttr(),
                     'exception' => $exception,
@@ -118,7 +118,7 @@ final class DeleteWbSupplyHandler
         $EntityManager->flush();
 
 
-        $this->messageDispatchLogger->info('Удалили поставку с нулевыми заказами',
+        $this->logger->info('Удалили поставку с нулевыми заказами',
             [
                 'supply' => $UserProfileUid->getAttr(),
                 __FILE__ . ':' . __LINE__,

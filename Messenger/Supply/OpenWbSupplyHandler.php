@@ -41,7 +41,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class OpenWbSupplyHandler
 {
-    private LoggerInterface $messageDispatchLogger;
+    private LoggerInterface $logger;
     private WbSupplyOpenHandler $wbSupplyOpenHandler;
     private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
     private WildberriesSupplyOpen $wildberriesSupplyOpen;
@@ -52,12 +52,12 @@ final class OpenWbSupplyHandler
         OpenWbSupplyInterface $openWbSupply,
         WildberriesSupplyOpen $wildberriesSupplyOpen,
         WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $wildberriesPackageLogger,
         WbSupplyOpenHandler $wbSupplyOpenHandler,
         CentrifugoPublishInterface $CentrifugoPublish
     )
     {
-        $this->messageDispatchLogger = $messageDispatchLogger;
+        $this->logger = $wildberriesPackageLogger;
         $this->wbSupplyOpenHandler = $wbSupplyOpenHandler;
         $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
         $this->wildberriesSupplyOpen = $wildberriesSupplyOpen;
@@ -111,7 +111,7 @@ final class OpenWbSupplyHandler
             throw new DomainException(sprintf('%s: Ошибка при открытии поставки', $handle));
         }
 
-        $this->messageDispatchLogger->info('Открыли новую поставку',
+        $this->logger->info('Открыли новую поставку',
             [
                 'identifier' => $WildberriesSupplyOpenDTO->getIdentifier(),
                 __FILE__.':'.__LINE__,

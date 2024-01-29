@@ -51,7 +51,7 @@ final class AddWildberriesSupplyOrdersHandler
     private OrderByPackageInterface $orderByPackage;
     private WildberriesAddOrderToSupply $addOrderToSupply;
     private UpdatePackageOrderStatusHandler $orderStatusHandler;
-    private LoggerInterface $messageDispatchLogger;
+    private LoggerInterface $logger;
     private CentrifugoPublishInterface $CentrifugoPublish;
 
     public function __construct(
@@ -61,7 +61,7 @@ final class AddWildberriesSupplyOrdersHandler
         OrderByPackageInterface $orderByPackage,
         WildberriesAddOrderToSupply $addOrderToSupply,
         UpdatePackageOrderStatusHandler $orderStatusHandler,
-        LoggerInterface $messageDispatchLogger,
+        LoggerInterface $wildberriesPackageLogger,
         CentrifugoPublishInterface $CentrifugoPublish
     )
     {
@@ -71,7 +71,7 @@ final class AddWildberriesSupplyOrdersHandler
         $this->orderByPackage = $orderByPackage;
         $this->addOrderToSupply = $addOrderToSupply;
         $this->orderStatusHandler = $orderStatusHandler;
-        $this->messageDispatchLogger = $messageDispatchLogger;
+        $this->logger = $wildberriesPackageLogger;
         $this->CentrifugoPublish = $CentrifugoPublish;
     }
 
@@ -123,7 +123,7 @@ final class AddWildberriesSupplyOrdersHandler
         {
             $UpdateOrderStatusDTO = new UpdatePackageOrderStatusDTO($order);
 
-            $this->messageDispatchLogger->info(
+            $this->logger->info(
                 'Добавляем заказ в открытую поставку Wildberries',
                 [
                     'supply' => $UserProfileUid->getAttr(),
@@ -143,7 +143,7 @@ final class AddWildberriesSupplyOrdersHandler
             }
             catch(DomainException $exception)
             {
-                $this->messageDispatchLogger->critical(
+                $this->logger->critical(
                     $exception->getMessage(),
                     [
                         'code' => $exception->getCode(),
@@ -157,7 +157,7 @@ final class AddWildberriesSupplyOrdersHandler
 
             if(!$WbPackageOrder instanceof WbPackageOrder)
             {
-                $this->messageDispatchLogger->critical(
+                $this->logger->critical(
                     'Ошибка при добавлении заказа',
                     [
                         'code' => $WbPackageOrder,

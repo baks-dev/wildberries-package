@@ -39,7 +39,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler(priority: 99)] // высокий приоритет - выполняется первым
 final class CloseWbSupplyHandler
 {
-    private LoggerInterface $messageDispatchLogger;
+    private LoggerInterface $logger;
     private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
     private WildberriesSupplyClosed $wildberriesSupplyClosed;
     private OpenWbSupplyInterface $openWbSupply;
@@ -48,10 +48,10 @@ final class CloseWbSupplyHandler
         OpenWbSupplyInterface $openWbSupply,
         WildberriesSupplyClosed $wildberriesSupplyClosed,
         WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $messageDispatchLogger
+        LoggerInterface $wildberriesPackageLogger
     )
     {
-        $this->messageDispatchLogger = $messageDispatchLogger;
+        $this->logger = $wildberriesPackageLogger;
         $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
         $this->wildberriesSupplyClosed = $wildberriesSupplyClosed;
         $this->openWbSupply = $openWbSupply;
@@ -95,7 +95,7 @@ final class CloseWbSupplyHandler
             ->withSupply($UserProfileUid->getAttr())
             ->close();
 
-        $this->messageDispatchLogger->info('Закрыли поставку Wildberries',
+        $this->logger->info('Закрыли поставку Wildberries',
             [
                 'supply' => $UserProfileUid->getAttr(),
                 __FILE__.':'.__LINE__,
