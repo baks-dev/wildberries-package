@@ -33,11 +33,16 @@ return static function (FrameworkConfig $framework) {
         ->transport('wildberries-package')
         ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
         ->options(['queue_name' => 'wildberries-package'])
+        ->failureTransport('failed-wildberries-package')
         ->retryStrategy()
         ->maxRetries(3)
         ->delay(1000)
         ->maxDelay(0)
         ->multiplier(3)
         ->service(null)
+
     ;
+
+    $messenger->transport('failed-wildberries-package')
+        ->dsn('%env(MESSENGER_TRANSPORT_DSN)%');
 };
