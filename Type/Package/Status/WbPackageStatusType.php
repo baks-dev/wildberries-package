@@ -25,20 +25,18 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Type\Package\Status;
 
-use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusInterface;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\Collection\WbPackageStatusInterface;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Types\StringType;
-use InvalidArgumentException;
+use Doctrine\DBAL\Types\Type;
 
-final class WbPackageStatusType extends StringType
+final class WbPackageStatusType extends Type
 {
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
         return (string) $value;
     }
 
-    public function convertToPHPValue($value, AbstractPlatform $platform): mixed
+    public function convertToPHPValue($value, AbstractPlatform $platform): ?WbPackageStatus
     {
         return !empty($value) ? new WbPackageStatus($value) : null;
     }
@@ -65,8 +63,6 @@ final class WbPackageStatusType extends StringType
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
-        $column['length'] = 15;
-
         return $platform->getStringTypeDeclarationSQL($column);
     }
 }
