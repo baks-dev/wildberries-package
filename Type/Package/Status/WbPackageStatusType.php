@@ -46,16 +46,6 @@ final class WbPackageStatusType extends Type
         return WbPackageStatus::TYPE;
     }
 
-    public function getDeclaredType(): array
-    {
-        return array_filter(
-            get_declared_classes(),
-            static function ($className) {
-                return in_array(WbPackageStatusInterface::class, class_implements($className), true);
-            }
-        );
-    }
-
     public function requiresSQLCommentHint(AbstractPlatform $platform): bool
     {
         return true;
