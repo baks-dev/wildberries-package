@@ -39,7 +39,7 @@
                         {% if opens.sticker is null %}
                             disabled="disabled"
                         {% endif %}
-                        class="btn-link btn p-1 icon modal-link"
+                        class="btn-link btn p-1 icon modal-link disabled"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
                         style="width: 40px; height: 40px;"
@@ -89,7 +89,7 @@
                         title="Печатать всех"
                 >
                     <a href="{{ path('wildberries-package:admin.package.prints', { id : opens.id }) }}"
-                       class="btn btn-warning modal-link"
+                       class="btn btn-warning modal-link disabled"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                     >
@@ -128,7 +128,7 @@
 
                     <a href="{{ path('wildberries-package:admin.supply.close', { id: opens.id }) }}"
                        id="close_supply_btn"
-                       class="btn modal-btn btn-danger modal-link text-nowrap"
+                       class="btn modal-btn btn-danger modal-link disabled text-nowrap"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
                     >
@@ -155,7 +155,7 @@
 
         {# <div class="text-end w-25">
             <a href="#"
-               class="btn modal-btn modal-link btn-primary" data-bs-toggle="modal" data-bs-target="#modal"
+               class="btn modal-btn modal-link disabled btn-primary" data-bs-toggle="modal" data-bs-target="#modal"
                title="Открыть поставку">
                 Открыть партию
             </a>

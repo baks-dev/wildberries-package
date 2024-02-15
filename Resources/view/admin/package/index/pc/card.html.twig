@@ -231,7 +231,7 @@
                                     total: item.order_total
                                 }) }}"
 
-                                        class="btn btn-sm modal-link {{ item.exist_manufacture ?: 'btn-primary' }}"
+                                        class="btn btn-sm modal-link disabled {{ item.exist_manufacture ?: 'btn-primary' }}"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modal"
                                         {% if item.exist_manufacture %}
@@ -274,7 +274,7 @@
 
 
                 {# <a href="#"
-                       class="btn modal-btn modal-link btn-primary border-0 w-100"
+                       class="btn modal-btn modal-link disabled btn-primary border-0 w-100"
                        style="background-image: var(--bs-gradient);"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"

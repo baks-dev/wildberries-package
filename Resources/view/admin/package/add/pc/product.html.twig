@@ -71,7 +71,7 @@
                     id="print-{{ card.id }}"
                 {% endif %}
 
-                class="btn btn-sm {{ isSticker ? 'btn-primary': 'btn-danger' }}  modal-link"
+                class="btn btn-sm {{ isSticker ? 'btn-primary': 'btn-danger' }}  modal-link disabled"
                 data-href="{{ path('wildberries-package:admin.package.print', { id : card.id }) }}"
                 data-bs-toggle="modal"
                 data-bs-target="#modal"
