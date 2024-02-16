@@ -113,9 +113,6 @@ final class DeleteHandleTest extends KernelTestCase
         $WbSupplyDeleteDTO = new WbSupplyDeleteDTO();
         $WbSupplyEvent->getDto($WbSupplyDeleteDTO);
 
-        //dd($WbSupplyDeleteDTO);
-
-
         /** @var WbSupplyDeleteHandler $WbSupplyDeleteHandler */
         $WbSupplyDeleteHandler = self::getContainer()->get(WbSupplyDeleteHandler::class);
         $handle = $WbSupplyDeleteHandler->handle($WbSupplyDeleteDTO);
