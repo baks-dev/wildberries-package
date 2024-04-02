@@ -57,7 +57,7 @@ use BaksDev\Wildberries\Products\Entity\Barcode\Event\WbBarcodeEvent;
 use BaksDev\Wildberries\Products\Entity\Barcode\WbBarcode;
 use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardVariation;
 
-final class PrintOrdersPackageSupply implements PrintOrdersPackageSupplyInterface
+final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupplyInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 

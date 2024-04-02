@@ -33,7 +33,7 @@ use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
 
-final class ExistOrderPackage implements ExistOrderPackageInterface
+final class ExistOrderPackageRepository implements ExistOrderPackageInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 

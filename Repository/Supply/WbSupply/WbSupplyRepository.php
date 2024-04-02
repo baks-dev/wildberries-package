@@ -34,7 +34,7 @@ use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
-final class WbSupplyRepository implements WbSupplyRepositoryInterface
+final class WbSupplyRepository implements WbSupplyInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 

@@ -35,7 +35,7 @@ use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilter
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\AllWbSupplyOrders\AllWbSupplyOrdersInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
-use BaksDev\Wildberries\Package\Repository\Supply\WbSupply\WbSupplyRepositoryInterface;
+use BaksDev\Wildberries\Package\Repository\Supply\WbSupply\WbSupplyInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -53,7 +53,7 @@ final class DetailComtroller extends AbstractController
     public function index(
         Request $request,
         #[MapEntity] WbSupply $wbSupply,
-        WbSupplyRepositoryInterface $wbSupplyRepository,
+        WbSupplyInterface $wbSupplyRepository,
         AllWbSupplyOrdersInterface $allWbSupplyOrders,
         //AllWbSupplyInterface $allWbSupplyOrders,
         int $page = 0,

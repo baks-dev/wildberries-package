@@ -21,15 +21,47 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Wildberries\Package\Repository\Supply\WbSupply;
+declare(strict_types=1);
 
+namespace BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent;
+
+use BaksDev\Core\Doctrine\ORMQueryBuilder;
+use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
-interface WbSupplyRepositoryInterface
+final class WbSupplyCurrentEventRepository implements WbSupplyCurrentEventInterface
 {
+    private ORMQueryBuilder $ORMQueryBuilder;
+
+    public function __construct(ORMQueryBuilder $ORMQueryBuilder)
+    {
+        $this->ORMQueryBuilder = $ORMQueryBuilder;
+    }
+
     /**
-     * Получаем поставку по указанному идентификатору
+     * Возвращает активное событие поставки
      */
-    public function getWbSupplyById(WbSupply|WbSupplyUid $supply): ?array;
+    public function findWbSupplyEvent(WbSupply|WbSupplyUid $supply): ?WbSupplyEvent
+    {
+        $supply = $supply instanceof WbSupply ? $supply->getId() : $supply;
+
+        $qb = $this->ORMQueryBuilder->createQueryBuilder(self::class);
+
+        $qb->select('event');
+
+        $qb
+            ->from(WbSupply::class, 'supply')
+            ->where('supply.id = :supply')
+            ->setParameter('supply', $supply, WbSupplyUid::TYPE);
+
+        $qb->join(
+            WbSupplyEvent::class,
+            'event',
+            'WITH',
+            'event.id = supply.event'
+        );
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
 }

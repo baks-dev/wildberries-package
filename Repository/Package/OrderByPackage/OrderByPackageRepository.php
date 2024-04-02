@@ -53,7 +53,7 @@ use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardVariation;
 use Generator;
 
 
-final class OrderByPackage implements OrderByPackageInterface
+final class OrderByPackageRepository implements OrderByPackageInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 

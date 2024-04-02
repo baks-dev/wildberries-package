@@ -67,7 +67,7 @@ class WbSupplyEvent extends EntityEvent
     /**
      * Модификатор
      */
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyModify::class, cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: WbSupplyModify::class, mappedBy: 'event', cascade: ['all'])]
     private WbSupplyModify $modify;
 
     /**
@@ -81,7 +81,7 @@ class WbSupplyEvent extends EntityEvent
      * Константы сущности
      */
     #[Assert\Valid]
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyConst::class, cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: WbSupplyConst::class, mappedBy: 'event', cascade: ['all'])]
     private ?WbSupplyConst $const = null;
 
 
@@ -89,7 +89,7 @@ class WbSupplyEvent extends EntityEvent
      * Поставка Wildberries
      */
     #[Assert\Valid]
-    #[ORM\OneToOne(mappedBy: 'event', targetEntity: WbSupplyWildberries::class, cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: WbSupplyWildberries::class, mappedBy: 'event', cascade: ['all'])]
     private ?WbSupplyWildberries $wildberries = null;
 
 

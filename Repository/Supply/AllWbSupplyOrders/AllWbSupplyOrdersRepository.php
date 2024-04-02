@@ -55,7 +55,7 @@ use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardOffer;
 use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardVariation;
 
-final class AllWbSupplyOrders implements AllWbSupplyOrdersInterface
+final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
 {
     private PaginatorInterface $paginator;
     private DBALQueryBuilder $DBALQueryBuilder;

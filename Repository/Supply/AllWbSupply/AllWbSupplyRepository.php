@@ -1,17 +1,17 @@
 <?php
 /*
  *  Copyright 2023.  Baks.dev <admin@baks.dev>
- *
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,105 +23,60 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply;
+namespace BaksDev\Wildberries\Package\Repository\Supply\AllWbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
+use BaksDev\Core\Form\Search\SearchDTO;
+use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
-use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
+use BaksDev\Wildberries\Package\Forms\Supply\SupplyFilter\SupplyFilterDTO;
+use DateTimeImmutable;
 
-final class OpenWbSupply implements OpenWbSupplyInterface
+final class AllWbSupplyRepository implements AllWbSupplyInterface
 {
+    private PaginatorInterface $paginator;
+
     private DBALQueryBuilder $DBALQueryBuilder;
+
+    private ?SupplyFilterDTO $filter = null;
+    private SearchDTO $search;
+
 
     public function __construct(
         DBALQueryBuilder $DBALQueryBuilder,
+        PaginatorInterface $paginator,
     )
     {
+        $this->paginator = $paginator;
         $this->DBALQueryBuilder = $DBALQueryBuilder;
     }
 
-    /**
-     * Метод возвращает профиль пользователя и идентификатор поставки в качестве аттрибута
-     */
-    public function getWbSupply(WbSupplyUid $WbSupplyUid) : ?UserProfileUid
+    public function setFilter(SupplyFilterDTO $filter): self
     {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $this->filter = $filter;
+        return $this;
+    }
 
-        $qb
-            ->addSelect('supply_const.profile')
-            ->from(WbSupplyConst::TABLE, 'supply_const')
-            ->where('supply_const.main = :supply')
-            ->setParameter('supply', $WbSupplyUid, WbSupplyUid::TYPE);
-
-        $qb
-            ->addSelect('supply_wildberries.identifier')
-            ->leftJoin(
-                'supply_const',
-                WbSupplyWildberries::TABLE,
-                'supply_wildberries',
-                'supply_wildberries.main = supply_const.main'
-            );
-
-        $supply = $qb->fetchAssociative();
-
-        return $supply ? new UserProfileUid($supply['profile'], $supply['identifier']) : null;
-
+    public function setSearch(SearchDTO $search): self
+    {
+        $this->search = $search;
+        return $this;
     }
 
 
-
     /**
-     * Получаем идентификатор ОТКРЫТОЙ поставки профиля пользователя
+     * Метод возвращает пагинатор WbSupply
      */
-    public function getOpenWbSupplyByProfile(UserProfileUid $profile): ?WbSupplyUid
+
+    public function fetchAllWbSupplyAssociative(UserProfileUid $profile): PaginatorInterface
     {
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb
-            ->from(WbSupplyConst::TABLE, 'supply_const')
-            ->where('supply_const.profile = :profile')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
-
-        $qb
-            ->addSelect('supply.id')
-            ->join(
-                'supply_const',
-                WbSupply::TABLE,
-                'supply',
-                'supply.id = supply_const.main'
-            );
-
-        $qb
-            ->addSelect('event.status')
-            ->join(
-                'supply',
-                WbSupplyEvent::TABLE,
-                'event',
-                'event.id = supply.event AND (event.status = :new OR event.status = :open) '
-            )
-            ->setParameter('new', WbSupplyStatus\WbSupplyStatusNew::STATUS)
-            ->setParameter('open', WbSupplyStatus\WbSupplyStatusOpen::STATUS);
-
-        $qb->setMaxResults(1);
-
-        $result = $qb->fetchOne();
-
-        return $result ? new WbSupplyUid($result) : null;
-    }
-
-    /**
-     * Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
-     */
-    public function getLastWbSupply(UserProfileUid $profile): ?array
-    {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb
             ->addSelect('supply_const.total')
@@ -159,6 +114,27 @@ final class OpenWbSupply implements OpenWbSupplyInterface
             );
 
 
+        /**
+         * Фильтр по дате
+         */
+
+        if(!$this->search?->getQuery() && $this->filter?->getDate())
+        {
+            $date = $this->filter?->getDate() ?: new DateTimeImmutable();
+
+            // Начало дня
+            $startOfDay = $date->setTime(0, 0, 0);
+            // Конец дня
+            $endOfDay = $date->setTime(23, 59, 59);
+
+            //($date ? ' AND part_modify.mod_date = :date' : '')
+            $qb->andWhere('modify.mod_date BETWEEN :start AND :end');
+
+            $qb->setParameter('start', $startOfDay->format("Y-m-d H:i:s"));
+            $qb->setParameter('end', $endOfDay->format("Y-m-d H:i:s"));
+        }
+
+
         $qb
             ->addSelect('wb.identifier')
             ->addSelect('wb.sticker')
@@ -171,10 +147,17 @@ final class OpenWbSupply implements OpenWbSupplyInterface
 
 
         $qb->orderBy('modify.mod_date', 'DESC');
-        $qb->setMaxResults(1);
 
-        return $qb
-            ->enableCache((string) $profile, 3600)
-            ->fetchAssociative();
+        if($this->search?->getQuery())
+        {
+
+            $qb
+                ->createSearchQueryBuilder($this->search)
+                ->addSearchEqualUid('supply.id')
+                ->addSearchEqualUid('supply.event')
+                ->addSearchLike('wb.identifier');
+        }
+
+        return $this->paginator->fetchAllAssociative($qb);
     }
 }

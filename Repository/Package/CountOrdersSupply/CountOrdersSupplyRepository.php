@@ -31,7 +31,7 @@ use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
-final class CountOrdersSupply implements CountOrdersSupplyInterface
+final class CountOrdersSupplyRepository implements CountOrdersSupplyInterface
 {
     private DBALQueryBuilder $DBALQueryBuilder;
 
