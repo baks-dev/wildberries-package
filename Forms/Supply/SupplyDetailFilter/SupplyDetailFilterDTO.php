@@ -25,7 +25,7 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Forms\Supply\SupplyDetailFilter;
 
-use BaksDev\Products\Category\Type\Id\ProductCategoryUid;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use Symfony\Component\HttpFoundation\Request;
 
 final class SupplyDetailFilterDTO
@@ -41,7 +41,7 @@ final class SupplyDetailFilterDTO
     /**
      * Категория
      */
-    private ?ProductCategoryUid $category = null;
+    private ?CategoryProductUid $category = null;
 
     /**
      * Торговое предложение
@@ -68,7 +68,7 @@ final class SupplyDetailFilterDTO
     /**
      * Категория
      */
-    public function setCategory(ProductCategoryUid|string|null $category): void
+    public function setCategory(CategoryProductUid|string|null $category): void
     {
         if(empty($category))
         {
@@ -77,14 +77,14 @@ final class SupplyDetailFilterDTO
 
         if(is_string($category))
         {
-            $category = new ProductCategoryUid($category);
+            $category = new CategoryProductUid($category);
         }
 
         $this->category = $category;
     }
 
 
-    public function getCategory(bool $readonly = false): ?ProductCategoryUid
+    public function getCategory(bool $readonly = false): ?CategoryProductUid
     {
         if($readonly)
         {

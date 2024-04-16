@@ -29,12 +29,12 @@ use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Manufacture\Part\Entity\Products\ManufacturePartProduct;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
-use BaksDev\Products\Category\Entity\Offers\ProductCategoryOffers;
-use BaksDev\Products\Category\Entity\Offers\Trans\ProductCategoryOffersTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\ProductCategoryModification;
-use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\ProductCategoryModificationTrans;
-use BaksDev\Products\Category\Entity\Offers\Variation\ProductCategoryVariation;
-use BaksDev\Products\Category\Entity\Offers\Variation\Trans\ProductCategoryVariationTrans;
+use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
+use BaksDev\Products\Category\Entity\Offers\Trans\CategoryProductOffersTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\Trans\CategoryProductModificationTrans;
+use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVariationTrans;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
@@ -221,7 +221,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_offer.reference AS product_offer_reference');
         $qb->leftJoin(
             'product_offer',
-            ProductCategoryOffers::TABLE,
+            CategoryProductOffers::TABLE,
             'category_offer',
             'category_offer.id = product_offer.category_offer'
         );
@@ -231,7 +231,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_offer_trans.postfix as product_offer_name_postfix');
         $qb->leftJoin(
             'category_offer',
-            ProductCategoryOffersTrans::TABLE,
+            CategoryProductOffersTrans::TABLE,
             'category_offer_trans',
             'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
@@ -253,7 +253,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_variation.reference as product_variation_reference');
         $qb->leftJoin(
             'product_variation',
-            ProductCategoryVariation::TABLE,
+            CategoryProductVariation::TABLE,
             'category_variation',
             'category_variation.id = product_variation.category_variation'
         );
@@ -264,7 +264,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_variation_trans.postfix as product_variation_name_postfix');
         $qb->leftJoin(
             'category_variation',
-            ProductCategoryVariationTrans::TABLE,
+            CategoryProductVariationTrans::TABLE,
             'category_variation_trans',
             'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
         );
@@ -414,7 +414,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_offer.reference AS product_offer_reference');
         $qb->leftJoin(
             'product_offer',
-            ProductCategoryOffers::TABLE,
+            CategoryProductOffers::TABLE,
             'category_offer',
             'category_offer.id = product_offer.category_offer'
         );
@@ -424,7 +424,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_offer_trans.postfix as product_offer_name_postfix');
         $qb->leftJoin(
             'category_offer',
-            ProductCategoryOffersTrans::TABLE,
+            CategoryProductOffersTrans::TABLE,
             'category_offer_trans',
             'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
         );
@@ -448,7 +448,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_variation.reference as product_variation_reference');
         $qb->leftJoin(
             'product_variation',
-            ProductCategoryVariation::TABLE,
+            CategoryProductVariation::TABLE,
             'category_variation',
             'category_variation.id = product_variation.category_variation'
         );
@@ -459,7 +459,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_variation_trans.postfix as product_variation_name_postfix');
         $qb->leftJoin(
             'category_variation',
-            ProductCategoryVariationTrans::TABLE,
+            CategoryProductVariationTrans::TABLE,
             'category_variation_trans',
             'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
         );
@@ -483,7 +483,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_modification.reference as product_modification_reference');
         $qb->leftJoin(
             'product_modification',
-            ProductCategoryModification::TABLE,
+            CategoryProductModification::TABLE,
             'category_modification',
             'category_modification.id = product_modification.category_modification'
         );
@@ -493,7 +493,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         $qb->addSelect('category_modification_trans.postfix as product_modification_name_postfix');
         $qb->leftJoin(
             'category_modification',
-            ProductCategoryModificationTrans::TABLE,
+            CategoryProductModificationTrans::TABLE,
             'category_modification_trans',
             'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
         );
