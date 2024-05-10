@@ -89,7 +89,7 @@ final class SupplyDetailFilterForm extends AbstractType
 
 
                 $builder->add('category', ChoiceType::class, [
-                    'choices' => $this->categoryChoice->getCategoryCollection(),
+                    'choices' => $this->categoryChoice->findAll(),
                     'choice_value' => function(?CategoryProductUid $category) {
                         return $category?->getValue();
                     },
