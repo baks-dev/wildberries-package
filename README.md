@@ -1,6 +1,6 @@
 # BaksDev Package Wildberries
 
-[![Version](https://img.shields.io/badge/version-7.0.22-blue)](https://github.com/baks-dev/wildberries-package/releases)
+[![Version](https://img.shields.io/badge/version-7.0.23-blue)](https://github.com/baks-dev/wildberries-package/releases)
 ![php 8.2+](https://img.shields.io/badge/php-min%208.1-red.svg)
 
 Модуль упаковки заказов
