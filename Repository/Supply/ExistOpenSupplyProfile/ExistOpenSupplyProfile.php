@@ -26,7 +26,7 @@ use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use Doctrine\DBAL\Connection;
 
-final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileInterface
+final class ExistOpenSupplyProfile implements ExistOpenSupplyProfileInterface
 {
 
     private DBALQueryBuilder $DBALQueryBuilder;
