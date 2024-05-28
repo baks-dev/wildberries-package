@@ -78,6 +78,8 @@ final class CloseController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('wb_supply_close'))
         {
+            $this->refreshTokenForm($form);
+
             $handle = $WbSupplyCloseHandler->handle($WbSupplyCloseDTO);
 
             $this->addFlash

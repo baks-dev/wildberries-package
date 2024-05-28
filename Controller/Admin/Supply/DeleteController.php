@@ -60,6 +60,8 @@ final class DeleteController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('wb_supply_delete'))
         {
+            $this->refreshTokenForm($form);
+
             $handle = $WbSupplyDeleteHandler->handle($WbSupplyDeleteDTO);
 
             $this->addFlash
