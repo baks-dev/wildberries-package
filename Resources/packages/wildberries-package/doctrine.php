@@ -23,6 +23,7 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use BaksDev\Wildberries\Package\BaksDevWildberriesPackageBundle;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventType;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageType;
@@ -52,11 +53,9 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
     $doctrine->dbal()->type(WbSupplyStatus::TYPE)->class(WbSupplyStatusType::class);
 
 
-    $MODULE = substr(__DIR__, 0, strpos(__DIR__, "Resources"));
-
     $emDefault->mapping('wildberries-package')
         ->type('attribute')
-        ->dir($MODULE.'Entity')
+        ->dir(BaksDevWildberriesPackageBundle::PATH.'Entity')
         ->isBundle(false)
         ->prefix('BaksDev\Wildberries\Package')
         ->alias('wildberries-package')
