@@ -1,6 +1,6 @@
 # BaksDev Package Wildberries
 
-[![Version](https://img.shields.io/badge/version-7.1.1-blue)](https://github.com/baks-dev/wildberries-package/releases)
+[![Version](https://img.shields.io/badge/version-7.1.2-blue)](https://github.com/baks-dev/wildberries-package/releases)
 ![php 8.3+](https://img.shields.io/badge/php-min%208.3-red.svg)
 
 Модуль упаковки заказов
@@ -13,27 +13,21 @@ $ composer require baks-dev/wildberries-package
 
 ## Дополнительно
 
-Изменения в схеме базы данных с помощью миграции
-
-``` bash
-$ php bin/console doctrine:migrations:diff
-
-$ php bin/console doctrine:migrations:migrate
-```
-
-Установка файловых ресурсов в публичную директорию (javascript, css, image ...):
+Установка конфигурации и файловых ресурсов:
 
 ``` bash
 $ php bin/console baks:assets:install
 ```
 
-Роли администратора с помощью Fixtures
+Изменения в схеме базы данных с помощью миграции
 
 ``` bash
-$ php bin/console doctrine:fixtures:load --append
+$ php bin/console doctrine:migrations:diff
+$ php bin/console doctrine:migrations:migrate
 ```
 
-Тесты
+
+## Тестирование
 
 ``` bash
 $ php bin/phpunit --group=wildberries-package
