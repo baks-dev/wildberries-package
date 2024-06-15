@@ -31,8 +31,8 @@ return static function (FrameworkConfig $framework) {
 
     $messenger
         ->transport('wildberries-package')
-        ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
-        ->options(['queue_name' => 'wildberries-package'])
+        ->dsn('redis://%env(REDIS_PASSWORD)%@%env(REDIS_HOST)%:%env(REDIS_PORT)%?auto_setup=true')
+        ->options(['stream' => 'wildberries-package'])
         ->failureTransport('failed-wildberries-package')
         ->retryStrategy()
         ->maxRetries(3)
@@ -43,7 +43,9 @@ return static function (FrameworkConfig $framework) {
 
     ;
 
-    $messenger->transport('failed-wildberries-package')
+    $failure = $framework->messenger();
+
+    $failure->transport('failed-wildberries-package')
         ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
         ->options(['queue_name' => 'failed-wildberries-package'])
     ;
