@@ -131,7 +131,9 @@
                                     ><small>{{ item.product_article }}</small> #}
 
                         <div class="btn-group p-0" role="group">
-                            <button type="submit" class="btn btn-primary btn-sm py-0"
+                            <button type="submit"
+                                    class="btn btn-primary btn-sm py-0"
+                                    role="tooltip"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="bottom"
                                     title='Общее количество аналогичных заказов'
@@ -140,7 +142,9 @@
                             </button>
 
                             {% if item.wb_order_alarm %}
-                                <button type="submit" class="btn btn-danger btn-sm py-0"
+                                <button type="submit"
+                                        class="btn btn-danger btn-sm py-0"
+                                        role="tooltip"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="bottom"
                                         title='Количество срочных заказов'
@@ -163,6 +167,7 @@
 
 
                 <div class="text-truncate"
+                     role="tooltip"
                      data-bs-toggle="tooltip"
                      data-bs-placement="top"
                      title="{{ item.product_name }}"
@@ -219,6 +224,7 @@
                     {% if package_open %}
                         {% if is_granted('ROLE_WB_PACKAGE_ADD') or  is_granted('ROLE_ADMIN') %}
                             <span
+                                    role="tooltip"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="bottom"
                                     title='{{ item.exist_manufacture ? 'Продукция на производстве '~ item.exist_manufacture : 'Добавить поставку' }}'
@@ -254,6 +260,7 @@
                     {% else %}
 
                         <span
+                                role="tooltip"
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="bottom"
                                 title='Открыть новую поставку Wildberries'

@@ -29,7 +29,9 @@
 
             <div>
 
-                <span data-bs-toggle="tooltip"
+                <span
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
                       data-bs-placement="bottom"
                       data-bs-delay='{"show":600,"hide":100}'
                       title='{{ opens.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
@@ -83,6 +85,8 @@
             <div>
 
                 <div
+
+                        role="tooltip"
                         data-bs-toggle="tooltip"
                         data-bs-placement="bottom"
                         data-bs-delay='{"show":600,"hide":100}'
@@ -120,7 +124,9 @@
         {% if opens.status == 'new' or opens.status == 'open' %}
             <div class="text-end"
             >
-                <div data-bs-toggle="tooltip"
+                <div
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
                      data-bs-placement="bottom"
                      data-bs-delay='{"show":600,"hide":100}'
                      title="Отправить поставку на склад Wildberries"
@@ -142,6 +148,7 @@
             >
                 <a href="{{ path('wildberries-package:admin.supply.new') }}"
                    class="btn btn-primary text-nowrap"
+                   role="tooltip"
                    data-bs-toggle="tooltip"
                    data-bs-placement="bottom"
                    data-bs-delay='{"show":600,"hide":100}'

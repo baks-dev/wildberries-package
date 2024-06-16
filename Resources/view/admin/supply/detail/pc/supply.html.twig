@@ -28,7 +28,9 @@
 
             <div>
 
-                <span data-bs-toggle="tooltip"
+                <span
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
                       data-bs-placement="bottom"
                       data-bs-delay='{"show":600,"hide":100}'
                       title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
@@ -88,7 +90,9 @@
         {% if supply.status == 'new' or supply.status == 'open' %}
             <div class="text-end"
             >
-                <div data-bs-toggle="tooltip"
+                <div
+                        role="tooltip"
+                        data-bs-toggle="tooltip"
                      data-bs-placement="bottom"
                      data-bs-delay='{"show":600,"hide":100}'
                      title="Отправить поставку на склад Wildberries"
