@@ -32,7 +32,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 //#[AutoconfigureTag('baks.menu.admin')]
 final class Role implements RoleInterface //, MenuAdminInterface
 {
-
     public const ROLE = 'ROLE_WB_SUPPLY';
 
     public function getRole(): string
@@ -40,48 +39,5 @@ final class Role implements RoleInterface //, MenuAdminInterface
         return self::ROLE;
     }
 
-
-//    /**
-//     * Добавляем раздел в меню администрирования.
-//     */
-//
-//
-//    /** Метод возвращает PATH раздела */
-//    public function getPath(): string
-//    {
-//        return 'wildberries-package:admin.supply.index';
-//    }
-//
-//    /**
-//     * Метод возвращает секцию, в которую помещается ссылка на раздел.
-//     */
-//    public function getGroupMenu(): MenuAdminSectionGroupCollectionInterface|bool
-//    {
-//        return new MenuGroupWildberries();
-//    }
-//
-//    /**
-//     * Метод возвращает позицию, в которую располагается ссылка в секции меню.
-//     */
-//    public function getSortMenu(): int
-//    {
-//        return 500;
-//    }
-//
-//    /**
-//     * Метод возвращает флаг "Показать в выпадающем меню".
-//     */
-//    public function getDropdownMenu(): bool
-//    {
-//        return true;
-//    }
-//
-//    /**
-//     * Метод возвращает флаг "Модальное окно".
-//     */
-//    public function getModal(): bool
-//    {
-//        return false;
-//    }
 
 }
