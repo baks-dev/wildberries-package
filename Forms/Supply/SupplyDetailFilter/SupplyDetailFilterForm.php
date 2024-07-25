@@ -42,7 +42,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class SupplyDetailFilterForm extends AbstractType
 {
-
     private RequestStack $request;
 
     private CategoryChoiceInterface $categoryChoice;
@@ -53,15 +52,12 @@ final class SupplyDetailFilterForm extends AbstractType
 
     public function __construct(
         RequestStack $request,
-
         CategoryChoiceInterface $categoryChoice,
         OfferFieldsCategoryChoiceInterface $offerChoice,
         VariationFieldsCategoryChoiceInterface $variationChoice,
         ModificationFieldsCategoryChoiceInterface $modificationChoice,
         FieldsChoice $choice,
-
-    )
-    {
+    ) {
         $this->request = $request;
         $this->categoryChoice = $categoryChoice;
         $this->offerChoice = $offerChoice;
@@ -90,10 +86,10 @@ final class SupplyDetailFilterForm extends AbstractType
 
                 $builder->add('category', ChoiceType::class, [
                     'choices' => $this->categoryChoice->findAll(),
-                    'choice_value' => function(?CategoryProductUid $category) {
+                    'choice_value' => function (?CategoryProductUid $category) {
                         return $category?->getValue();
                     },
-                    'choice_label' => function(CategoryProductUid $category) {
+                    'choice_label' => function (CategoryProductUid $category) {
                         return $category->getOptions();
                     },
                     'label' => false,
@@ -105,10 +101,9 @@ final class SupplyDetailFilterForm extends AbstractType
         });
 
 
-
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function(FormEvent $event): void {
+            function (FormEvent $event): void {
                 /** @var SupplyDetailFilterDTO $data */
                 $data = $event->getData();
 
@@ -124,7 +119,7 @@ final class SupplyDetailFilterForm extends AbstractType
 
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
-            function(FormEvent $event): void {
+            function (FormEvent $event): void {
                 // this would be your entity, i.e. SportMeetup
 
                 /** @var SupplyDetailFilterDTO $data */
@@ -145,7 +140,9 @@ final class SupplyDetailFilterForm extends AbstractType
                 {
                     /** Торговое предложение раздела */
 
-                    $offerField = $this->offerChoice->findByCategory($Category);
+                    $offerField = $this->offerChoice
+                        ->category($Category)
+                        ->findAllCategoryProductOffers();
 
                     if($offerField)
                     {
@@ -153,24 +150,23 @@ final class SupplyDetailFilterForm extends AbstractType
 
                         if($inputOffer)
                         {
-                            $builder->add('offer',
-
+                            $builder->add(
+                                'offer',
                                 $inputOffer->form(),
                                 [
                                     'label' => $offerField->getOption(),
-                                    //'mapped' => false,
                                     'priority' => 200,
                                     'required' => false,
 
-                                    //'block_name' => $field['type'],
-                                    //'data' => isset($session[$field['type']]) ? $session[$field['type']] : null,
                                 ]
                             );
 
 
                             /** Множественные варианты торгового предложения */
 
-                            $variationField = $this->variationChoice->getVariationFieldType($offerField);
+                            $variationField = $this->variationChoice
+                                ->offer($offerField)
+                                ->findCategoryProductVariation();
 
                             if($variationField)
                             {
@@ -179,22 +175,22 @@ final class SupplyDetailFilterForm extends AbstractType
 
                                 if($inputVariation)
                                 {
-                                    $builder->add('variation',
+                                    $builder->add(
+                                        'variation',
                                         $inputVariation->form(),
                                         [
                                             'label' => $variationField->getOption(),
-                                            //'mapped' => false,
                                             'priority' => 199,
                                             'required' => false,
 
-                                            //'block_name' => $field['type'],
-                                            //'data' => isset($session[$field['type']]) ? $session[$field['type']] : null,
                                         ]
                                     );
 
                                     /** Модификации множественных вариантов торгового предложения */
 
-                                    $modificationField = $this->modificationChoice->findByVariation($variationField);
+                                    $modificationField = $this->modificationChoice
+                                        ->variation($variationField)
+                                        ->findAllModification();
 
 
                                     if($modificationField)
@@ -203,16 +199,13 @@ final class SupplyDetailFilterForm extends AbstractType
 
                                         if($inputModification)
                                         {
-                                            $builder->add('modification',
+                                            $builder->add(
+                                                'modification',
                                                 $inputModification->form(),
                                                 [
                                                     'label' => $modificationField->getOption(),
-                                                    //'mapped' => false,
                                                     'priority' => 198,
                                                     'required' => false,
-
-                                                    //'block_name' => $field['type'],
-                                                    //'data' => isset($session[$field['type']]) ? $session[$field['type']] : null,
                                                 ]
                                             );
                                         }
