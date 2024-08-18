@@ -128,7 +128,7 @@ final class AddWildberriesSupplyOrdersHandler
                 [
                     'supply' => $UserProfileUid->getAttr(),
                     'order' => $order->getAttr(),
-                    __FILE__.':'.__LINE__
+                    self::class.':'.__LINE__
                 ]);
 
             try
@@ -147,7 +147,7 @@ final class AddWildberriesSupplyOrdersHandler
                     $exception->getMessage(),
                     [
                         'code' => $exception->getCode(),
-                        __FILE__.':'.__LINE__
+                        self::class.':'.__LINE__
                     ]);
 
                 $UpdateOrderStatusDTO->setStatus(WbPackageStatusError::class);
@@ -161,7 +161,7 @@ final class AddWildberriesSupplyOrdersHandler
                     'Ошибка при добавлении заказа',
                     [
                         'code' => $WbPackageOrder,
-                        __FILE__.':'.__LINE__
+                        self::class.':'.__LINE__
                     ]);
 
                 throw new DomainException('Ошибка при добавлении заказа');

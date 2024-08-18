@@ -98,7 +98,7 @@ final class CloseWbSupplyHandler
         $this->logger->info('Закрыли поставку Wildberries',
             [
                 'supply' => $UserProfileUid->getAttr(),
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
             ]);
     }
 

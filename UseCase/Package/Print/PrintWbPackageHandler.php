@@ -48,7 +48,7 @@ final class PrintWbPackageHandler extends AbstractHandler
         $this->entityManager->clear();
         $WbPackageSupply = $this->entityManager->getRepository(WbPackageSupply::class)->find($command->getMain());
 
-        if($this->validatorCollection->add($WbPackageSupply, context: [__FILE__.':'.__LINE__]))
+        if($this->validatorCollection->add($WbPackageSupply, context: [self::class.':'.__LINE__]))
         {
             $WbPackageSupply->setEntity($command);
 

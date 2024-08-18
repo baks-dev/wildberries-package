@@ -43,7 +43,7 @@ final class WbSupplyTotalHandler extends AbstractHandler
         $this->entityManager->clear();
         $WbSupplyConst = $this->entityManager->getRepository(WbSupplyConst::class)->find($command->getMain());
 
-        if(false === $this->validatorCollection->add($WbSupplyConst, context: [__FILE__.':'.__LINE__]))
+        if(false === $this->validatorCollection->add($WbSupplyConst, context: [self::class.':'.__LINE__]))
         {
             return $this->validatorCollection->getErrorUniqid();
         }

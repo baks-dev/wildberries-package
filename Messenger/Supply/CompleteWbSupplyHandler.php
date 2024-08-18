@@ -109,7 +109,7 @@ final class CompleteWbSupplyHandler
                 [
                     'expected' => $UserProfileUid->getAttr(),
                     'received' => $WildberriesSupplyStickerDTO->getIdentifier(),
-                    __FILE__.':'.__LINE__,
+                    self::class.':'.__LINE__,
                 ]);
 
             throw new DomainException('Не соответствует идентификатор поставки');
@@ -136,7 +136,7 @@ final class CompleteWbSupplyHandler
         $this->logger->info('Присвоили стикер и укомплектовали поставку',
             [
                 'identifier' => $WildberriesSupplyStickerDTO->getIdentifier(),
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
             ]);
 
     }

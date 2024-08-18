@@ -81,7 +81,7 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
             ->getRepository(WbPackageOrder::class)
             ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);
 
-        if(false === $this->validatorCollection->add($WbPackageOrder, context: [__FILE__.':'.__LINE__]))
+        if(false === $this->validatorCollection->add($WbPackageOrder, context: [self::class.':'.__LINE__]))
         {
             return $this->validatorCollection->getErrorUniqid();
         }

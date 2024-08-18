@@ -114,7 +114,7 @@ final class OpenWbSupplyHandler
         $this->logger->info('Открыли новую поставку',
             [
                 'identifier' => $WildberriesSupplyOpenDTO->getIdentifier(),
-                __FILE__.':'.__LINE__,
+                self::class.':'.__LINE__,
             ]);
 
         /** Отправляем сокет с идентификатором поставки */

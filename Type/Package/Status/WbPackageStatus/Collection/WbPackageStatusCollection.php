@@ -25,14 +25,14 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\Collection;
 
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 final class WbPackageStatusCollection
 {
     private iterable $status;
 
     public function __construct(
-        #[TaggedIterator('baks.wb.package.status')] iterable $status
+        #[AutowireIterator('baks.wb.package.status')] iterable $status
     )
     {
         $this->status = $status;
