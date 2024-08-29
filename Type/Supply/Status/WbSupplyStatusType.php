@@ -32,7 +32,7 @@ final class WbSupplyStatusType extends Type
 {
     public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
-        return (string) $value;
+        return (string) new WbSupplyStatus($value);
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): ?WbSupplyStatus

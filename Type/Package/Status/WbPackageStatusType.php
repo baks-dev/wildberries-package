@@ -33,7 +33,7 @@ final class WbPackageStatusType extends Type
 {
     public function convertToDatabaseValue($value, AbstractPlatform $platform): string
     {
-        return (string) $value;
+        return (string) new WbPackageStatus($value);
     }
 
     public function convertToPHPValue($value, AbstractPlatform $platform): ?WbPackageStatus
