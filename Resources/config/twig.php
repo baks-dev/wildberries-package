@@ -24,26 +24,13 @@
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use BaksDev\Wildberries\Package\BaksDevWildberriesPackageBundle;
+use Symfony\Config\TwigConfig;
 
-return static function(ContainerConfigurator $configurator) {
+return static function (TwigConfig $twig) {
 
-    $services = $configurator->services()
-        ->defaults()
-        ->autowire()
-        ->autoconfigure();
-
-    $NAMESPACE = BaksDevWildberriesPackageBundle::NAMESPACE;
-    $PATH = BaksDevWildberriesPackageBundle::PATH;
-
-    $services->load($NAMESPACE, $PATH)
-        ->exclude([
-            $PATH.'{Entity,Resources,Type}',
-            $PATH.'**/*Message.php',
-            $PATH.'**/*DTO.php',
-        ])
-    ;
-
-    $services->load($NAMESPACE.'Type\Package\Status\WbPackageStatus\\', $PATH.'Type/Package/Status/WbPackageStatus');
-    $services->load($NAMESPACE.'Type\Supply\Status\WbSupplyStatus\\', $PATH.'Type/Supply/Status/WbSupplyStatus');
+    $twig->path(
+        BaksDevWildberriesPackageBundle::PATH.implode(DIRECTORY_SEPARATOR, ['Resources', 'view', '']), // .'Resources/view',
+        'wildberries-package'
+    );
 
 };

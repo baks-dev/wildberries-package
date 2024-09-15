@@ -39,14 +39,11 @@ return static function (FrameworkConfig $framework) {
         ->delay(1000)
         ->maxDelay(0)
         ->multiplier(3)
-        ->service(null)
-
-    ;
+        ->service(null);
 
     $failure = $framework->messenger();
 
     $failure->transport('failed-wildberries-package')
         ->dsn('%env(MESSENGER_TRANSPORT_DSN)%')
-        ->options(['queue_name' => 'failed-wildberries-package'])
-    ;
+        ->options(['queue_name' => 'failed-wildberries-package']);
 };
