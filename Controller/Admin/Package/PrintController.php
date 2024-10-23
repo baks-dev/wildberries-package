@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,9 +36,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
-use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Repository\Package\OrderByPackage\OrderByPackageInterface;
-use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageDTO;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -112,7 +110,6 @@ final class PrintController extends AbstractController
         );
 
 
-
         /* Получаем настройки бокового стикера */
         $ProductUid = new ProductUid($Product['main']);
         $BarcodeSettings = $barcodeSettings->findWbBarcodeSettings($ProductUid) ?: null;
@@ -121,7 +118,7 @@ final class PrintController extends AbstractController
         /* Отправляем сообщение в шину и отмечаем принт */
         $messageDispatch->dispatch(
             message: new PrintWbPackageDTO($wbPackage->getId()),
-             transport: (string) $this->getProfileUid(),
+            transport: (string) $this->getProfileUid(),
         );
 
         return $this->render(

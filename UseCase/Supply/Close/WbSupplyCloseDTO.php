@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@ namespace BaksDev\Wildberries\Package\UseCase\Supply\Close;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see WbSupplyEvent */
@@ -54,7 +54,8 @@ final class WbSupplyCloseDTO implements WbSupplyEventInterface
     #[Assert\Valid]
     private Const\WbSupplyConstDTO $const;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->status = new WbSupplyStatus(WbSupplyStatusClose::class);
         $this->const = new Const\WbSupplyConstDTO();
     }

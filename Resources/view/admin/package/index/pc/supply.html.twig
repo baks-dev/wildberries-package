@@ -32,9 +32,9 @@
                 <span
                         role="tooltip"
                         data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      data-bs-delay='{"show":600,"hide":100}'
-                      title='{{ opens.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title='{{ opens.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
                 <button
                         id="supply-{{ opens.id }}"
                         data-href="{{ path('wildberries-package:admin.supply.print', { id : opens.id }) }}"
@@ -65,11 +65,11 @@
 
 
                     <a
-                        {% if opens.identifier is empty %}
-                            id="number-{{ opens.id }}"
-                        {% endif %}
-                        href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
-                        class="fw-bolder text-decoration-none"
+                            {% if opens.identifier is empty %}
+                                id="number-{{ opens.id }}"
+                            {% endif %}
+                            href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
+                            class="fw-bolder text-decoration-none"
                     >
                         {{ opens.identifier ?: 'Ожидается ...' }}
                     </a>
@@ -127,9 +127,9 @@
                 <div
                         role="tooltip"
                         data-bs-toggle="tooltip"
-                     data-bs-placement="bottom"
-                     data-bs-delay='{"show":600,"hide":100}'
-                     title="Отправить поставку на склад Wildberries"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Отправить поставку на склад Wildberries"
                 >
 
                     <a href="{{ path('wildberries-package:admin.supply.close', { id: opens.id }) }}"

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@ namespace BaksDev\Wildberries\Package\UseCase\Supply\Open;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusOpen;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusOpen;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see WbSupplyEvent */
@@ -61,7 +61,8 @@ final class WbSupplyOpenDTO implements WbSupplyEventInterface
     private Wildberries\WbSupplyWildberriesDTO $wildberries;
 
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->status = new WbSupplyStatus(WbSupplyStatusOpen::class);
         $this->wildberries = new Wildberries\WbSupplyWildberriesDTO();
         $this->const = new Const\WbSupplyConstDTO();

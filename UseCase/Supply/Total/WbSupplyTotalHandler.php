@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,6 @@ namespace BaksDev\Wildberries\Package\UseCase\Supply\Total;
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
-use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
-use DomainException;
 
 final class WbSupplyTotalHandler extends AbstractHandler
 {

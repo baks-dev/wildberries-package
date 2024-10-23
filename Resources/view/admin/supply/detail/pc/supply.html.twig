@@ -1,5 +1,3 @@
-
-
 <section class="card card-flush alert {{ supply.status == 'complete' ? 'alert-success' : 'alert-warning' }} p-0 w-100 "
          style="background-image: var(--bs-gradient);">
 
@@ -31,9 +29,9 @@
                 <span
                         role="tooltip"
                         data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      data-bs-delay='{"show":600,"hide":100}'
-                      title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
                 <button
                         id="supply-{{ supply.id }}"
                         data-href="{{ path('wildberries-package:admin.supply.print', { id : supply.id }) }}"
@@ -81,9 +79,9 @@
         <div id="package-{{ supply.id }}" class="w-100 overflow-auto" style="max-height: 200px;">
 
             {# Список продукции для печати #}
-           {# {% for card in print %}
+            {# {% for card in print %}
                 {{ include('@wildberries-package/admin/package/add/pc/product.html.twig') }}
-            {% endfor %}#}
+            {% endfor %} #}
         </div>
 
 
@@ -93,9 +91,9 @@
                 <div
                         role="tooltip"
                         data-bs-toggle="tooltip"
-                     data-bs-placement="bottom"
-                     data-bs-delay='{"show":600,"hide":100}'
-                     title="Отправить поставку на склад Wildberries"
+                        data-bs-placement="bottom"
+                        data-bs-delay='{"show":600,"hide":100}'
+                        title="Отправить поставку на склад Wildberries"
                 >
 
                     <a href="{{ path('wildberries-package:admin.supply.close', { id: supply.id }) }}"

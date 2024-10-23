@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -121,7 +121,7 @@ final class SupplyDetailFilterDTO
 
     public function setVariation(?string $variation): void
     {
-        if(empty($variation) || empty($this->category) ||  empty($this->offer))
+        if(empty($variation) || empty($this->category) || empty($this->offer))
         {
             $this->request->getSession()->remove(self::variation);
         }
@@ -139,7 +139,7 @@ final class SupplyDetailFilterDTO
 
     public function setModification(?string $modification): void
     {
-        if(empty($modification) || empty($this->category) ||  empty($this->offer) || empty($this->variation) )
+        if(empty($modification) || empty($this->category) || empty($this->offer) || empty($this->variation))
         {
             $this->request->getSession()->remove(self::modification);
         }

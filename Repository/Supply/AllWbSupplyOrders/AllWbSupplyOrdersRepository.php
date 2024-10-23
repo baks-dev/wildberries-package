@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Supply\AllWbSupplyOrders;
 
 
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Entity\Products\Price\OrderPrice;
@@ -172,13 +172,13 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'order_product.event = ord.event'
         );
 
-//        $qb->addSelect('order_price.price AS order_price');
-//        $qb->addSelect('order_price.currency AS order_currency');
-//        $qb->leftJoin('order_product',
-//            OrderPrice::TABLE,
-//            'order_price',
-//            'order_price.product = order_product.id'
-//        );
+        //        $qb->addSelect('order_price.price AS order_price');
+        //        $qb->addSelect('order_price.currency AS order_currency');
+        //        $qb->leftJoin('order_product',
+        //            OrderPrice::TABLE,
+        //            'order_price',
+        //            'order_price.product = order_product.id'
+        //        );
 
 
         /**
@@ -379,15 +379,12 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             $qb
                 ->createSearchQueryBuilder($this->search)
                 ->addSearchEqualUid('supply_order.id')
-
                 ->addSearchLike('product_variation.article')
                 ->addSearchLike('product_offer.article')
                 ->addSearchLike('product_info.article')
                 ->addSearchLike('wb_order_event.barcode')
                 ->addSearchLike('wb_order_sticker.part')
-
-                ->addSearchEqual('wb_order.ord')
-            ;
+                ->addSearchEqual('wb_order.ord');
 
         }
 
