@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
@@ -38,14 +37,8 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 
 final class OpenWbSupplyRepository implements OpenWbSupplyInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод возвращает профиль пользователя и идентификатор поставки в качестве аттрибута
@@ -56,7 +49,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
 
         $qb
             ->addSelect('supply_const.profile')
-            ->from(WbSupplyConst::TABLE, 'supply_const')
+            ->from(WbSupplyConst::class, 'supply_const')
             ->where('supply_const.main = :supply')
             ->setParameter('supply', $WbSupplyUid, WbSupplyUid::TYPE);
 
@@ -64,7 +57,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('supply_wildberries.identifier')
             ->leftJoin(
                 'supply_const',
-                WbSupplyWildberries::TABLE,
+                WbSupplyWildberries::class,
                 'supply_wildberries',
                 'supply_wildberries.main = supply_const.main'
             );
@@ -84,7 +77,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb
-            ->from(WbSupplyConst::TABLE, 'supply_const')
+            ->from(WbSupplyConst::class, 'supply_const')
             ->where('supply_const.profile = :profile')
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
@@ -92,7 +85,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('supply.id')
             ->join(
                 'supply_const',
-                WbSupply::TABLE,
+                WbSupply::class,
                 'supply',
                 'supply.id = supply_const.main'
             );
@@ -101,7 +94,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('event.status')
             ->join(
                 'supply',
-                WbSupplyEvent::TABLE,
+                WbSupplyEvent::class,
                 'event',
                 'event.id = supply.event AND (event.status = :new OR event.status = :open) '
             )
@@ -124,7 +117,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
 
         $qb
             ->addSelect('supply_const.total')
-            ->from(WbSupplyConst::TABLE, 'supply_const')
+            ->from(WbSupplyConst::class, 'supply_const')
             ->where('supply_const.profile = :profile')
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
@@ -133,7 +126,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('supply.event')
             ->join(
                 'supply_const',
-                WbSupply::TABLE,
+                WbSupply::class,
                 'supply',
                 'supply.id = supply_const.main'
             );
@@ -143,7 +136,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('event.status')
             ->leftJoin(
                 'supply',
-                WbSupplyEvent::TABLE,
+                WbSupplyEvent::class,
                 'event',
                 'event.id = supply.event'
             );
@@ -152,7 +145,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('modify.mod_date AS supply_date')
             ->leftJoin(
                 'supply',
-                WbSupplyModify::TABLE,
+                WbSupplyModify::class,
                 'modify',
                 'modify.event = supply.event'
             );
@@ -163,7 +156,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->addSelect('wb.sticker')
             ->leftJoin(
                 'supply',
-                WbSupplyWildberries::TABLE,
+                WbSupplyWildberries::class,
                 'wb',
                 'wb.main = supply.id'
             );

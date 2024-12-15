@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Supply\WbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
@@ -34,14 +33,9 @@ use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
-final class WbSupplyRepository implements WbSupplyInterface
+final readonly class WbSupplyRepository implements WbSupplyInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
-
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder,)
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Получаем поставку по указанному идентификатору
@@ -55,7 +49,7 @@ final class WbSupplyRepository implements WbSupplyInterface
 
         $qb
             ->addSelect('supply_const.total')
-            ->from(WbSupply::TABLE, 'supply')
+            ->from(WbSupply::class, 'supply')
             ->where('supply.id = :supply')
             ->setParameter('supply', $supply, WbSupplyUid::TYPE);
 
@@ -65,7 +59,7 @@ final class WbSupplyRepository implements WbSupplyInterface
             ->addSelect('supply.event')
             ->leftJoin(
                 'supply',
-                WbSupplyConst::TABLE,
+                WbSupplyConst::class,
                 'supply_const',
                 'supply_const.main = supply.id'
             );
@@ -75,7 +69,7 @@ final class WbSupplyRepository implements WbSupplyInterface
             ->addSelect('event.status')
             ->leftJoin(
                 'supply',
-                WbSupplyEvent::TABLE,
+                WbSupplyEvent::class,
                 'event',
                 'event.id = supply.event'
             );
@@ -84,7 +78,7 @@ final class WbSupplyRepository implements WbSupplyInterface
             ->addSelect('modify.mod_date AS supply_date')
             ->leftJoin(
                 'supply',
-                WbSupplyModify::TABLE,
+                WbSupplyModify::class,
                 'modify',
                 'modify.event = supply.event'
             );
@@ -95,7 +89,7 @@ final class WbSupplyRepository implements WbSupplyInterface
             ->addSelect('wb.sticker')
             ->leftJoin(
                 'supply',
-                WbSupplyWildberries::TABLE,
+                WbSupplyWildberries::class,
                 'wb',
                 'wb.main = supply.id'
             );

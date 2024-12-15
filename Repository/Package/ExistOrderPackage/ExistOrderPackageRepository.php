@@ -35,14 +35,8 @@ use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageSta
 
 final class ExistOrderPackageRepository implements ExistOrderPackageInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     /**
      * Метод проверяет, имеется ли заказ в упаковке (без статуса ERROR)
@@ -53,7 +47,7 @@ final class ExistOrderPackageRepository implements ExistOrderPackageInterface
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         //$qb->select('id');
-        $qb->from(WbPackageOrder::TABLE, 'wb_order');
+        $qb->from(WbPackageOrder::class, 'wb_order');
 
         $qb
             ->where('wb_order.id = :order')
@@ -65,7 +59,7 @@ final class ExistOrderPackageRepository implements ExistOrderPackageInterface
 
         $qb->join(
             'wb_order',
-            WbPackage::TABLE,
+            WbPackage::class,
             'package',
             'package.event = wb_order.event'
         );

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2024.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -39,22 +39,14 @@ use DateTimeImmutable;
 
 final class AllWbSupplyRepository implements AllWbSupplyInterface
 {
-    private PaginatorInterface $paginator;
-
-    private DBALQueryBuilder $DBALQueryBuilder;
-
     private ?SupplyFilterDTO $filter = null;
+
     private SearchDTO $search;
 
-
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        PaginatorInterface $paginator,
-    )
-    {
-        $this->paginator = $paginator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly PaginatorInterface $paginator,
+    ) {}
 
     public function setFilter(SupplyFilterDTO $filter): self
     {
@@ -80,7 +72,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
 
         $qb
             ->addSelect('supply_const.total')
-            ->from(WbSupplyConst::TABLE, 'supply_const')
+            ->from(WbSupplyConst::class, 'supply_const')
             ->where('supply_const.profile = :profile')
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
@@ -89,7 +81,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
             ->addSelect('supply.event')
             ->join(
                 'supply_const',
-                WbSupply::TABLE,
+                WbSupply::class,
                 'supply',
                 'supply.id = supply_const.main'
             );
@@ -99,7 +91,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
             ->addSelect('event.status')
             ->leftJoin(
                 'supply',
-                WbSupplyEvent::TABLE,
+                WbSupplyEvent::class,
                 'event',
                 'event.id = supply.event'
             );
@@ -108,7 +100,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
             ->addSelect('modify.mod_date AS supply_date')
             ->leftJoin(
                 'supply',
-                WbSupplyModify::TABLE,
+                WbSupplyModify::class,
                 'modify',
                 'modify.event = supply.event'
             );
@@ -140,7 +132,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
             ->addSelect('wb.sticker')
             ->leftJoin(
                 'supply',
-                WbSupplyWildberries::TABLE,
+                WbSupplyWildberries::class,
                 'wb',
                 'wb.main = supply.id'
             );

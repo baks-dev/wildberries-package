@@ -29,17 +29,10 @@ use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
-use Doctrine\DBAL\Connection;
 
 final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileInterface
 {
-
-    private DBALQueryBuilder $DBALQueryBuilder;
-
-    public function __construct(DBALQueryBuilder $DBALQueryBuilder)
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function isExistOpenSupply(UserProfileUid $profile): bool
     {
@@ -47,14 +40,14 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $qb
-            ->from(WbSupplyConst::TABLE, 'supply_const')
+            ->from(WbSupplyConst::class, 'supply_const')
             ->where('supply_const.profile = :profile')
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 
 
         $qb->join(
             'supply_const',
-            WbSupply::TABLE, 'supply',
+            WbSupply::class, 'supply',
             'supply.id = supply_const.main AND supply.event = supply_const.event'
         );
 
@@ -62,7 +55,7 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         $qb
             ->join(
                 'supply_const',
-                WbSupplyEvent::TABLE, 'supply_event',
+                WbSupplyEvent::class, 'supply_event',
                 'supply_event.id = supply_const.event AND (supply_event.status = :new OR supply_event.status = :open)'
             )
             ->setParameter('new', WbSupplyStatus\WbSupplyStatusNew::STATUS)

@@ -26,20 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Package\OrderByPackage;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
-use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
-use BaksDev\Products\Product\Entity\Event\ProductEvent;
-use BaksDev\Products\Product\Entity\Info\ProductInfo;
-use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
-use BaksDev\Products\Product\Entity\Offers\ProductOffer;
-use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
-use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
-use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
-use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Wildberries\Orders\Entity\Event\WbOrdersEvent;
 use BaksDev\Wildberries\Orders\Entity\Sticker\WbOrdersSticker;
 use BaksDev\Wildberries\Orders\Entity\WbOrders;
@@ -48,20 +37,13 @@ use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
-use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardVariation;
 use Generator;
 
 
 final class OrderByPackageRepository implements OrderByPackageInterface
 {
-    private DBALQueryBuilder $DBALQueryBuilder;
 
-    public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-    )
-    {
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
 
     /**
@@ -73,7 +55,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        $qb->from(WbPackageOrder::TABLE, 'package_order');
+        $qb->from(WbPackageOrder::class, 'package_order');
 
         $qb
             ->where('package_order.event = :event')
@@ -83,7 +65,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->addSelect('package_event.total')
             ->leftJoin(
                 'package_order',
-                WbPackageEvent::TABLE,
+                WbPackageEvent::class,
                 'package_event',
                 'package_event.id = package_order.event'
             );
@@ -93,7 +75,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->addSelect('wb_sticker.sticker')
             ->leftJoin(
                 'package_order',
-                WbOrdersSticker::TABLE,
+                WbOrdersSticker::class,
                 'wb_sticker',
                 'wb_sticker.main = package_order.id'
             );
@@ -102,7 +84,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
         $qb
             ->leftJoin(
                 'package_order',
-                Order::TABLE,
+                Order::class,
                 'ord',
                 'ord.id = package_order.id'
             );
@@ -113,7 +95,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->addSelect('ord_product.variation AS product_variation')
             ->leftJoin(
                 'ord',
-                OrderProduct::TABLE,
+                OrderProduct::class,
                 'ord_product',
                 'ord_product.event = ord.event'
             );
@@ -122,7 +104,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
         $qb
             ->leftJoin(
                 'package_order',
-                WbOrders::TABLE,
+                WbOrders::class,
                 'wb_orders',
                 'wb_orders.id = package_order.id'
             );
@@ -131,7 +113,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->addSelect('wb_orders_event.barcode')
             ->leftJoin(
                 'wb_orders',
-                WbOrdersEvent::TABLE,
+                WbOrdersEvent::class,
                 'wb_orders_event',
                 'wb_orders_event.id = wb_orders.event'
             );
@@ -152,7 +134,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
 
         $qb
             ->select('orders.id AS value')
-            ->from(WbPackageOrder::TABLE, 'orders');
+            ->from(WbPackageOrder::class, 'orders');
 
         $qb
             ->where('orders.event = :event')
@@ -167,7 +149,7 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->addSelect('wb_orders.ord AS attr')
             ->join(
                 'orders',
-                WbOrders::TABLE,
+                WbOrders::class,
                 'wb_orders',
                 'wb_orders.id = orders.id'
             );
