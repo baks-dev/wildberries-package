@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,8 @@ namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
 use App\Kernel;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Wildberries\Api\Token\Supplies\WildberriesSupplyClosed;
-use BaksDev\Wildberries\Api\Token\Supplies\WildberriesSupplyDelete;
+use BaksDev\Wildberries\Package\Api\WildberriesSupplyClosed;
+use BaksDev\Wildberries\Package\Api\WildberriesSupplyDelete;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;

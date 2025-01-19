@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
 use App\Kernel;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
-use BaksDev\Wildberries\Api\Token\Supplies\SupplySticker\WildberriesSupplySticker;
+use BaksDev\Wildberries\Package\Api\SupplySticker\WildberriesSupplySticker;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
