@@ -39,41 +39,22 @@ use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderSt
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
 use DomainException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class AddWildberriesSupplyOrdersHandler
+final readonly class AddWildberriesSupplyOrdersHandler
 {
-    private CountOrdersSupplyInterface $countOrdersSupply;
-
-    private OpenWbSupplyInterface $openWbSupply;
-    private WildberriesSupplyInfo $wildberriesSupplyInfo;
-    private OrderByPackageInterface $orderByPackage;
-    private WildberriesAddOrderToSupply $addOrderToSupply;
-    private UpdatePackageOrderStatusHandler $orderStatusHandler;
-    private LoggerInterface $logger;
-    private CentrifugoPublishInterface $CentrifugoPublish;
-
     public function __construct(
-        CountOrdersSupplyInterface $countOrdersSupply,
-        OpenWbSupplyInterface $openWbSupply,
-        WildberriesSupplyInfo $wildberriesSupplyInfo,
-        OrderByPackageInterface $orderByPackage,
-        WildberriesAddOrderToSupply $addOrderToSupply,
-        UpdatePackageOrderStatusHandler $orderStatusHandler,
-        LoggerInterface $wildberriesPackageLogger,
-        CentrifugoPublishInterface $CentrifugoPublish
-    )
-    {
-        $this->countOrdersSupply = $countOrdersSupply;
-        $this->openWbSupply = $openWbSupply;
-        $this->wildberriesSupplyInfo = $wildberriesSupplyInfo;
-        $this->orderByPackage = $orderByPackage;
-        $this->addOrderToSupply = $addOrderToSupply;
-        $this->orderStatusHandler = $orderStatusHandler;
-        $this->logger = $wildberriesPackageLogger;
-        $this->CentrifugoPublish = $CentrifugoPublish;
-    }
+        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
+        private CountOrdersSupplyInterface $countOrdersSupply,
+        private OpenWbSupplyInterface $openWbSupply,
+        private WildberriesSupplyInfo $wildberriesSupplyInfo,
+        private OrderByPackageInterface $orderByPackage,
+        private WildberriesAddOrderToSupply $addOrderToSupply,
+        private UpdatePackageOrderStatusHandler $orderStatusHandler,
+        private CentrifugoPublishInterface $CentrifugoPublish
+    ) {}
 
     /**
      * Метод добавляет заказы в указанную поставку Wildberries (Api) и обновляет статусы в системной упаковке

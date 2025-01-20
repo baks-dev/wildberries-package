@@ -36,35 +36,20 @@ use BaksDev\Wildberries\Package\UseCase\Supply\Sticker\WbSupplyStickerDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Sticker\WbSupplyStickerHandler;
 use DomainException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 1)]
-final class CompleteWbSupplyHandler
+final readonly class CompleteWbSupplyHandler
 {
-    private LoggerInterface $logger;
-    private WbSupplyStickerHandler $WbSupplyStickerHandler;
-    private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
-    private WildberriesSupplySticker $wildberriesSupplySticker;
-    private OpenWbSupplyInterface $openWbSupply;
-    private CentrifugoPublishInterface $CentrifugoPublish;
-
-
     public function __construct(
-        OpenWbSupplyInterface $openWbSupply,
-        WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $wildberriesPackageLogger,
-        WbSupplyStickerHandler $WbSupplyStickerHandler,
-        WildberriesSupplySticker $wildberriesSupplySticker,
-        CentrifugoPublishInterface $CentrifugoPublish
-    )
-    {
-        $this->logger = $wildberriesPackageLogger;
-        $this->WbSupplyStickerHandler = $WbSupplyStickerHandler;
-        $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
-        $this->wildberriesSupplySticker = $wildberriesSupplySticker;
-        $this->openWbSupply = $openWbSupply;
-        $this->CentrifugoPublish = $CentrifugoPublish;
-    }
+        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
+        private OpenWbSupplyInterface $openWbSupply,
+        private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
+        private WbSupplyStickerHandler $WbSupplyStickerHandler,
+        private WildberriesSupplySticker $wildberriesSupplySticker,
+        private CentrifugoPublishInterface $CentrifugoPublish
+    ) {}
 
     /**
      * Метод получает стикер закрытой поставки Wildberries для печати и присваивает статус Complete

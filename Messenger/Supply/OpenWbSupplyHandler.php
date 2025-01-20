@@ -36,34 +36,20 @@ use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenHandler;
 use DomainException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class OpenWbSupplyHandler
+final readonly class OpenWbSupplyHandler
 {
-    private LoggerInterface $logger;
-    private WbSupplyOpenHandler $wbSupplyOpenHandler;
-    private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
-    private WildberriesSupplyOpen $wildberriesSupplyOpen;
-    private OpenWbSupplyInterface $openWbSupply;
-    private CentrifugoPublishInterface $CentrifugoPublish;
-
     public function __construct(
-        OpenWbSupplyInterface $openWbSupply,
-        WildberriesSupplyOpen $wildberriesSupplyOpen,
-        WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $wildberriesPackageLogger,
-        WbSupplyOpenHandler $wbSupplyOpenHandler,
-        CentrifugoPublishInterface $CentrifugoPublish
-    )
-    {
-        $this->logger = $wildberriesPackageLogger;
-        $this->wbSupplyOpenHandler = $wbSupplyOpenHandler;
-        $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
-        $this->wildberriesSupplyOpen = $wildberriesSupplyOpen;
-        $this->openWbSupply = $openWbSupply;
-        $this->CentrifugoPublish = $CentrifugoPublish;
-    }
+        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
+        private OpenWbSupplyInterface $openWbSupply,
+        private WildberriesSupplyOpen $wildberriesSupplyOpen,
+        private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
+        private WbSupplyOpenHandler $wbSupplyOpenHandler,
+        private CentrifugoPublishInterface $CentrifugoPublish
+    ) {}
 
     /**
      * Метод открывает поставку Wildberries если статус системной поставки New (новая)

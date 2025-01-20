@@ -27,7 +27,6 @@ namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
 use App\Kernel;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
-use BaksDev\Wildberries\Package\Api\WildberriesSupplyClosed;
 use BaksDev\Wildberries\Package\Api\WildberriesSupplyDelete;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
@@ -35,31 +34,19 @@ use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyC
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use DomainException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 99)] // высокий приоритет - выполняется первым
-final class DeleteWbSupplyHandler
+final readonly class DeleteWbSupplyHandler
 {
-    private LoggerInterface $logger;
-    private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
-    private OpenWbSupplyInterface $openWbSupply;
-    private WildberriesSupplyDelete $wildberriesSupplyDelete;
-    private ORMQueryBuilder $ORMQueryBuilder;
-
     public function __construct(
-        OpenWbSupplyInterface $openWbSupply,
-        WildberriesSupplyDelete $wildberriesSupplyDelete,
-        WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $wildberriesPackageLogger,
-        ORMQueryBuilder $ORMQueryBuilder
-    )
-    {
-        $this->logger = $wildberriesPackageLogger;
-        $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
-        $this->openWbSupply = $openWbSupply;
-        $this->wildberriesSupplyDelete = $wildberriesSupplyDelete;
-        $this->ORMQueryBuilder = $ORMQueryBuilder;
-    }
+        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
+        private OpenWbSupplyInterface $openWbSupply,
+        private WildberriesSupplyDelete $wildberriesSupplyDelete,
+        private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
+        private ORMQueryBuilder $ORMQueryBuilder
+    ) {}
 
     /**
      * Метод удаляет поставку Wildberries если системная поставка со статусом Close (Закрыта),

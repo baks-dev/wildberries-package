@@ -31,28 +31,18 @@ use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInter
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler(priority: 99)] // высокий приоритет - выполняется первым
-final class CloseWbSupplyHandler
+final readonly class CloseWbSupplyHandler
 {
-    private LoggerInterface $logger;
-    private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent;
-    private WildberriesSupplyClosed $wildberriesSupplyClosed;
-    private OpenWbSupplyInterface $openWbSupply;
-
     public function __construct(
-        OpenWbSupplyInterface $openWbSupply,
-        WildberriesSupplyClosed $wildberriesSupplyClosed,
-        WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
-        LoggerInterface $wildberriesPackageLogger
-    )
-    {
-        $this->logger = $wildberriesPackageLogger;
-        $this->wbSupplyCurrentEvent = $wbSupplyCurrentEvent;
-        $this->wildberriesSupplyClosed = $wildberriesSupplyClosed;
-        $this->openWbSupply = $openWbSupply;
-    }
+        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
+        private OpenWbSupplyInterface $openWbSupply,
+        private WildberriesSupplyClosed $wildberriesSupplyClosed,
+        private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
+    ) {}
 
     /**
      * Метод закрывает поставку Wildberries если системная поставка со статусом Close (Закрыта)
