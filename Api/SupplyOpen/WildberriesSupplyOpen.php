@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api\SupplyOpen;
 
 use BaksDev\Wildberries\Api\Wildberries;
-use DomainException;
 
 final class WildberriesSupplyOpen extends Wildberries
 {
@@ -47,30 +46,45 @@ final class WildberriesSupplyOpen extends Wildberries
      *
      * Возвращает идентификатор созданной поставки в формате "WB-GI-1234567".
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies/post
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies/post
      *
      */
-    public function open(): WildberriesSupplyOpenDTO
+    public function open(): WildberriesSupplyOpenDTO|false
     {
+        if(false === $this->isExecuteEnvironment())
+        {
+            return false;
+        }
+
+
         $data = ["name" => $this->name];
 
-        $response = $this->TokenHttpClient()->request(
+        $response = $this->marketplace()->TokenHttpClient()->request(
             'POST',
             '/api/v3/supplies',
             ['json' => $data],
         );
 
+        $content = $response->toArray(false);
+
         if($response->getStatusCode() !== 201)
         {
-            $content = $response->toArray(false);
-            //$this->logger->critical('curl -X POST "' . $url . '" ' . $curlHeader . ' -d "' . $data . '"');
-            throw new DomainException(
-                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-                code: $response->getStatusCode()
+
+            $this->logger->critical(
+                'wildberries-package: Ошибка при открытии новой поставки',
+                [$content, self::class.':'.__LINE__]
             );
+
+            //$this->logger->critical('curl -X POST "' . $url . '" ' . $curlHeader . ' -d "' . $data . '"');
+            //            throw new DomainException(
+            //                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
+            //                code: $response->getStatusCode()
+            //            );
+
+            return false;
         }
 
-        return new WildberriesSupplyOpenDTO($response->toArray(false));
+        return new WildberriesSupplyOpenDTO($content);
     }
 
 

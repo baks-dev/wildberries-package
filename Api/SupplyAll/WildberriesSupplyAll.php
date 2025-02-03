@@ -48,7 +48,7 @@ final class WildberriesSupplyAll extends Wildberries
     /**
      * Получить список поставок (LIMIT 100)
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies/get
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies/get
      *
      */
     public function all(int $next = 0): Generator
@@ -58,7 +58,7 @@ final class WildberriesSupplyAll extends Wildberries
             "next" => $next
         ];
 
-        $response = $this->TokenHttpClient()->request(
+        $response = $this->marketplace()->TokenHttpClient()->request(
             'GET',
             '/api/v3/supplies',
             ['query' => $data],

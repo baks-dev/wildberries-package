@@ -71,7 +71,7 @@ final class WildberriesSupplyClosed extends Wildberries
             return;
         }
 
-        $response = $this->TokenHttpClient()->request(
+        $response = $this->marketplace()->TokenHttpClient()->request(
             'PATCH',
             '/api/v3/supplies/'.$this->supply.'/deliver',
         );

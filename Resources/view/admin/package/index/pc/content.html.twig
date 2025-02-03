@@ -1,5 +1,7 @@
 {% trans_default_domain('admin.wb.package') %}
-{% set package_open = opens is not null and (opens.status == 'new' or opens.status == 'open') %}
+
+
+{% set package_open = opens != false and (opens.status == 'new' or opens.status == 'open') %}
 
 <main class="main d-print-none ">
 
@@ -166,7 +168,7 @@
 
                     {% if filter.offer is defined and filter.offer.vars.data %}
                         <div><small class="text-muted small">{{ filter.offer.vars.label }}:</small>&nbsp;
-                            <strong> {{ filter.offer.vars.data|trans({}, 'reference.color') }}</strong>
+                            <strong> {{ filter.offer.vars.data|trans({}, 'color_type') }}</strong>
                         </div>
                     {% endif %}
 

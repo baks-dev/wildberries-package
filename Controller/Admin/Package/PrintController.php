@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,6 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
-use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Repository\Package\OrderByPackage\OrderByPackageInterface;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageDTO;
@@ -43,7 +41,6 @@ use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeS
 use chillerlan\QRCode\QRCode;
 use Picqer\Barcode\BarcodeGeneratorSVG;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
@@ -89,11 +86,12 @@ final class PrintController extends AbstractController
             throw new RouteNotFoundException('Order Not Found');
         }
 
-        $Product = $productDetail->fetchProductDetailByEventAssociative(
-            new ProductEventUid($order['product_event']),
-            new ProductOfferUid($order['product_offer']),
-            new ProductVariationUid($order['product_variation']),
-        );
+        $Product = $productDetail
+            ->event($order['product_event'])
+            ->offer($order['product_offer'])
+            ->variation($order['product_variation'])
+            ->modification($order['product_modification'])
+            ->find();
 
         if(!$Product)
         {

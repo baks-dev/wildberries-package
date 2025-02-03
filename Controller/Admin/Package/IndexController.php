@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,6 @@ use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Manufacture\Part\Type\Complete\ManufacturePartComplete;
-use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Wildberries\Manufacture\Repository\AllWbOrdersGroup\AllWbOrdersManufactureInterface;
 use BaksDev\Wildberries\Manufacture\Type\ManufacturePartComplete\ManufacturePartCompleteWildberriesFbs;
 use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
@@ -65,10 +64,14 @@ final class IndexController extends AbstractController
 
         // Поиск
         $search = new SearchDTO($request);
-        $searchForm = $this->createForm(SearchForm::class, $search,
-            ['action' => $this->generateUrl('wildberries-package:admin.package.index')]
-        );
-        $searchForm->handleRequest($request);
+
+        $searchForm = $this
+            ->createForm(
+                type: SearchForm::class,
+                data: $search,
+                options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')]
+            )
+            ->handleRequest($request);
 
         // Получаем открытую поставку
         $opens = $openWbSupply->getLastWbSupply($this->getProfileUid());

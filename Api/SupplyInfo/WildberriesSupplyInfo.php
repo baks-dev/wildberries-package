@@ -51,7 +51,7 @@ final class WildberriesSupplyInfo extends Wildberries
     /**
      * Получить информацию о поставке
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies~1%7BsupplyId%7D/get
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}/get
      *
      */
     public function getInfo(): WildberriesSupplyInfoDTO
@@ -63,7 +63,7 @@ final class WildberriesSupplyInfo extends Wildberries
             );
         }
 
-        $response = $this->TokenHttpClient()->request(
+        $response = $this->marketplace()->TokenHttpClient()->request(
             'GET',
             '/api/v3/supplies/'.$this->supply,
         );

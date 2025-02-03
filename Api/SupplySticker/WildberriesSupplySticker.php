@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api\SupplySticker;
 
 use BaksDev\Wildberries\Api\Wildberries;
-use DomainException;
 use InvalidArgumentException;
 
 final class WildberriesSupplySticker extends Wildberries
@@ -56,10 +55,10 @@ final class WildberriesSupplySticker extends Wildberries
      * Получить QR поставки
      * Возвращает QR в svg, zplv (вертикальный), zplh (горизонтальный), png.
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies~1{supplyId}~1barcode/get
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}~1barcode/get
      *
      */
-    public function request(): WildberriesSupplyStickerDTO
+    public function request(): WildberriesSupplyStickerDTO|false
     {
         if($this->supply === null)
         {
@@ -71,7 +70,7 @@ final class WildberriesSupplySticker extends Wildberries
 
         $data = ["type" => $this->type];
 
-        $response = $this->TokenHttpClient()->request(
+        $response = $this->marketplace()->TokenHttpClient()->request(
             'GET',
             '/api/v3/supplies/'.$this->supply.'/barcode',
             ['query' => $data],
@@ -82,10 +81,15 @@ final class WildberriesSupplySticker extends Wildberries
         if($response->getStatusCode() !== 200)
         {
 
-            throw new DomainException(
-                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-                code: $response->getStatusCode()
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка при получении QR поставки %s', $this->supply),
+                [$content, self::class.':'.__LINE__]
             );
+
+            //            throw new DomainException(
+            //                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
+            //                code: $response->getStatusCode()
+            //            );
         }
 
         return new WildberriesSupplyStickerDTO($content);
