@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -28,53 +28,58 @@ namespace BaksDev\Wildberries\Package\Repository\Package\CountOrdersSupply;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use InvalidArgumentException;
 
 final class CountOrdersSupplyRepository implements CountOrdersSupplyInterface
 {
+    private WbSupplyUid|false $supply = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
-    /**
-     * Возвращает идентификатор поставки упаковки
-     */
-    public function findSupplyByPackage(WbPackageEventUid $event): ?WbSupplyUid
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self
     {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        if(is_string($supply))
+        {
+            $supply = new WbSupplyUid($supply);
+        }
 
-        $qb
-            ->select('package_supply.supply')
-            ->from(WbPackageSupply::class, 'package_supply')
-            ->where('package_supply.event = :event AND package_supply.print = false')
-            ->setParameter('event', $event, WbPackageEventUid::TYPE);
+        if($supply instanceof WbSupply)
+        {
+            $supply = $supply->getId();
+        }
 
-        $supply = $qb->fetchOne();
+        $this->supply = $supply;
 
-        return $supply ? new WbSupplyUid($supply) : null;
+        return $this;
     }
-
 
     /**
      * Метод возвращает количество всех заказов в поставке
      */
-    public function countOrdersSupply(WbSupplyUid $supply): int
+    public function count(): int
     {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        if(false === ($this->supply instanceof WbSupplyUid))
+        {
+            throw new InvalidArgumentException('Invalid Argument WbSupply');
+        }
 
-        $qb
-            ->select('COUNT(*)')
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $dbal
             ->from(WbPackageSupply::class, 'package_supply')
             ->where('package_supply.supply = :supply')
-            ->setParameter('supply', $supply, WbPackageEventUid::TYPE);
+            ->setParameter('supply', $this->supply, WbPackageEventUid::TYPE);
 
-        $qb->leftJoin(
+        $dbal->leftJoin(
             'package_supply',
             WbPackageOrder::class,
             'package_order',
             'package_order.event = package_supply.event'
         );
 
-        return $qb->fetchOne() ?: 0;
+        return $dbal->count();
     }
 }

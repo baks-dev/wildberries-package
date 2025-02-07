@@ -58,7 +58,7 @@ final class WildberriesSupplySticker extends Wildberries
      * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}~1barcode/get
      *
      */
-    public function request(): WildberriesSupplyStickerDTO|false
+    public function sticker(): WildberriesSupplyStickerDTO|false
     {
         if($this->supply === null)
         {
@@ -66,7 +66,6 @@ final class WildberriesSupplySticker extends Wildberries
                 'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")'
             );
         }
-
 
         $data = ["type" => $this->type];
 
@@ -86,10 +85,7 @@ final class WildberriesSupplySticker extends Wildberries
                 [$content, self::class.':'.__LINE__]
             );
 
-            //            throw new DomainException(
-            //                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-            //                code: $response->getStatusCode()
-            //            );
+            return false;
         }
 
         return new WildberriesSupplyStickerDTO($content);

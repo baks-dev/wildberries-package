@@ -41,7 +41,7 @@ use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageDTO;
 use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageForm;
 use BaksDev\Wildberries\Package\Repository\Package\ExistOrderPackage\ExistOrderPackageInterface;
-use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
+use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupplyIdentifier\OpenWbSupplyIdentifierInterface;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\Orders\WbPackageOrderDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageHandler;
@@ -61,11 +61,11 @@ final class AddController extends AbstractController
     public function news(
         Request $request,
         WbOrdersByProductInterface $wbOrdersByProduct,
-        OpenWbSupplyInterface $openWbSupply,
         WbPackageHandler $wbPackageHandler,
         ProductDetailByUidInterface $productDetail,
         ExistOrderPackageInterface $existOrderPackage,
         CentrifugoPublishInterface $CentrifugoPublish,
+        OpenWbSupplyIdentifierInterface $OpenWbSupplyIdentifier,
         #[ParamConverter(ProductEventUid::class)] $product = null,
         #[ParamConverter(ProductOfferUid::class)] $offer = null,
         #[ParamConverter(ProductVariationUid::class)] $variation = null,
@@ -109,7 +109,9 @@ final class AddController extends AbstractController
                 ->addData(['identifier' => $PackageOrdersDTO->getIdentifier()]) // ID продукта
                 ->send('remove');
 
-            $WbSupplyUid = $openWbSupply->getOpenWbSupplyByProfile($this->getProfileUid());
+            $WbSupplyUid = $OpenWbSupplyIdentifier
+                ->forProfile($this->getProfileUid())
+                ->find();
 
             if(!$WbSupplyUid)
             {
@@ -129,7 +131,7 @@ final class AddController extends AbstractController
 
             foreach($orders as $Order)
             {
-                if($existOrderPackage->isExistOrder($Order))
+                if($existOrderPackage->forOrder($Order)->isExist())
                 {
                     return $this->errorController('Exist');
                 }

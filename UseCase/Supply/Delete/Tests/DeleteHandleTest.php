@@ -1,17 +1,17 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
- *
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
  *  in the Software without restriction, including without limitation the rights
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is furnished
  *  to do so, subject to the following conditions:
- *
+ *  
  *  The above copyright notice and this permission notice shall be included in all
  *  copies or substantial portions of the Software.
- *
+ *  
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  *  FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,7 +35,7 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatus
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusComplete;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusNew;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusOpen;
-use BaksDev\Wildberries\Package\UseCase\Supply\Delete\Tests\Const\WbSupplyConstDTO;
+use BaksDev\Wildberries\Package\UseCase\Supply\Delete\Tests\Invariable\WbSupplyInvariableDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Delete\Tests\Wildberries\WbSupplyWildberriesDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Delete\WbSupplyDeleteDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Delete\WbSupplyDeleteHandler;
@@ -90,7 +90,9 @@ final class DeleteHandleTest extends KernelTestCase
 
         /** @var WbSupplyCurrentEventInterface $WbSupplyCurrent */
         $WbSupplyCurrent = self::getContainer()->get(WbSupplyCurrentEventInterface::class);
-        $WbSupplyEvent = $WbSupplyCurrent->findWbSupplyEvent(new WbSupplyUid());
+        $WbSupplyEvent = $WbSupplyCurrent
+            ->forSupply(new WbSupplyUid())
+            ->find();
         self::assertNotNull($WbSupplyEvent);
 
         $TestDeleteDTO = new TestDeleteDTO();
@@ -103,9 +105,9 @@ final class DeleteHandleTest extends KernelTestCase
         self::assertEquals('DWxgCsZEeC', $WbSupplyWildberriesDTO->getSticker());
 
 
-        /** @var WbSupplyConstDTO $WbSupplyConstDTO */
-        $WbSupplyConstDTO = $TestDeleteDTO->getConst();
-        self::assertEquals(UserProfileUid::TEST, (string) $WbSupplyConstDTO->getProfile());
+        /** @var WbSupplyInvariableDTO $WbSupplyInvariableDTO */
+        $WbSupplyInvariableDTO = $TestDeleteDTO->getInvariable();
+        self::assertEquals(UserProfileUid::TEST, (string) $WbSupplyInvariableDTO->getProfile());
 
 
         /** DELETE */

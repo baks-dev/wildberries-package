@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -358,19 +358,19 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         /* Карточка Wildberries */
 
 
-        $dbal->leftJoin('wb_order',
-            WbProductCardVariation::class,
-            'wb_card_variation',
-            'wb_card_variation.barcode = wb_order_event.barcode'
-        );
+        //        $dbal->leftJoin('wb_order',
+        //            WbProductCardVariation::class,
+        //            'wb_card_variation',
+        //            'wb_card_variation.barcode = wb_order_event.barcode'
+        //        );
 
-        $dbal->addSelect('wb_card_offer.nomenclature AS wb_order_nomenclature');
-
-        $dbal->leftJoin('wb_card_variation',
-            WbProductCardOffer::class,
-            'wb_card_offer',
-            'wb_card_offer.card = wb_card_variation.card AND wb_card_offer.offer =  product_offer.const'
-        );
+        //        $dbal->addSelect('wb_card_offer.nomenclature AS wb_order_nomenclature');
+        //
+        //        $dbal->leftJoin('wb_card_variation',
+        //            WbProductCardOffer::class,
+        //            'wb_card_offer',
+        //            'wb_card_offer.card = wb_card_variation.card AND wb_card_offer.offer =  product_offer.const'
+        //        );
 
 
         /* Поиск */

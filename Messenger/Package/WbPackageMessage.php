@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -34,17 +34,17 @@ final class WbPackageMessage
     /**
      * Идентификатор
      */
-    private WbPackageUid $id;
+    private string $id;
 
     /**
      * Идентификатор события
      */
-    private WbPackageEventUid $event;
+    private string $event;
 
     /**
      * Идентификатор предыдущего события
      */
-    private ?WbPackageEventUid $last;
+    private ?string $last;
 
 
     public function __construct(
@@ -53,18 +53,17 @@ final class WbPackageMessage
         ?WbPackageEventUid $last = null,
     )
     {
-        $this->id = $id;
-        $this->event = $event;
-        $this->last = $last;
+        $this->id = (string) $id;
+        $this->event = (string) $event;
+        $this->last = $last ? (string) $last : null;
     }
-
 
     /**
      * Идентификатор
      */
     public function getId(): WbPackageUid
     {
-        return $this->id;
+        return new WbPackageUid($this->id);
     }
 
 
@@ -73,15 +72,14 @@ final class WbPackageMessage
      */
     public function getEvent(): WbPackageEventUid
     {
-        return $this->event;
+        return new WbPackageEventUid($this->event);
     }
-
 
     /**
      * Идентификатор предыдущего события
      */
     public function getLast(): ?WbPackageEventUid
     {
-        return $this->last;
+        return $this->last ? new WbPackageEventUid($this->last) : null;
     }
 }

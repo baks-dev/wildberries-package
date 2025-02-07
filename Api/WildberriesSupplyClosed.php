@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api;
 
 use BaksDev\Wildberries\Api\Wildberries;
-use DomainException;
 use InvalidArgumentException;
 
 final class WildberriesSupplyClosed extends Wildberries
@@ -54,11 +53,17 @@ final class WildberriesSupplyClosed extends Wildberries
      * После закрытия поставки новые сборочные задания к ней добавить будет невозможно.
      * Передать поставку в доставку можно только при наличии в ней хотя бы одного сборочного задания.
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies~1{supplyId}~1deliver/patch
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}~1deliver/patch
      *
      */
-    public function close(): void
+    public function close(): bool
     {
+        if($this->isExecuteEnvironment() === false)
+        {
+            $this->logger->critical('Запрос может быть выполнен только в PROD окружении', [self::class.':'.__LINE__]);
+            return true;
+        }
+
         if($this->supply === null)
         {
             throw new InvalidArgumentException(
@@ -66,25 +71,22 @@ final class WildberriesSupplyClosed extends Wildberries
             );
         }
 
-        if($this->test)
-        {
-            return;
-        }
-
         $response = $this->marketplace()->TokenHttpClient()->request(
             'PATCH',
-            '/api/v3/supplies/'.$this->supply.'/deliver',
+            sprintf('/api/v3/supplies/%s/deliver', $this->supply),
         );
 
         if($response->getStatusCode() !== 204)
         {
-            $content = $response->toArray(false);
-            //$this->logger->critical('curl -X POST "' . $url . '" ' . $curlHeader . ' -d "' . $data . '"');
-            throw new DomainException(
-                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-                code: $response->getStatusCode()
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка при закрытии поставки %s', $this->supply),
+                [$response->toArray(false), self::class.':'.__LINE__]
             );
+
+            return false;
         }
+
+        return true;
     }
 
 }

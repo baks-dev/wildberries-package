@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api;
 
 use BaksDev\Wildberries\Api\Wildberries;
-use DomainException;
 use InvalidArgumentException;
 
 final class WildberriesSupplyDelete extends Wildberries
@@ -53,19 +52,19 @@ final class WildberriesSupplyDelete extends Wildberries
      * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies~1{supplyId}/delete
      *
      */
-    public function delete(): void
+    public function delete(): bool
     {
+        if($this->isExecuteEnvironment() === false)
+        {
+            $this->logger->critical('Запрос может быть выполнен только в PROD окружении', [self::class.':'.__LINE__]);
+            return true;
+        }
 
         if($this->supply === null)
         {
             throw new InvalidArgumentException(
                 'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")'
             );
-        }
-
-        if($this->test)
-        {
-            return;
         }
 
         $response = $this->TokenHttpClient()->request(
@@ -75,14 +74,15 @@ final class WildberriesSupplyDelete extends Wildberries
 
         if($response->getStatusCode() !== 204)
         {
-            $content = $response->toArray(false);
-            //$this->logger->critical('curl -X POST "' . $url . '" ' . $curlHeader . ' -d "' . $data . '"');
-            throw new DomainException(
-                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-                code: $response->getStatusCode()
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка при удалении поставки %s', $this->supply),
+                [$response->toArray(false), self::class.':'.__LINE__]
             );
+
+            return false;
         }
 
+        return true;
     }
 
 }

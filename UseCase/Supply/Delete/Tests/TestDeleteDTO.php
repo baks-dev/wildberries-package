@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ final class TestDeleteDTO implements WbSupplyEventInterface
     /**
      * Константа
      */
-    private Const\WbSupplyConstDTO $const;
+    private Invariable\WbSupplyInvariableDTO $invariable;
 
     /**
      * Wildberries
@@ -57,7 +57,7 @@ final class TestDeleteDTO implements WbSupplyEventInterface
 
     public function __construct()
     {
-        $this->const = new Const\WbSupplyConstDTO();
+        $this->invariable = new Invariable\WbSupplyInvariableDTO();
         $this->wildberries = new Wildberries\WbSupplyWildberriesDTO();
     }
 
@@ -78,11 +78,11 @@ final class TestDeleteDTO implements WbSupplyEventInterface
     }
 
     /**
-     * Const
+     * Invariable
      */
-    public function getConst(): Const\WbSupplyConstDTO
+    public function getInvariable(): Invariable\WbSupplyInvariableDTO
     {
-        return $this->const;
+        return $this->invariable;
     }
 
     /**

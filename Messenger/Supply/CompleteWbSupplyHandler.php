@@ -25,8 +25,11 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
-use App\Kernel;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Api\SupplySticker\WildberriesSupplySticker;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
@@ -34,7 +37,6 @@ use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyC
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use BaksDev\Wildberries\Package\UseCase\Supply\Sticker\WbSupplyStickerDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Sticker\WbSupplyStickerHandler;
-use DomainException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -48,7 +50,9 @@ final readonly class CompleteWbSupplyHandler
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private WbSupplyStickerHandler $WbSupplyStickerHandler,
         private WildberriesSupplySticker $wildberriesSupplySticker,
-        private CentrifugoPublishInterface $CentrifugoPublish
+        private CentrifugoPublishInterface $CentrifugoPublish,
+        private MessageDispatchInterface $MessageDispatch,
+        private DeduplicatorInterface $deduplicator
     ) {}
 
     /**
@@ -56,7 +60,11 @@ final readonly class CompleteWbSupplyHandler
      */
     public function __invoke(WbSupplyMessage $message): void
     {
-        if(Kernel::isTestEnvironment())
+        $Deduplicator = $this->deduplicator
+            ->namespace('wildberries-package')
+            ->deduplication([$message->getId(), self::class]);
+
+        if($Deduplicator->isExecuted())
         {
             return;
         }
@@ -64,43 +72,68 @@ final readonly class CompleteWbSupplyHandler
         /**
          * Получаем активное событие системной поставки
          */
-        $Event = $this->wbSupplyCurrentEvent->findWbSupplyEvent($message->getId());
+        $Event = $this->wbSupplyCurrentEvent
+            ->forSupply($message->getId())
+            ->find();
 
-        if(
-            !$Event ||
-            $Event->getTotal() === 0 ||
-            !$Event->getStatus()->equals(WbSupplyStatusClose::STATUS)
-        )
+        if(false === $Event || false === $Event->getStatus()->equals(WbSupplyStatusClose::STATUS))
         {
             return;
         }
+
+        /**
+         * Не получаем стикер поставки если в ней нет заказов
+         */
+        if(0 === $Event->getTotal())
+        {
+            return;
+        }
+
 
         /* Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
-        $UserProfileUid = $this->openWbSupply->getWbSupply($message->getId());
+        $UserProfileUid = $this->openWbSupply
+            ->forSupply($message->getId())
+            ->find();
 
-        if(!$UserProfileUid || !$UserProfileUid->getAttr())
+        if(false === ($UserProfileUid instanceof UserProfileUid) || empty($UserProfileUid->getAttr()))
         {
             return;
         }
 
+        /** Получаем QR поставки в svg */
         $WildberriesSupplyStickerDTO = $this->wildberriesSupplySticker
             ->profile($UserProfileUid)
             ->withSupply($UserProfileUid->getAttr())
-            ->request();
+            ->sticker();
+
+        if(false === $WildberriesSupplyStickerDTO)
+        {
+            $this->MessageDispatch->dispatch(
+                message: $message,
+                stamps: [new MessageDelay('3 seconds')],
+                transport: (string) $UserProfileUid
+            );
+
+            $this->logger->critical('Пробуем получить стикер поставки через 3 сек');
+
+            return;
+        }
 
         if($WildberriesSupplyStickerDTO->getIdentifier() !== $UserProfileUid->getAttr())
         {
-            $this->logger->critical('Не соответствует идентификатор поставки',
+            $this->logger->critical('Не соответствует идентификатор системной поставки и Wildberries',
                 [
                     'expected' => $UserProfileUid->getAttr(),
                     'received' => $WildberriesSupplyStickerDTO->getIdentifier(),
                     self::class.':'.__LINE__,
                 ]);
 
-            throw new DomainException('Не соответствует идентификатор поставки');
+            return;
         }
 
-        /** Получаем в системе поставку Wildberries */
+        /**
+         * Обновляем системную поставку Wildberries
+         */
 
         $WbSupplyStickerDTO = $Event->getDto(WbSupplyStickerDTO::class);
         $WbSupplyWildberriesDTO = $WbSupplyStickerDTO->getWildberries();
@@ -110,8 +143,11 @@ final readonly class CompleteWbSupplyHandler
 
         if(!$handle instanceof WbSupply)
         {
-            throw new DomainException(sprintf('%s: Ошибка при получении стикера поставки', $handle));
+            $this->logger->critical(sprintf('%s: Ошибка при сохранении стикера поставки', $handle));
+            return;
         }
+
+        $Deduplicator->save();
 
         /** Отправляем сокет комплектации */
         $this->CentrifugoPublish

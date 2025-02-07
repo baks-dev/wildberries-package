@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusCollection;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusNew;
-use BaksDev\Wildberries\Package\UseCase\Supply\New\Const\WbSupplyConstDTO;
+use BaksDev\Wildberries\Package\UseCase\Supply\New\Invariable\WbSupplyInvariableDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\New\WbSupplyNewDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\New\WbSupplyNewHandler;
 use Doctrine\ORM\EntityManagerInterface;
@@ -87,9 +87,9 @@ final class NewHandleTest extends KernelTestCase
         $UserProfileUid = new UserProfileUid();
         $WbSupplyNewDTO = new WbSupplyNewDTO($UserProfileUid);
 
-        /** @var WbSupplyConstDTO $WbSupplyConstDTO */
-        $WbSupplyConstDTO = $WbSupplyNewDTO->getConst();
-        self::assertSame($UserProfileUid, $WbSupplyConstDTO->getProfile());
+        /** @var WbSupplyInvariableDTO $WbSupplyInvariableDTO */
+        $WbSupplyInvariableDTO = $WbSupplyNewDTO->getInvariable();
+        self::assertSame($UserProfileUid, $WbSupplyInvariableDTO->getProfile());
 
 
         /** @var WbSupplyNewHandler $WbSupplyOpenHandler */

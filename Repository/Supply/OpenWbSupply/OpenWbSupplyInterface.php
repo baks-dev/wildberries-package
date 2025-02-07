@@ -24,23 +24,16 @@
 namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply;
 
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
 interface OpenWbSupplyInterface
 {
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self;
 
     /**
      * Метод возвращает профиль пользователя и идентификатор поставки в качестве аттрибута
      */
-    public function getWbSupply(WbSupplyUid $WbSupplyUid): ?UserProfileUid;
+    public function find(): UserProfileUid|false;
 
-    /**
-     * Получаем идентификатор ОТКРЫТОЙ поставки профиля пользователя
-     */
-    public function getOpenWbSupplyByProfile(UserProfileUid $profile): ?WbSupplyUid;
-
-    /**
-     * Получаем последнюю поставку профиля пользователя
-     */
-    public function getLastWbSupply(UserProfileUid $profile): array|false;
 }

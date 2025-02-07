@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@ use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
+use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
@@ -72,7 +72,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
 
         $qb
             ->addSelect('supply_const.total')
-            ->from(WbSupplyConst::class, 'supply_const')
+            ->from(WbSupplyInvariable::class, 'supply_const')
             ->where('supply_const.profile = :profile')
             ->setParameter('profile', $profile, UserProfileUid::TYPE);
 

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,41 +26,40 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Package;
 
 use BaksDev\Wildberries\Package\Repository\Package\CountOrdersSupply\CountOrdersSupplyInterface;
-use BaksDev\Wildberries\Package\UseCase\Supply\Total\WbSupplyConstDTO;
+use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
+use BaksDev\Wildberries\Package\UseCase\Supply\Total\WbSupplyInvariableDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Total\WbSupplyTotalHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class UpdateSupplyOrdersTotalHandler
+final readonly class UpdateSupplyOrdersTotalHandler
 {
-    private CountOrdersSupplyInterface $countOrdersSupply;
-    private WbSupplyTotalHandler $supplyTotalHandler;
-
     public function __construct(
-        CountOrdersSupplyInterface $countOrdersSupply,
-        WbSupplyTotalHandler $supplyTotalHandler,
-    )
-    {
-        $this->countOrdersSupply = $countOrdersSupply;
-        $this->supplyTotalHandler = $supplyTotalHandler;
-    }
+        private SupplyByPackageInterface $SupplyByPackage,
+        private CountOrdersSupplyInterface $CountOrdersSupply,
+        private WbSupplyTotalHandler $SupplyTotalHandler,
+    ) {}
 
     /**
      * Метод пересчитывает количество заказов в поставке
      */
     public function __invoke(WbPackageMessage $message): void
     {
-        $WbSupplyUid = $this->countOrdersSupply->findSupplyByPackage($message->getEvent());
+        $WbSupplyUid = $this->SupplyByPackage
+            ->forPackageEvent($message->getEvent())
+            ->find();
 
-        if(!$WbSupplyUid)
+        if(false === $WbSupplyUid)
         {
             return;
         }
 
-        $counter = $this->countOrdersSupply->countOrdersSupply($WbSupplyUid);
+        $counter = $this->CountOrdersSupply
+            ->forSupply($WbSupplyUid)
+            ->count();
 
-        $WbSupplyConstDTO = new WbSupplyConstDTO($WbSupplyUid, $counter);
-        $this->supplyTotalHandler->handle($WbSupplyConstDTO);
+        $WbSupplyConstDTO = new WbSupplyInvariableDTO($WbSupplyUid, $counter);
+        $this->SupplyTotalHandler->handle($WbSupplyConstDTO);
 
     }
 }

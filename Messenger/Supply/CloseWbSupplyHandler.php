@@ -26,6 +26,10 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
 use App\Kernel;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Api\WildberriesSupplyClosed;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
@@ -42,6 +46,8 @@ final readonly class CloseWbSupplyHandler
         private OpenWbSupplyInterface $openWbSupply,
         private WildberriesSupplyClosed $wildberriesSupplyClosed,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
+        private DeduplicatorInterface $deduplicator,
+        private MessageDispatchInterface $MessageDispatch
     ) {}
 
     /**
@@ -49,7 +55,11 @@ final readonly class CloseWbSupplyHandler
      */
     public function __invoke(WbSupplyMessage $message): void
     {
-        if(Kernel::isTestEnvironment())
+        $Deduplicator = $this->deduplicator
+            ->namespace('wildberries-package')
+            ->deduplication([$message->getId(), self::class]);
+
+        if($Deduplicator->isExecuted())
         {
             return;
         }
@@ -57,37 +67,57 @@ final readonly class CloseWbSupplyHandler
         /**
          * Получаем активное событие системной поставки
          */
-        $Event = $this->wbSupplyCurrentEvent->findWbSupplyEvent($message->getId());
+        $Event = $this->wbSupplyCurrentEvent
+            ->forSupply($message->getId())
+            ->find();
 
-        if(
-            !$Event ||
-            $Event->getTotal() === 0 ||
-            !$Event->getStatus()->equals(WbSupplyStatusClose::STATUS)
-        )
+        if(false === $Event || false === $Event->getStatus()->equals(WbSupplyStatusClose::STATUS))
         {
             return;
         }
 
-        /* Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
-        $UserProfileUid = $this->openWbSupply->getWbSupply($message->getId());
+        /**
+         * Не закрываем поставку если в ней нет заказов
+         */
+        if(0 === $Event->getTotal())
+        {
+            return;
+        }
 
-        if(!$UserProfileUid || !$UserProfileUid->getAttr())
+        /** Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
+        $UserProfileUid = $this->openWbSupply
+            ->forSupply($message->getId())
+            ->find();
+
+        if(false === ($UserProfileUid instanceof UserProfileUid) || empty($UserProfileUid->getAttr()))
         {
             return;
         }
 
         /* Закрываем поставку Wildberries Api */
-        $this->wildberriesSupplyClosed
+        $isClose = $this->wildberriesSupplyClosed
             ->profile($UserProfileUid)
             ->withSupply($UserProfileUid->getAttr())
             ->close();
 
-        $this->logger->info('Закрыли поставку Wildberries',
-            [
-                'supply' => $UserProfileUid->getAttr(),
-                self::class.':'.__LINE__,
-            ]);
+        if(false === $isClose)
+        {
+            $this->logger->critical('wildberries-package: Пробуем закрыть поставку Wildberries через 3 сек');
+
+            $this->MessageDispatch->dispatch(
+                message: $message,
+                stamps: [new MessageDelay('3 seconds')],
+                transport: (string) $UserProfileUid
+            );
+
+            return;
+        }
+
+        $Deduplicator->save();
+
+        $this->logger->info(
+            sprintf('%s: Закрыли поставку Wildberries', $UserProfileUid->getAttr()),
+            [self::class.':'.__LINE__,]
+        );
     }
-
-
 }

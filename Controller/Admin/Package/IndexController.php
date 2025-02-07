@@ -37,7 +37,7 @@ use BaksDev\Wildberries\Manufacture\Type\ManufacturePartComplete\ManufacturePart
 use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
 use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterForm;
 use BaksDev\Wildberries\Package\Repository\Package\PrintOrdersPackageSupply\PrintOrdersPackageSupplyInterface;
-use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
+use BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LastWbSupplyInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,10 +54,10 @@ final class IndexController extends AbstractController
     #[Route('/admin/wb/packages/{page<\d+>}', name: 'admin.package.index', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
-        OpenWbSupplyInterface $openWbSupply,
         PrintOrdersPackageSupplyInterface $printOrdersPackageSupply,
         TokenUserGenerator $tokenUserGenerator,
         AllWbOrdersManufactureInterface $allWbOrdersGroup,
+        LastWbSupplyInterface $LastWbSupply,
         int $page = 0,
     ): Response
     {
@@ -73,12 +73,13 @@ final class IndexController extends AbstractController
             )
             ->handleRequest($request);
 
-        // Получаем открытую поставку
-        $opens = $openWbSupply->getLastWbSupply($this->getProfileUid());
+        // Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
+        $opens = $LastWbSupply
+            ->forProfile($this->getProfileUid())
+            ->find();
 
         /* Получаем заказа, которые не были напечатаны  */
         $print = isset($opens['id']) ? $printOrdersPackageSupply->fetchAllPrintOrdersPackageSupplyAssociative(new WbSupplyUid($opens['id'])) : null;
-
 
         /**
          * Фильтр заказов

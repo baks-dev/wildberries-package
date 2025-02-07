@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Supply\WbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
+use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
@@ -59,7 +59,7 @@ final readonly class WbSupplyRepository implements WbSupplyInterface
             ->addSelect('supply.event')
             ->leftJoin(
                 'supply',
-                WbSupplyConst::class,
+                WbSupplyInvariable::class,
                 'supply_const',
                 'supply_const.main = supply.id'
             );

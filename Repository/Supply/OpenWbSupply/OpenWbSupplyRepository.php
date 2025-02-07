@@ -27,146 +27,71 @@ namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Entity\Supply\Const\WbSupplyConst;
-use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
-use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
+use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
+use InvalidArgumentException;
 
 final class OpenWbSupplyRepository implements OpenWbSupplyInterface
 {
 
+    private WbSupplyUid|false $supply = false;
+
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self
+    {
+
+        if(is_string($supply))
+        {
+            $supply = new WbSupplyUid($supply);
+        }
+
+        if($supply instanceof WbSupply)
+        {
+            $supply = $supply->getId();
+        }
+
+        $this->supply = $supply;
+
+        return $this;
+    }
 
     /**
      * Метод возвращает профиль пользователя и идентификатор поставки в качестве аттрибута
      */
-    public function getWbSupply(WbSupplyUid $WbSupplyUid): ?UserProfileUid
+    public function find(): UserProfileUid|false
     {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        if(false === ($this->supply instanceof WbSupplyUid))
+        {
+            throw new InvalidArgumentException('Invalid Argument WbSupply');
+        }
 
-        $qb
-            ->addSelect('supply_const.profile')
-            ->from(WbSupplyConst::class, 'supply_const')
-            ->where('supply_const.main = :supply')
-            ->setParameter('supply', $WbSupplyUid, WbSupplyUid::TYPE);
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb
-            ->addSelect('supply_wildberries.identifier')
+        $dbal
+            ->addSelect('invariable.profile AS value')
+            ->from(WbSupplyInvariable::class, 'invariable')
+            ->where('invariable.main = :supply')
+            ->setParameter(
+                key: 'supply',
+                value: $this->supply,
+                type: WbSupplyUid::TYPE
+            );
+
+        $dbal
+            ->addSelect('wildberries.identifier AS attr')
             ->leftJoin(
-                'supply_const',
+                'invariable',
                 WbSupplyWildberries::class,
-                'supply_wildberries',
-                'supply_wildberries.main = supply_const.main'
+                'wildberries',
+                'wildberries.main = invariable.main'
             );
 
-        $supply = $qb->fetchAssociative();
 
-        return $supply ? new UserProfileUid($supply['profile'], $supply['identifier']) : null;
+        return $dbal->fetchHydrate(UserProfileUid::class);
 
     }
 
-
-    /**
-     * Получаем идентификатор ОТКРЫТОЙ поставки профиля пользователя
-     */
-    public function getOpenWbSupplyByProfile(UserProfileUid $profile): ?WbSupplyUid
-    {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-
-        $qb
-            ->from(WbSupplyConst::class, 'supply_const')
-            ->where('supply_const.profile = :profile')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
-
-        $qb
-            ->addSelect('supply.id')
-            ->join(
-                'supply_const',
-                WbSupply::class,
-                'supply',
-                'supply.id = supply_const.main'
-            );
-
-        $qb
-            ->addSelect('event.status')
-            ->join(
-                'supply',
-                WbSupplyEvent::class,
-                'event',
-                'event.id = supply.event AND (event.status = :new OR event.status = :open) '
-            )
-            ->setParameter('new', WbSupplyStatus\WbSupplyStatusNew::STATUS)
-            ->setParameter('open', WbSupplyStatus\WbSupplyStatusOpen::STATUS);
-
-        $qb->setMaxResults(1);
-
-        $result = $qb->fetchOne();
-
-        return $result ? new WbSupplyUid($result) : null;
-    }
-
-    /**
-     * Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
-     */
-    public function getLastWbSupply(UserProfileUid $profile): array|false
-    {
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-
-        $qb
-            ->addSelect('supply_const.total')
-            ->from(WbSupplyConst::class, 'supply_const')
-            ->where('supply_const.profile = :profile')
-            ->setParameter('profile', $profile, UserProfileUid::TYPE);
-
-        $qb
-            ->addSelect('supply.id')
-            ->addSelect('supply.event')
-            ->join(
-                'supply_const',
-                WbSupply::class,
-                'supply',
-                'supply.id = supply_const.main'
-            );
-
-
-        $qb
-            ->addSelect('event.status')
-            ->leftJoin(
-                'supply',
-                WbSupplyEvent::class,
-                'event',
-                'event.id = supply.event'
-            );
-
-        $qb
-            ->addSelect('modify.mod_date AS supply_date')
-            ->leftJoin(
-                'supply',
-                WbSupplyModify::class,
-                'modify',
-                'modify.event = supply.event'
-            );
-
-
-        $qb
-            ->addSelect('wb.identifier')
-            ->addSelect('wb.sticker')
-            ->leftJoin(
-                'supply',
-                WbSupplyWildberries::class,
-                'wb',
-                'wb.main = supply.id'
-            );
-
-
-        $qb->orderBy('modify.mod_date', 'DESC');
-        $qb->setMaxResults(1);
-
-        return $qb
-            ->enableCache((string) $profile, 3600)
-            ->fetchAssociative();
-    }
 }

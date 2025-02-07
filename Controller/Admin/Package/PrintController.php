@@ -71,7 +71,9 @@ final class PrintController extends AbstractController
             ->send('remove');
 
         /* Получаем все заказы в упаковке  */
-        $orders = $orderByPackage->getOrdersPackage($wbPackage->getEvent());
+        $orders = $orderByPackage
+            ->forPackageEvent($wbPackage->getEvent())
+            ->findAll();
 
         if(!$orders)
         {

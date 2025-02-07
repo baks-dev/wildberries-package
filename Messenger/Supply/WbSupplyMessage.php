@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -33,17 +33,17 @@ final class WbSupplyMessage
     /**
      * Идентификатор
      */
-    private WbSupplyUid $id;
+    private string $id;
 
     /**
      * Идентификатор события
      */
-    private WbSupplyEventUid $event;
+    private string $event;
 
     /**
      * Идентификатор предыдущего события
      */
-    private ?WbSupplyEventUid $last;
+    private ?string $last;
 
 
     public function __construct(
@@ -52,9 +52,9 @@ final class WbSupplyMessage
         ?WbSupplyEventUid $last = null,
     )
     {
-        $this->id = $id;
-        $this->event = $event;
-        $this->last = $last;
+        $this->id = (string) $id;
+        $this->event = (string) $event;
+        $this->last = $last ? (string) $last : null;
     }
 
 
@@ -63,7 +63,7 @@ final class WbSupplyMessage
      */
     public function getId(): WbSupplyUid
     {
-        return $this->id;
+        return new WbSupplyUid($this->id);
     }
 
 
@@ -72,7 +72,7 @@ final class WbSupplyMessage
      */
     public function getEvent(): WbSupplyEventUid
     {
-        return $this->event;
+        return new WbSupplyEventUid($this->event);
     }
 
 
@@ -81,6 +81,6 @@ final class WbSupplyMessage
      */
     public function getLast(): ?WbSupplyEventUid
     {
-        return $this->last;
+        return $this->last ? new WbSupplyEventUid($this->last) : null;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,26 +30,14 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Messenger\Package\WbPackageMessage;
-use DomainException;
 
 final class WbPackageHandler extends AbstractHandler
 {
     public function handle(WbPackageDTO $command): string|WbPackage
     {
-        /* Валидация DTO  */
-        $this->validatorCollection->add($command);
+        $this->setCommand($command);
 
-        $this->main = new WbPackage();
-        $this->event = new WbPackageEvent();
-
-        try
-        {
-            $command->getEvent() ? $this->preUpdate($command, true) : $this->prePersist($command);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
+        $this->preEventPersistOrUpdate(WbPackage::class, WbPackageEvent::class);
 
         /* Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -57,8 +45,7 @@ final class WbPackageHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-
-        $this->entityManager->flush();
+        $this->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -32,38 +32,68 @@ use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
+use InvalidArgumentException;
 
 final class ExistOrderPackageRepository implements ExistOrderPackageInterface
 {
+    private OrderUid|false $order;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+
+    public function forOrder(Order|OrderUid|string $order): self
+    {
+        if(is_string($order))
+        {
+            $order = new OrderUid($order);
+        }
+
+        if($order instanceof Order)
+        {
+            $order = $order->getId();
+        }
+
+        $this->order = $order;
+
+        return $this;
+    }
 
     /**
      * Метод проверяет, имеется ли заказ в упаковке (без статуса ERROR)
      */
-    public function isExistOrder(Order|OrderUid $order): bool
+    public function isExist(): bool
     {
+        if(false === ($this->order instanceof OrderUid))
+        {
+            throw new InvalidArgumentException('Invalid Argument Order');
+        }
 
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        //$qb->select('id');
-        $qb->from(WbPackageOrder::class, 'wb_order');
+        $dbal->from(WbPackageOrder::class, 'wb_order');
 
-        $qb
+        $dbal
             ->where('wb_order.id = :order')
-            ->setParameter('order', $order instanceof Order ? $order->getId() : $order, OrderUid::TYPE);
+            ->setParameter(
+                key: 'order',
+                value: $this->order,
+                type: OrderUid::TYPE
+            );
 
-        $qb
+        $dbal
             ->andWhere('wb_order.status != :status')
-            ->setParameter('status', new WbPackageStatus(WbPackageStatusError::class), WbPackageStatus::TYPE);
+            ->setParameter(
+                key: 'status',
+                value: new WbPackageStatus(WbPackageStatusError::class),
+                type: WbPackageStatus::TYPE
+            );
 
-        $qb->join(
+        $dbal->join(
             'wb_order',
             WbPackage::class,
             'package',
             'package.event = wb_order.event'
         );
 
-        return $qb->fetchExist();
+        return $dbal->fetchExist();
     }
 }

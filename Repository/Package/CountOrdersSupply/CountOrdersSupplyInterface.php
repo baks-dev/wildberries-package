@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,15 @@
 
 namespace BaksDev\Wildberries\Package\Repository\Package\CountOrdersSupply;
 
-use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
 interface CountOrdersSupplyInterface
 {
-    /**
-     * Возвращает идентификатор поставки упаковки
-     */
-    public function findSupplyByPackage(WbPackageEventUid $event): ?WbSupplyUid;
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self;
 
     /**
      * Метод возвращает количество всех заказов в поставке
      */
-    public function countOrdersSupply(WbSupplyUid $supply): int;
+    public function count(): int;
 }

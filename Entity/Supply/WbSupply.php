@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'wb_supply')]
-// #[ORM\Index(columns: ['column'])]
 class WbSupply
 {
-    public const TABLE = 'wb_supply';
-
     /** ID */
     #[ORM\Id]
     #[ORM\Column(type: WbSupplyUid::TYPE)]

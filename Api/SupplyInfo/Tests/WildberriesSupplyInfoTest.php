@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api\SupplyInfo\Tests;
 
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyAll;
 use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyAllDTO;
-use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfo;
+use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyAllRequest;
+use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Type\Authorization\WbAuthorizationToken;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
@@ -49,16 +49,16 @@ final class WildberriesSupplyInfoTest extends KernelTestCase
 
     public function testUseCase(): void
     {
-        /** @var WildberriesSupplyAll $WildberriesSupplyAll */
-        $WildberriesSupplyAll = self::getContainer()->get(WildberriesSupplyAll::class);
+        /** @var WildberriesSupplyAllRequest $WildberriesSupplyAll */
+        $WildberriesSupplyAll = self::getContainer()->get(WildberriesSupplyAllRequest::class);
         $WildberriesSupplyAll->TokenHttpClient(new WbAuthorizationToken(new UserProfileUid(), self::$tocken));
 
         /** @var WildberriesSupplyAllDTO $WildberriesSupply */
         $WildberriesSupply = ($WildberriesSupplyAll->all())->current();
 
 
-        /** @var WildberriesSupplyInfo $WildberriesSupplyInfo */
-        $WildberriesSupplyInfo = self::getContainer()->get(WildberriesSupplyInfo::class);
+        /** @var WildberriesSupplyInfoRequest $WildberriesSupplyInfo */
+        $WildberriesSupplyInfo = self::getContainer()->get(WildberriesSupplyInfoRequest::class);
         $WildberriesSupplyInfo->TokenHttpClient(new WbAuthorizationToken(new UserProfileUid(), self::$tocken));
 
 

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,30 +26,17 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\UseCase\Supply\Open;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
-use DomainException;
 
 final class WbSupplyOpenHandler extends AbstractHandler
 {
     public function handle(WbSupplyOpenDTO $command): string|WbSupply
     {
-        /** Валидация WbSupplyOpenDTO  */
-        $this->validatorCollection->add($command);
+        $this->setCommand($command);
+        $this->preEventPersistOrUpdate(WbSupply::class, WbSupplyEvent::class);
 
-        $this->main = new WbSupply();
-        $this->event = new WbSupplyEvent();
-
-        try
-        {
-            $command->getEvent() ? $this->preUpdate($command, true) : $this->prePersist($command);
-        }
-        catch(DomainException $errorUniqid)
-        {
-            return $errorUniqid->getMessage();
-        }
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -57,8 +44,7 @@ final class WbSupplyOpenHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-
-        $this->entityManager->flush();
+        $this->flush();
 
         /* Отправляем сообщение в шину */
         $this->messageDispatch->dispatch(

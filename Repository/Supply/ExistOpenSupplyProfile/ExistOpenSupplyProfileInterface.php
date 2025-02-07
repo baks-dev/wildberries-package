@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,20 @@
 namespace BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile;
 
 
+use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
 interface ExistOpenSupplyProfileInterface
 {
-    public function isExistOpenSupply(UserProfileUid $profile): bool;
+    public function forProfile(UserProfile|UserProfileUid|string $profile): self;
+
+    /**
+     * Метод проверяет, имеется ли поставка со статусом «New»
+     */
+    public function isExistNewSupply(): bool;
+
+    /**
+     * Метод проверяет, имеется ли поставка со статусом «New» либо «Open»
+     */
+    public function isExistNewOrOpenSupply(): bool;
 }
