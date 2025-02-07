@@ -75,7 +75,7 @@ class WbPackageEvent extends EntityEvent
     private Collection $ord;
 
     /**
-     * Общее количество заказов в паковке
+     * Общее количество заказов в упаковке
      */
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private int $total = 0;

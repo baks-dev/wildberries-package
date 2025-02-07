@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -99,14 +99,14 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         );
 
 
-        $dbal
-            ->addSelect('ord_sticker.sticker')
-            ->leftJoin(
-                'package_order',
-                WbOrdersSticker::class,
-                'ord_sticker',
-                'ord_sticker.main = package_order.id'
-            );
+        //        $dbal
+        //            ->addSelect('ord_sticker.sticker')
+        //            ->leftJoin(
+        //                'package_order',
+        //                WbOrdersSticker::class,
+        //                'ord_sticker',
+        //                'ord_sticker.main = package_order.id'
+        //            );
 
         $dbal
             ->leftJoin(
@@ -117,22 +117,22 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             );
 
 
-        $dbal
-            ->leftJoin(
-                'ord',
-                WbOrders::class,
-                'wb_orders',
-                'wb_orders.id = ord.id'
-            );
-
-        $dbal
-            ->addSelect('wb_orders_event.barcode')
-            ->leftJoin(
-                'wb_orders',
-                WbOrdersEvent::class,
-                'wb_orders_event',
-                'wb_orders_event.id = wb_orders.event'
-            );
+        //        $dbal
+        //            ->leftJoin(
+        //                'ord',
+        //                WbOrders::class,
+        //                'wb_orders',
+        //                'wb_orders.id = ord.id'
+        //            );
+        //
+        //        $dbal
+        //            ->addSelect('wb_orders_event.barcode')
+        //            ->leftJoin(
+        //                'wb_orders',
+        //                WbOrdersEvent::class,
+        //                'wb_orders_event',
+        //                'wb_orders_event.id = wb_orders.event'
+        //            );
 
 
         $dbal
@@ -201,62 +201,67 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         );
 
 
-        $dbal->addSelect('product_offer.value as product_offer_value');
-        $dbal->leftJoin(
-            'ord_product',
-            ProductOffer::class,
-            'product_offer',
-            'product_offer.id = ord_product.offer '
-        );
+        $dbal
+            ->addSelect('product_offer.value as product_offer_value')
+            ->leftJoin(
+                'ord_product',
+                ProductOffer::class,
+                'product_offer',
+                'product_offer.id = ord_product.offer '
+            );
 
         /* Получаем тип торгового предложения */
-        $dbal->addSelect('category_offer.reference AS product_offer_reference');
-        $dbal->leftJoin(
-            'product_offer',
-            CategoryProductOffers::class,
-            'category_offer',
-            'category_offer.id = product_offer.category_offer'
-        );
+        $dbal
+            ->addSelect('category_offer.reference AS product_offer_reference')
+            ->leftJoin(
+                'product_offer',
+                CategoryProductOffers::class,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer'
+            );
 
         /* Получаем название торгового предложения */
-        $dbal->addSelect('category_offer_trans.name as product_offer_name');
-        $dbal->addSelect('category_offer_trans.postfix as product_offer_name_postfix');
-        $dbal->leftJoin(
-            'category_offer',
-            CategoryProductOffersTrans::class,
-            'category_offer_trans',
-            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_offer_trans.name as product_offer_name')
+            ->addSelect('category_offer_trans.postfix as product_offer_name_postfix')
+            ->leftJoin(
+                'category_offer',
+                CategoryProductOffersTrans::class,
+                'category_offer_trans',
+                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+            );
 
 
-        $dbal->addSelect('product_variation.value as product_variation_value');
-        $dbal->leftJoin(
-            'ord_product',
-            ProductVariation::class,
-            'product_variation',
-            'product_variation.id = ord_product.variation '
-        );
+        $dbal
+            ->addSelect('product_variation.value as product_variation_value')
+            ->leftJoin(
+                'ord_product',
+                ProductVariation::class,
+                'product_variation',
+                'product_variation.id = ord_product.variation '
+            );
 
 
         /* Получаем тип множественного варианта */
-        $dbal->addSelect('category_variation.reference as product_variation_reference');
-        $dbal->leftJoin(
-            'product_variation',
-            CategoryProductVariation::class,
-            'category_variation',
-            'category_variation.id = product_variation.category_variation'
-        );
+        $dbal
+            ->addSelect('category_variation.reference as product_variation_reference')
+            ->leftJoin(
+                'product_variation',
+                CategoryProductVariation::class,
+                'category_variation',
+                'category_variation.id = product_variation.category_variation'
+            );
 
         /* Получаем название множественного варианта */
-        $dbal->addSelect('category_variation_trans.name as product_variation_name');
-
-        $dbal->addSelect('category_variation_trans.postfix as product_variation_name_postfix');
-        $dbal->leftJoin(
-            'category_variation',
-            CategoryProductVariationTrans::class,
-            'category_variation_trans',
-            'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_variation_trans.name as product_variation_name')
+            ->addSelect('category_variation_trans.postfix as product_variation_name_postfix')
+            ->leftJoin(
+                'category_variation',
+                CategoryProductVariationTrans::class,
+                'category_variation_trans',
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+            );
 
 
         //        $dbal->leftJoin(
@@ -287,6 +292,15 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
 		');
 
 
+        $dbal->addSelect('
+            COALESCE(
+                product_modification.barcode, 
+                product_variation.barcode, 
+                product_offer.barcode, 
+                product_info.barcode
+            ) AS product_barcode
+		');
+
         return $dbal
             //->enableCache('wildberries-package', 3600)
             ->fetchAllAssociative();
@@ -302,9 +316,8 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        $dbal->select('package_supply.main AS id');
-
         $dbal
+            ->select('package_supply.main AS id')
             ->from(WbPackageSupply::class, 'package_supply')
             ->where('package_supply.supply = :supply')
             ->andWhere('package_supply.print = false')
@@ -329,22 +342,6 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         /** Стикеры Wildberries */
 
 
-        $dbal
-            ->addSelect('
-                CASE 
-                WHEN ord_sticker.sticker IS NULL 
-                THEN FALSE
-                ELSE TRUE
-                END AS sticker
-            ')
-            ->leftJoin(
-                'package_orders',
-                WbOrdersSticker::class,
-                'ord_sticker',
-                'ord_sticker.main = package_orders.id'
-            );
-
-
         $dbal->leftJoin(
             'package_orders',
             Order::class,
@@ -361,68 +358,73 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         );
 
 
-        $dbal->addSelect('product_event.id AS product_event');
-        $dbal->leftJoin(
-            'ord_product',
-            ProductEvent::class,
-            'product_event',
-            'product_event.id = ord_product.product'
-        );
+        $dbal
+            ->addSelect('product_event.id AS product_event')
+            ->leftJoin(
+                'ord_product',
+                ProductEvent::class,
+                'product_event',
+                'product_event.id = ord_product.product'
+            );
 
-        $dbal->addSelect('product_trans.name AS product_name');
-        $dbal->leftJoin(
-            'product_event',
-            ProductTrans::class,
-            'product_trans',
-            'product_trans.event = product_event.id AND product_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('product_trans.name AS product_name')
+            ->leftJoin(
+                'product_event',
+                ProductTrans::class,
+                'product_trans',
+                'product_trans.event = product_event.id AND product_trans.local = :local'
+            );
 
         /* Торговое предложение */
 
-        $dbal->addSelect('product_offer.id as product_offer_uid');
-        $dbal->addSelect('product_offer.value as product_offer_value');
-        $dbal->addSelect('product_offer.postfix as product_offer_postfix');
-
-
-        $dbal->leftJoin(
-            'ord_product',
-            ProductOffer::class,
-            'product_offer',
-            'product_offer.id = ord_product.offer OR product_offer.id IS NULL'
-        );
+        $dbal
+            ->addSelect('product_offer.id as product_offer_uid')
+            ->addSelect('product_offer.value as product_offer_value')
+            ->addSelect('product_offer.postfix as product_offer_postfix')
+            ->addSelect('product_offer.barcode as product_offer_barcode')
+            ->leftJoin(
+                'ord_product',
+                ProductOffer::class,
+                'product_offer',
+                'product_offer.id = ord_product.offer OR product_offer.id IS NULL'
+            );
 
         /* Получаем тип торгового предложения */
-        $dbal->addSelect('category_offer.reference AS product_offer_reference');
-        $dbal->leftJoin(
-            'product_offer',
-            CategoryProductOffers::class,
-            'category_offer',
-            'category_offer.id = product_offer.category_offer'
-        );
+        $dbal
+            ->addSelect('category_offer.reference AS product_offer_reference')
+            ->leftJoin(
+                'product_offer',
+                CategoryProductOffers::class,
+                'category_offer',
+                'category_offer.id = product_offer.category_offer'
+            );
 
         /* Получаем название торгового предложения */
-        $dbal->addSelect('category_offer_trans.name as product_offer_name');
-        $dbal->addSelect('category_offer_trans.postfix as product_offer_name_postfix');
-        $dbal->leftJoin(
-            'category_offer',
-            CategoryProductOffersTrans::class,
-            'category_offer_trans',
-            'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_offer_trans.name as product_offer_name')
+            ->addSelect('category_offer_trans.postfix as product_offer_name_postfix')
+            ->leftJoin(
+                'category_offer',
+                CategoryProductOffersTrans::class,
+                'category_offer_trans',
+                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+            );
 
 
         /* Множественные варианты торгового предложения */
 
-        $dbal->addSelect('product_variation.id as product_variation_uid');
-        $dbal->addSelect('product_variation.value as product_variation_value');
-        $dbal->addSelect('product_variation.postfix as product_variation_postfix');
-
-        $dbal->leftJoin(
-            'ord_product',
-            ProductVariation::class,
-            'product_variation',
-            'product_variation.id = ord_product.variation OR product_variation.id IS NULL '
-        );
+        $dbal
+            ->addSelect('product_variation.id as product_variation_uid')
+            ->addSelect('product_variation.value as product_variation_value')
+            ->addSelect('product_variation.postfix as product_variation_postfix')
+            ->addSelect('product_variation.postfix as product_variation_barcode')
+            ->leftJoin(
+                'ord_product',
+                ProductVariation::class,
+                'product_variation',
+                'product_variation.id = ord_product.variation OR product_variation.id IS NULL '
+            );
 
 
         /* Получаем тип множественного варианта */
@@ -435,50 +437,61 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
         );
 
         /* Получаем название множественного варианта */
-        $dbal->addSelect('category_variation_trans.name as product_variation_name');
-
-        $dbal->addSelect('category_variation_trans.postfix as product_variation_name_postfix');
-        $dbal->leftJoin(
-            'category_variation',
-            CategoryProductVariationTrans::class,
-            'category_variation_trans',
-            'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_variation_trans.name as product_variation_name')
+            ->addSelect('category_variation_trans.postfix as product_variation_name_postfix')
+            ->leftJoin(
+                'category_variation',
+                CategoryProductVariationTrans::class,
+                'category_variation_trans',
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+            );
 
 
         /* Модификация множественного варианта торгового предложения */
 
-        $dbal->addSelect('product_modification.id as product_modification_uid');
-        $dbal->addSelect('product_modification.value as product_modification_value');
-        $dbal->addSelect('product_modification.postfix as product_modification_postfix');
-
-        $dbal->leftJoin(
-            'ord_product',
-            ProductModification::class,
-            'product_modification',
-            'product_modification.id = ord_product.modification OR product_modification.id IS NULL '
-        );
+        $dbal
+            ->addSelect('product_modification.id as product_modification_uid')
+            ->addSelect('product_modification.value as product_modification_value')
+            ->addSelect('product_modification.postfix as product_modification_postfix')
+            ->addSelect('product_modification.barcode as product_modification_barcode')
+            ->leftJoin(
+                'ord_product',
+                ProductModification::class,
+                'product_modification',
+                'product_modification.id = ord_product.modification OR product_modification.id IS NULL '
+            );
 
 
         /* Получаем тип модификации множественного варианта */
-        $dbal->addSelect('category_modification.reference as product_modification_reference');
-        $dbal->leftJoin(
-            'product_modification',
-            CategoryProductModification::class,
-            'category_modification',
-            'category_modification.id = product_modification.category_modification'
-        );
+        $dbal
+            ->addSelect('category_modification.reference as product_modification_reference')
+            ->leftJoin(
+                'product_modification',
+                CategoryProductModification::class,
+                'category_modification',
+                'category_modification.id = product_modification.category_modification'
+            );
 
         /* Получаем название типа модификации */
-        $dbal->addSelect('category_modification_trans.name as product_modification_name');
-        $dbal->addSelect('category_modification_trans.postfix as product_modification_name_postfix');
-        $dbal->leftJoin(
-            'category_modification',
-            CategoryProductModificationTrans::class,
-            'category_modification_trans',
-            'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
-        );
+        $dbal
+            ->addSelect('category_modification_trans.name as product_modification_name')
+            ->addSelect('category_modification_trans.postfix as product_modification_name_postfix')
+            ->leftJoin(
+                'category_modification',
+                CategoryProductModificationTrans::class,
+                'category_modification_trans',
+                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+            );
 
+
+        $dbal->addSelect('
+            COALESCE(
+                product_modification.barcode, 
+                product_variation.barcode, 
+                product_offer.barcode
+            ) AS barcode
+		');
 
         /* Фото продукта */
 
@@ -510,6 +523,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'product_offer_images',
             'product_offer_images.offer = product_offer.id AND product_offer_images.root = true'
         );
+
 
         $dbal->addSelect(
             "

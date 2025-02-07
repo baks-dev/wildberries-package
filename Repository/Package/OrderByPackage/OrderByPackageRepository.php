@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Package\OrderByPackage;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
@@ -96,14 +97,14 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             );
 
 
-        $dbal
-            ->addSelect('wb_sticker.sticker')
-            ->leftJoin(
-                'package_order',
-                WbOrdersSticker::class,
-                'wb_sticker',
-                'wb_sticker.main = package_order.id'
-            );
+        //        $dbal
+        //            ->addSelect('wb_sticker.sticker')
+        //            ->leftJoin(
+        //                'package_order',
+        //                WbOrdersSticker::class,
+        //                'wb_sticker',
+        //                'wb_sticker.main = package_order.id'
+        //            );
 
 
         $dbal
@@ -113,6 +114,16 @@ final class OrderByPackageRepository implements OrderByPackageInterface
                 'ord',
                 'ord.id = package_order.id'
             );
+
+        $dbal
+            ->addSelect('invariable.number')
+            ->leftJoin(
+                'package_order',
+                OrderInvariable::class,
+                'invariable',
+                'invariable.main = ord.id'
+            );
+
 
         $dbal
             ->addSelect('ord_product.product AS product_event')
@@ -125,23 +136,23 @@ final class OrderByPackageRepository implements OrderByPackageInterface
                 'ord_product.event = ord.event'
             );
 
-
-        $dbal
-            ->leftJoin(
-                'package_order',
-                WbOrders::class,
-                'wb_orders',
-                'wb_orders.id = package_order.id'
-            );
-
-        $dbal
-            ->addSelect('wb_orders_event.barcode')
-            ->leftJoin(
-                'wb_orders',
-                WbOrdersEvent::class,
-                'wb_orders_event',
-                'wb_orders_event.id = wb_orders.event'
-            );
+        //
+        //        $dbal
+        //            ->leftJoin(
+        //                'package_order',
+        //                WbOrders::class,
+        //                'wb_orders',
+        //                'wb_orders.id = package_order.id'
+        //            );
+        //
+        //        $dbal
+        //            ->addSelect('wb_orders_event.barcode')
+        //            ->leftJoin(
+        //                'wb_orders',
+        //                WbOrdersEvent::class,
+        //                'wb_orders_event',
+        //                'wb_orders_event.id = wb_orders.event'
+        //            );
 
 
         return $dbal

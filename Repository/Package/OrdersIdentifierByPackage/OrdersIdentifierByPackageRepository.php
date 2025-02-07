@@ -26,12 +26,18 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
+use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
+use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
+use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Wildberries\Orders\Entity\WbOrders;
+use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
 use Generator;
 use InvalidArgumentException;
@@ -40,6 +46,8 @@ use InvalidArgumentException;
 final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPackageInterface
 {
     private WbPackageEventUid|false $event = false;
+
+    private string $status = WbPackageStatusNew::class;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
@@ -60,8 +68,23 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
         return $this;
     }
 
+    public function onlyNew(): self
+    {
+        $this->status = WbPackageStatusNew::class;
+
+        return $this;
+    }
+
+    public function onlyAddSupply(): self
+    {
+        $this->status = WbPackageStatusAdd::class;
+
+        return $this;
+    }
+
+
     /**
-     * Метод возвращает идентификаторы системных заказов и идентификаторы заказов Wildberries качестве атрибута
+     * Метод возвращает идентификаторы системных заказов и идентификаторы заказа Wildberries FBS качестве атрибута
      */
     public function findAll(): Generator|false
     {
@@ -88,17 +111,37 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
             ->andWhere('orders.status = :status')
             ->setParameter(
                 key: 'status',
-                value: WbPackageStatusNew::class,
+                value: $this->status,
                 type: WbPackageStatus::TYPE
             );
 
+
         $dbal
-            ->addSelect('wb_orders.ord AS attr')
-            ->join(
+            ->addSelect('invariable.number AS attr')
+            ->leftJoin(
                 'orders',
-                WbOrders::class,
-                'wb_orders',
-                'wb_orders.id = orders.id'
+                OrderInvariable::class,
+                'invariable',
+                'invariable.id = orders.id',
+            );
+
+        $dbal->leftJoin(
+            'invariable',
+            OrderUser::class,
+            'usr',
+            'user.event = invariable.event',
+        );
+
+        $dbal->join(
+            'usr',
+            OrderDelivery::class,
+            'delivery',
+            'delivery.usr = usr.id AND delivery.delivery = :delivery',
+        )
+            ->setParameter(
+                key: 'delivery',
+                value: new DeliveryUid(TypeDeliveryFbsWildberries::class),
+                type: DeliveryUid::TYPE,
             );
 
         return $dbal->fetchAllHydrate(OrderUid::class);

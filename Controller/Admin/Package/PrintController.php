@@ -26,6 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Controller\Admin\Package;
 
 
+use BaksDev\Barcode\Writer\BarcodeFormat;
+use BaksDev\Barcode\Writer\BarcodeType;
+use BaksDev\Barcode\Writer\BarcodeWrite;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
@@ -33,6 +36,7 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Id\ProductUid;
+use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\WildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Repository\Package\OrderByPackage\OrderByPackageInterface;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageDTO;
@@ -40,6 +44,7 @@ use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodeP
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
 use chillerlan\QRCode\QRCode;
 use Picqer\Barcode\BarcodeGeneratorSVG;
+use RuntimeException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -62,12 +67,15 @@ final class PrintController extends AbstractController
         WbBarcodePropertyByProductEventInterface $wbBarcodeProperty,
         ProductDetailByUidInterface $productDetail,
         MessageDispatchInterface $messageDispatch,
+        BarcodeWrite $BarcodeWrite,
+        WildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest
     ): Response
     {
 
         /* Скрываем у все пользователей заказ для печати */
         $CentrifugoPublish
             ->addData(['identifier' => (string) $wbPackage->getId()]) // ID продукта
+            ->addData(['profile' => $this->getCurrentProfileUid()])
             ->send('remove');
 
         /* Получаем все заказы в упаковке  */
@@ -75,18 +83,29 @@ final class PrintController extends AbstractController
             ->forPackageEvent($wbPackage->getEvent())
             ->findAll();
 
-        if(!$orders)
+        if(empty($orders))
         {
             throw new RouteNotFoundException('Orders Not Found');
         }
 
-        /* Получаем продукцию для иллюстрации */
-        $order = current($orders);
+        $stickers = null;
 
-        if(!$order)
+        /**
+         * Получаем стикеры заказа Wildberries
+         */
+
+        foreach($orders as $order)
         {
-            throw new RouteNotFoundException('Order Not Found');
+            $stickers[$order['number']] = $WildberriesOrdersStickerRequest
+                ->profile($this->getProfileUid())
+                ->forOrderWb($order['number'])
+                ->getOrderSticker();
         }
+
+        /**
+         * Получаем продукцию для штрихкода
+         */
+        $order = current($orders);
 
         $Product = $productDetail
             ->event($order['product_event'])
@@ -100,35 +119,55 @@ final class PrintController extends AbstractController
             throw new RouteNotFoundException('Product Not Found');
         }
 
-        /* Генерируем боковые стикеры */
-        $BarcodeGenerator = new BarcodeGeneratorSVG();
-        $barcode = $BarcodeGenerator->getBarcode(
-            $order['barcode'],
-            $BarcodeGenerator::TYPE_CODE_128,
-            2,
-            60
-        );
+        /**
+         * Генерируем штрихкод продукции (один на все заказы)
+         */
+
+        $barcode = $BarcodeWrite
+            ->text($Product['product_barcode'])
+            ->type(BarcodeType::Code128)
+            ->format(BarcodeFormat::SVG)
+            ->generate(implode(DIRECTORY_SEPARATOR, ['barcode', 'test']));
+
+        if($barcode === false)
+        {
+            /**
+             * Проверить права на исполнение
+             * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Writer/Generate
+             * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
+             * */
+            throw new RuntimeException('Barcode write error');
+        }
+
+        $Code = $BarcodeWrite->render();
+
+        $BarcodeWrite->remove();
 
 
-        /* Получаем настройки бокового стикера */
+        /**
+         * Получаем настройки бокового стикера
+         */
+
         $ProductUid = new ProductUid($Product['main']);
         $BarcodeSettings = $barcodeSettings->findWbBarcodeSettings($ProductUid) ?: null;
         $property = $BarcodeSettings ? $wbBarcodeProperty->getPropertyCollection(new ProductEventUid($order['product_event'])) : [];
 
-        /* Отправляем сообщение в шину и отмечаем принт */
+
+        /** Отправляем сообщение в шину и отмечаем принт упаковки */
         $messageDispatch->dispatch(
             message: new PrintWbPackageDTO($wbPackage->getId()),
-            transport: (string) $this->getProfileUid(),
+            transport: 'wildberries-package',
         );
 
         return $this->render(
             [
                 'item' => $orders,
-                'barcode' => base64_encode($barcode),
+                'barcode' => $Code,
                 'counter' => $BarcodeSettings['counter'] ?? 1,
                 'settings' => $BarcodeSettings,
                 'card' => $Product,
                 'property' => $property,
+                'stickers' => $stickers
             ]
         );
     }

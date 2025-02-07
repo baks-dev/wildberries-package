@@ -30,20 +30,20 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
 use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Orders\Repository\WbOrdersById\WbOrdersByIdInterface;
-use BaksDev\Wildberries\Orders\Type\OrderStatus\Status\WbOrderStatusConfirm;
-use BaksDev\Wildberries\Orders\UseCase\Command\Status\StatusWbOrderDTO;
-use BaksDev\Wildberries\Orders\UseCase\Command\Status\StatusWbOrderHandler;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class UpdatePackageOrderStatusHandler extends AbstractHandler
 {
     public function __construct(
-        private readonly WbOrdersByIdInterface $wbOrdersById,
-        private readonly StatusWbOrderHandler $statusWbOrderHandler,
+        private readonly ProductStocksByOrderInterface $ProductStocksByOrder,
+        private readonly ExtraditionProductStockHandler $ExtraditionProductStockHandler,
 
         EntityManagerInterface $entityManager,
         MessageDispatchInterface $messageDispatch,
@@ -58,16 +58,20 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
 
     public function handle(UpdatePackageOrderStatusDTO $command): string|WbPackageOrder
     {
-        /** Валидация WbSupplyOpenDTO  */
+
         $this->validatorCollection->add($command);
 
-        $this->entityManager->clear();
-
-        /** Только упаковки со статусом NEW можно изменить статус на ADD или ERROR */
-        $WbPackageOrder = $this->entityManager
+        /**
+         * Только заказ в упаковке со статусом «NEW» можно изменить на «ADD» или «ERROR»
+         * @var WbPackageOrder $WbPackageOrder
+         */
+        $WbPackageOrder = $this
             ->getRepository(WbPackageOrder::class)
             ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);
 
+        /**
+         * Если объект не найден - ошибка валидации
+         */
         if(false === $this->validatorCollection->add($WbPackageOrder, context: [self::class.':'.__LINE__]))
         {
             return $this->validatorCollection->getErrorUniqid();
@@ -81,22 +85,29 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
             return $this->validatorCollection->getErrorUniqid();
         }
 
-        $this->entityManager->flush();
+        $this->flush();
+
+        if($command->getStatus()->equals(WbPackageStatusError::class))
+        {
+            return $WbPackageOrder;
+        }
 
 
         /**
-         * Изменяем статус заказа Wildberries на Confirm (Добавлен к поставке, на сборке)
+         * Если заказ был добавлен без ошибок - меняем статус складской заявки (квитанции) на статус «Готов к выдаче»
          */
 
-        $WbOrdersEvent = $this->wbOrdersById->getWbOrderByOrderUidOrNullResult($command->getId());
+        $invoices = $this->ProductStocksByOrder->findByOrder($command->getId());
 
-        if($WbOrdersEvent)
+        /** @var ProductStockEvent $ProductStockEvent */
+        foreach($invoices as $ProductStockEvent)
         {
-            /** @var StatusWbOrderDTO $StatusWbOrderDTO */
-            $StatusWbOrderDTO = $WbOrdersEvent->getDto(StatusWbOrderDTO::class);
-            $StatusWbOrderDTO->setStatus(WbOrderStatusConfirm::class);
-            $this->statusWbOrderHandler->handle($StatusWbOrderDTO);
+            $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
+            $ProductStockEvent->getDto($ExtraditionProductStockDTO);
+
+            $this->ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
         }
+
 
         return $WbPackageOrder;
     }

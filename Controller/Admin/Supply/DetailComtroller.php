@@ -78,17 +78,17 @@ final class DetailComtroller extends AbstractController
          * Фильтр товаров
          */
 
-        $filter = new WbOrdersProductFilterDTO($request);
-        $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()]),
-        ]);
-        $filterForm->handleRequest($request);
-        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
+        //        $filter = new WbOrdersProductFilterDTO($request);
+        //        $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
+        //            'action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()]),
+        //        ]);
+        //        $filterForm->handleRequest($request);
+        //        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
 
         // Получаем список
         $orders = $allWbSupplyOrders
             ->search($search)
-            ->filter($filter)
+            //->filter($filter)
             ->fetchAllWbSupplyOrdersAssociative($wbSupply);
 
         return $this->render(
@@ -96,7 +96,7 @@ final class DetailComtroller extends AbstractController
                 'query' => $orders,
                 'supply' => $supply,
                 'search' => $searchForm->createView(),
-                'filter' => $filterForm->createView(),
+                //'filter' => $filterForm->createView(),
             ]
         );
     }

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\UseCase\Package\Print;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -38,8 +37,10 @@ final class PrintWbPackageHandler extends AbstractHandler
         /* Валидация DTO  */
         $this->validatorCollection->add($command);
 
-        $this->entityManager->clear();
-        $WbPackageSupply = $this->entityManager->getRepository(WbPackageSupply::class)->find($command->getMain());
+        $this->clear();
+
+        /** @var WbPackageSupply $WbPackageSupply */
+        $WbPackageSupply = $this->getRepository(WbPackageSupply::class)->find($command->getMain());
 
         if($this->validatorCollection->add($WbPackageSupply, context: [self::class.':'.__LINE__]))
         {
@@ -51,7 +52,7 @@ final class PrintWbPackageHandler extends AbstractHandler
                 return;
             }
 
-            $this->entityManager->flush();
+            $this->flush();
         }
     }
 }

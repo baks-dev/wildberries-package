@@ -43,7 +43,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
+#[AsMessageHandler(priority: 0)]
 final readonly class AddWildberriesSupplyOrdersHandler
 {
     public function __construct(
@@ -109,6 +109,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
         /* Получаем упаковку, все её заказы со статусом NEW и идентификаторами заказов Wildberries */
         $orders = $this->OrdersIdentifierByPackage
             ->forPackageEvent($message->getEvent())
+            ->onlyNew()
             ->findAll();
 
         if(false === $orders || false === $orders->valid())
@@ -124,39 +125,38 @@ final readonly class AddWildberriesSupplyOrdersHandler
 
         /**
          * Добавляем по очереди заказы в открытую поставку
-         * @var OrderUid $order
+         * @var OrderUid $OrderUid
          */
 
         $this->Deduplicator
             ->namespace('wildberries-package')
             ->expiresAfter('1 hour');
 
-        foreach($orders as $order)
+        foreach($orders as $OrderUid)
         {
             $Deduplicator = $this->Deduplicator
-                ->deduplication([$order, self::class]);
+                ->deduplication([$OrderUid, self::class]);
 
             if($Deduplicator->isExecuted())
             {
                 return;
             }
 
-            $UpdateOrderStatusDTO = new UpdatePackageOrderStatusDTO($order);
+            $UpdateOrderStatusDTO = new UpdatePackageOrderStatusDTO($OrderUid);
 
             $this->logger->info('Добавляем заказ в открытую поставку Wildberries',
                 [
                     'supply' => $UserProfileUid->getAttr(),
-                    'order' => $order->getAttr(),
+                    'order' => $OrderUid->getAttr(),
                     self::class.':'.__LINE__
                 ]);
 
-            /* Добавляем заказ в открытую поставку Wildberries (API) */
             $isAdd = $AddOrderToSupplyRequest
-                ->withOrder($order->getAttr())
+                ->withOrder($OrderUid->getAttr())
                 ->add();
 
             /**
-             * Применяем результат добавления к упаковке
+             * Применяем статус добавления заказа к поставке
              */
 
             $WbPackageStatus = $isAdd ? WbPackageStatusAdd::class : WbPackageStatusError::class;
@@ -167,11 +167,9 @@ final readonly class AddWildberriesSupplyOrdersHandler
             if(false === ($WbPackageOrder instanceof WbPackageOrder))
             {
                 $this->logger->critical(
-                    'Ошибка при обновлении заказа в упаковке',
-                    [
-                        'code' => $WbPackageOrder,
-                        self::class.':'.__LINE__
-                    ]);
+                    'Ошибка при добавления заказа в поставку Wildberries',
+                    [$WbPackageOrder, self::class.':'.__LINE__]
+                );
             }
 
             $Deduplicator->save();

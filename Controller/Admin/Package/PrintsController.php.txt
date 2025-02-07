@@ -26,29 +26,23 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Controller\Admin\Package;
 
 
+use BaksDev\Barcode\Writer\BarcodeFormat;
+use BaksDev\Barcode\Writer\BarcodeType;
+use BaksDev\Barcode\Writer\BarcodeWrite;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
-use BaksDev\Products\Product\Type\Event\ProductEventUid;
-use BaksDev\Products\Product\Type\Id\ProductUid;
-use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
-use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Package\PrintOrdersPackageSupply\PrintOrdersPackageSupplyInterface;
 use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageDTO;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
-use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
-use chillerlan\QRCode\QRCode;
-use Picqer\Barcode\BarcodeGeneratorSVG;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
+
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_PACKAGE_PRINT')]
@@ -64,9 +58,13 @@ final class PrintsController extends AbstractController
         CentrifugoPublishInterface $CentrifugoPublish,
         WbBarcodePropertyByProductEventInterface $wbBarcodeProperty,
         MessageDispatchInterface $messageDispatch,
+        BarcodeWrite $BarcodeWrite,
     ): Response
     {
-        $orders = $printOrdersPackageSupply->fetchAllPrintOrdersPackageSupplyAssociative($wbSupply->getId());
+        return new Response('Обратитесь к администратору (admin.package.prints)');
+
+        $orders = $printOrdersPackageSupply
+            ->fetchAllPrintOrdersPackageSupplyAssociative($wbSupply->getId());
 
         if(!$orders)
         {
@@ -82,6 +80,27 @@ final class PrintsController extends AbstractController
             $CentrifugoPublish
                 ->addData(['identifier' => $order['package_id']]) // ID продукта
                 ->send('remove');
+
+            $barcode = $BarcodeWrite
+                ->text($order['barcode'])
+                ->type(BarcodeType::Code128)
+                ->format(BarcodeFormat::SVG)
+                ->generate(implode(DIRECTORY_SEPARATOR, ['barcode', 'test']));
+
+            if($barcode === false)
+            {
+                /**
+                 * Проверить права на исполнение
+                 * chmod +x /home/bundles.baks.dev/vПendor/baks-dev/barcode/Writer/Generate
+                 * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
+                 * */
+                throw new \RuntimeException('Barcode write error');
+            }
+
+            $QRCode = $BarcodeWrite->render();
+
+            $BarcodeWrite->remove();
+
 
             /* Генерируем боковые стикеры */
             $BarcodeGenerator = new BarcodeGeneratorSVG();

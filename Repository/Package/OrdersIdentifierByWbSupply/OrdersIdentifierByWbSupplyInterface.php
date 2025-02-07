@@ -21,40 +21,18 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByWbSupply;
 
-namespace BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use Generator;
 
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusInterface;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
-#[AutoconfigureTag('baks.wb.supply.status')]
-final class WbSupplyStatusError implements WbSupplyStatusInterface
+interface OrdersIdentifierByWbSupplyInterface
 {
-    /**
-     * Ошибка при добавлении заказа в поставку Wildberries
-     */
-    public const string STATUS = 'error';
-
-    public function __toString(): string
-    {
-        return self::STATUS;
-    }
+    public function supply(WbSupply|WbSupplyUid|string $supply): self;
 
     /**
-     * Возвращает значение (value)
+     * Метод возвращает все идентификаторы заказов в поставке
      */
-    public function getValue(): string
-    {
-        return self::STATUS;
-    }
-
-
-    /**
-     * Проверяет, относится ли строка к данному объекту
-     */
-    public static function equals(string $status): bool
-    {
-        return mb_strtolower($status) === self::STATUS;
-    }
+    public function findAll(): Generator|false;
 }

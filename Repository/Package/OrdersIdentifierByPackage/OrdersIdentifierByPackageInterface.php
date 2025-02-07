@@ -31,6 +31,11 @@ interface OrdersIdentifierByPackageInterface
 {
     public function forPackageEvent(WbPackageEvent|WbPackageEventUid|string $event): self;
 
+
+    public function onlyNew(): self;
+
+    public function onlyAddSupply(): self;
+
     /**
      * Метод возвращает идентификаторы системных заказов и идентификаторы заказов Wildberries качестве атрибута
      */

@@ -55,7 +55,6 @@ final class CloseController extends AbstractController
         WbSupplyCloseHandler $WbSupplyCloseHandler,
     ): Response
     {
-
         $WbSupplyEvent = $supplyCurrentEvent
             ->forSupply($WbSupply)
             ->find();
@@ -65,15 +64,17 @@ final class CloseController extends AbstractController
             throw new RouteNotFoundException('Supply Event Not Found');
         }
 
-
         $WbSupplyCloseDTO = new WbSupplyCloseDTO();
         $WbSupplyEvent->getDto($WbSupplyCloseDTO);
 
         // Форма
-        $form = $this->createForm(WbSupplyCloseForm::class, $WbSupplyCloseDTO, [
-            'action' => $this->generateUrl('wildberries-package:admin.supply.close', ['id' => $WbSupply->getId()]),
-        ]);
-        $form->handleRequest($request);
+        $form = $this
+            ->createForm(
+                type: WbSupplyCloseForm::class,
+                data: $WbSupplyCloseDTO,
+                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.close', ['id' => $WbSupply->getId()]),]
+            )
+            ->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid() && $form->has('wb_supply_close'))
         {
