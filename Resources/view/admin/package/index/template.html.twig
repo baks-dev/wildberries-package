@@ -1,4 +1,4 @@
-{% trans_default_domain("admin.wb.package") %}
+{% trans_default_domain("wildberries-package.package") %}
 
 {% set ROLE = 'ROLE_WB_PACKAGE' %}
 
@@ -7,7 +7,7 @@
 
 {# ---- CSS ------------------------------------------------------------ #}
 {% block title %}
-    {{ 'admin.page.index'|trans }}
+    {{ 'page.index'|trans }}
 {% endblock %}
 
 {# ---- CSS ------------------------------------------------------------ #}
@@ -66,16 +66,18 @@
 
 <script nonce='{{ csp_nonce() }}' async  data-src='/assets/plugins/nice-select2/nice-select2.min.js?v={{ version }}' class='lazy'></script>
 
-<script nonce="{{ csp_nonce() }}">
+{#<script nonce="{{ csp_nonce() }}">
 document.addEventListener("DOMContentLoaded", (event) => {
 
 	const form = document.forms.wb_orders_product_filter_form;
 	form.addEventListener('change', () => { setTimeout(() => { form.submit(); }, 300); });
 
 });
-</script>
+</script>#}
 
 <script nonce='{{ csp_nonce() }}' async data-src="/assets/centrifugo/centrifuge.min.js?v={{ version }}" class='lazy'></script>
+<script nonce='{{ csp_nonce() }}' async data-src="/assets/js/copy.min.js?v={{ version }}" class="lazy"></script>
+<script nonce='{{ csp_nonce() }}' async  data-src="/assets/js/print.min.js?v={{ version }}" class="lazy"></script>
 
 <script nonce="{{ csp_nonce() }}">
 
@@ -115,8 +117,8 @@ setTimeout(function SpgGHaQzun() {
                           }
 
                           $successSupplyToast = '{ "type":"success" , ' +
-                                '"header":"{{ 'admin.breadcrumb.complete'|trans({}, 'admin.wb.supply') }}"  , ' +
-                                '"message" : "{{ 'admin.success.complete'|trans({}, 'admin.wb.supply') }}" }';
+                                '"header":"{{ 'breadcrumb.complete'|trans({}, 'wildberries-package.supply') }}"  , ' +
+                                '"message" : "{{ 'success.complete'|trans({}, 'wildberries-package.supply') }}" }';
 
                             createToast(JSON.parse($successSupplyToast));
 

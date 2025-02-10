@@ -27,16 +27,22 @@ namespace BaksDev\Wildberries\Package\Controller\Admin\Package;
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Type\UidType\ParamConverter;
-use BaksDev\Manufacture\Part\Entity\Event\ManufacturePartEvent;
-use BaksDev\Manufacture\Part\Entity\Products\ManufacturePartProduct;
+use BaksDev\Orders\Order\Repository\RelevantNewOrderByProduct\RelevantNewOrderByProductInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
+use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
+use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Wildberries\Orders\Repository\WbOrdersByProduct\WbOrdersByProductInterface;
+use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageDTO;
 use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageForm;
@@ -63,9 +69,14 @@ final class AddController extends AbstractController
         WbOrdersByProductInterface $wbOrdersByProduct,
         WbPackageHandler $wbPackageHandler,
         ProductDetailByUidInterface $productDetail,
-        ExistOrderPackageInterface $existOrderPackage,
+        ExistOrderPackageInterface $ExistOrderPackage,
+        WbPackageHandler $WbPackageHandler,
         CentrifugoPublishInterface $CentrifugoPublish,
         OpenWbSupplyIdentifierInterface $OpenWbSupplyIdentifier,
+        RelevantNewOrderByProductInterface $RelevantNewOrderByProduct,
+        ProductStocksByOrderInterface $ProductStocksByOrder,
+        ExtraditionProductStockHandler $ExtraditionProductStockHandler,
+        DeduplicatorInterface $deduplicator,
         #[ParamConverter(ProductEventUid::class)] $product = null,
         #[ParamConverter(ProductOfferUid::class)] $offer = null,
         #[ParamConverter(ProductVariationUid::class)] $variation = null,
@@ -73,6 +84,8 @@ final class AddController extends AbstractController
         ?int $total = null,
     ): Response
     {
+
+
         $PackageOrdersDTO = new AddOrdersPackageDTO($this->getProfileUid());
 
         if($request->isMethod('GET'))
@@ -86,9 +99,11 @@ final class AddController extends AbstractController
         }
 
         // Форма
-        $form = $this->createForm(AddOrdersPackageForm::class, $PackageOrdersDTO, [
-            'action' => $this->generateUrl('wildberries-package:admin.package.add'),
-        ]);
+        $form = $this->createForm(
+            type: AddOrdersPackageForm::class,
+            data: $PackageOrdersDTO,
+            options: ['action' => $this->generateUrl('wildberries-package:admin.package.add'),]
+        );
 
         $form->handleRequest($request);
 
@@ -102,6 +117,7 @@ final class AddController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('package_orders'))
         {
+
             $this->refreshTokenForm($form);
 
             /* Скрываем у всех продукт */
@@ -109,74 +125,153 @@ final class AddController extends AbstractController
                 ->addData(['identifier' => $PackageOrdersDTO->getIdentifier()]) // ID продукта
                 ->send('remove');
 
-            $WbSupplyUid = $OpenWbSupplyIdentifier
-                ->forProfile($this->getProfileUid())
-                ->find();
+            $WbSupplyUid = $OpenWbSupplyIdentifier->find();
 
             if(!$WbSupplyUid)
             {
                 return $this->errorController('Supply');
             }
 
-            $WbPackage = new WbPackageDTO($this->getProfileUid());
-            $WbPackage->setPackageSupply($WbSupplyUid);
+            /** Создаем упаковку */
+            $WbPackageDTO = new WbPackageDTO($this->getProfileUid())
+                ->setPackageSupply($WbSupplyUid);
 
-            $orders = $wbOrdersByProduct->findOldWbOrders(
-                $PackageOrdersDTO->getTotal(),
-                $PackageOrdersDTO->getProduct(),
-                $PackageOrdersDTO->getOffer(),
-                $PackageOrdersDTO->getVariation(),
-                $PackageOrdersDTO->getModification()
-            );
+            $deduplicator
+                ->namespace('wildberries-package')
+                ->expiresAfter('1 day');
 
-            foreach($orders as $Order)
+
+            /**
+             * Перебираем все количество продукции в упаковке
+             */
+
+            $total = $PackageOrdersDTO->getTotal();
+
+
+            for($i = 1; $i <= $total; $i++)
             {
-                if($existOrderPackage->forOrder($Order)->isExist())
+                /**
+                 * Получаем заказ со статусом «УПАКОВКА» на данную продукцию
+                 */
+                $OrderEvent = $RelevantNewOrderByProduct
+                    ->forProductEvent($PackageOrdersDTO->getProduct())
+                    ->forOffer($PackageOrdersDTO->getOffer())
+                    ->forVariation($PackageOrdersDTO->getVariation())
+                    ->forModification($PackageOrdersDTO->getModification())
+                    ->forDelivery(TypeDeliveryFbsWildberries::TYPE)
+                    ->onlyPackageStatus()
+                    ->find();
+
+                if(false === $OrderEvent)
                 {
-                    return $this->errorController('Exist');
+                    break;
                 }
 
-                $WbPackageOrderDTO = new WbPackageOrderDTO();
-                $WbPackageOrderDTO->setId($Order);
-                $WbPackage->addOrd($WbPackageOrderDTO);
+                /**
+                 * Если найденный заказ добавлен в поставку, но его статус еще не успел обновиться на складе (складская заявка и сам заказ)
+                 * - пробуем через время (если застрял в очереди)
+                 */
+
+                $DeduplicatorPack = $deduplicator
+                    ->deduplication([$OrderEvent->getMain(), self::class]);
+
+                if($DeduplicatorPack->isExecuted())
+                {
+                    /** Если превышает 100 попыток */
+                    if($total >= 100)
+                    {
+                        $this->addFlash(
+                            'page.add',
+                            '%s: Нет возможности добавить заказа в поставку',
+                            'wildberries-package.package',
+                            $OrderEvent->getOrderNumber()
+                        );
+
+                        break;
+                    }
+
+                    $total++;
+                    usleep(100000);
+                    continue;
+                }
+
+                /**
+                 * Получаем складскую заявку и обновляем статус квитанции на «Готов к выдаче»
+                 */
+
+                $invoices = $ProductStocksByOrder->findByOrder($OrderEvent->getMain());
+
+                if(empty($invoices))
+                {
+                    $this->addFlash(
+                        'page.add',
+                        '%s: Не найдено ни одной складской заявки на заказ',
+                        'wildberries-package.package',
+                        $OrderEvent->getOrderNumber()
+                    );
+
+                    return $this->redirectToReferer();
+                }
+
+                /**
+                 * @var ProductStockEvent $ProductStockEvent
+                 * Изменяем статус складской заявки «Готов к выдаче»
+                 */
+                foreach($invoices as $ProductStockEvent)
+                {
+                    $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
+                    $ProductStockEvent->getDto($ExtraditionProductStockDTO);
+                    $ProductStock = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
+
+                    if(false === ($ProductStock instanceof ProductStock))
+                    {
+                        $this->addFlash(
+                            'page.add',
+                            'danger.add',
+                            'wildberries-package.package',
+                            $ProductStock
+                        );
+
+                        return $this->redirectToReferer();
+                    }
+                }
+
+                //$DeduplicatorPack->save();
+
+
+                /** Не добавляем, если заказ уже имеется в упаковке */
+                if($ExistOrderPackage->forOrder($OrderEvent->getMain())->isExist())
+                {
+                    continue;
+                }
+
+                /** Добавляем в упаковку поставки заказ */
+                $WbPackageOrderDTO = new WbPackageOrderDTO()->setId($OrderEvent->getMain());
+                $WbPackageDTO->addOrd($WbPackageOrderDTO);
+
             }
 
-            $handle = $wbPackageHandler->handle($WbPackage);
-
-            /** Если был добавлен продукт в открытую партию отправляем сокет */
-            if($handle instanceof WbPackage)
+            if($WbPackageDTO->getOrd()->isEmpty())
             {
-                /* Добавляем в список заказ */
-                $details['product_total'] = $PackageOrdersDTO->getTotal();
-                $details['id'] = $handle->getId();
-
-                $CentrifugoPublish
-                    // HTML продукта
-                    ->addData(['product' => $this->render(['card' => $details,],
-                        file: 'centrifugo.html.twig')->getContent()]) // шаблон
-                    ->addData(['total' => $PackageOrdersDTO->getTotal()]) // количество для суммы всех товаров
-                    ->send((string) $WbSupplyUid);
-
-                $CentrifugoPublish->send('publish');
-
-                $return = $this->addFlash(
-                    type: 'admin.page.add',
-                    message: 'admin.success.add',
-                    domain: 'admin.wb.package',
-                    status: $request->isXmlHttpRequest() ? 200 : 302 // не делаем редирект в случае AJAX
-                );
-
-                return $request->isXmlHttpRequest() ? $return : $this->redirectToRoute('wildberries-package:admin.package.index');
+                return $this->redirectToReferer();
             }
 
-            $this->addFlash(
-                'admin.page.add',
-                'admin.danger.add',
-                'admin.wb.package
-                ', $handle);
+            /** Сохраняем упаковку с имеющимися заказами */
 
-            return $this->redirectToRoute('wildberries-package:admin.package.index');
+            $WbPackage = $WbPackageHandler->handle($WbPackageDTO);
+
+
+            $this->addFlash
+            (
+                type: 'page.new',
+                message: $WbPackage instanceof WbPackage ? 'success.new' : 'danger.new',
+                domain: 'wildberries-package.package',
+                arguments: $WbPackage
+            );
+
+            return $this->redirectToReferer();
         }
+
 
         return $this->render([
             'form' => $form->createView(),
@@ -188,9 +283,9 @@ final class AddController extends AbstractController
     {
         $this->addFlash
         (
-            'admin.page.add',
-            'admin.danger.add',
-            'admin.wb.package',
+            'page.add',
+            'danger.add',
+            'wildberries-package.package',
             $code
         );
 

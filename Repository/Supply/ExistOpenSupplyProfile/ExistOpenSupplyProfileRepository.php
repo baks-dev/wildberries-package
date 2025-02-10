@@ -35,11 +35,11 @@ use Doctrine\DBAL\ArrayParameterType;
 use InvalidArgumentException;
 
 
-final readonly class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileInterface
+final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileInterface
 {
     private UserProfileUid|false $profile;
 
-    public function __construct(private DBALQueryBuilder $DBALQueryBuilder) {}
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
     public function forProfile(UserProfile|UserProfileUid|string $profile): self
     {
@@ -63,8 +63,8 @@ final readonly class ExistOpenSupplyProfileRepository implements ExistOpenSupply
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $dbal
-            ->from(WbSupplyInvariable::class, 'supply_const')
-            ->where('supply_const.profile = :profile')
+            ->from(WbSupplyInvariable::class, 'invariable')
+            ->where('invariable.profile = :profile')
             ->setParameter(
                 key: 'profile',
                 value: $this->profile,
@@ -73,17 +73,17 @@ final readonly class ExistOpenSupplyProfileRepository implements ExistOpenSupply
 
 
         $dbal->join(
-            'supply_const',
+            'invariable',
             WbSupply::class, 'supply',
-            'supply.id = supply_const.main AND supply.event = supply_const.event'
+            'supply.id = invariable.main AND supply.event = invariable.event'
         );
 
 
         $dbal
             ->join(
-                'supply_const',
+                'invariable',
                 WbSupplyEvent::class, 'supply_event',
-                'supply_event.id = supply_const.event AND supply_event.status IN (:status))'
+                'supply_event.id = invariable.event AND supply_event.status IN (:status)'
             );
 
         return $dbal;

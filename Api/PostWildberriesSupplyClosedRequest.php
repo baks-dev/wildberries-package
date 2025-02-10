@@ -28,7 +28,7 @@ namespace BaksDev\Wildberries\Package\Api;
 use BaksDev\Wildberries\Api\Wildberries;
 use InvalidArgumentException;
 
-final class WildberriesSupplyDelete extends Wildberries
+final class PostWildberriesSupplyClosedRequest extends Wildberries
 {
 
     /**
@@ -47,12 +47,16 @@ final class WildberriesSupplyDelete extends Wildberries
 
 
     /**
-     * Удаляет поставку, если она активна и за ней не закреплено ни одно сборочное задание.
+     * Передать поставку в доставку
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies~1{supplyId}/delete
+     * Закрывает поставку и переводит все сборочные задания в ней в статус complete ("В доставке").
+     * После закрытия поставки новые сборочные задания к ней добавить будет невозможно.
+     * Передать поставку в доставку можно только при наличии в ней хотя бы одного сборочного задания.
+     *
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}~1deliver/patch
      *
      */
-    public function delete(): bool
+    public function close(): bool
     {
         if($this->isExecuteEnvironment() === false)
         {
@@ -67,15 +71,15 @@ final class WildberriesSupplyDelete extends Wildberries
             );
         }
 
-        $response = $this->TokenHttpClient()->request(
-            'DELETE',
-            '/api/v3/supplies/'.$this->supply,
+        $response = $this->marketplace()->TokenHttpClient()->request(
+            'PATCH',
+            sprintf('/api/v3/supplies/%s/deliver', $this->supply),
         );
 
         if($response->getStatusCode() !== 204)
         {
             $this->logger->critical(
-                sprintf('wildberries-package: Ошибка при удалении поставки %s', $this->supply),
+                sprintf('wildberries-package: Ошибка при закрытии поставки %s', $this->supply),
                 [$response->toArray(false), self::class.':'.__LINE__]
             );
 

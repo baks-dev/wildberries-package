@@ -23,37 +23,23 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\UseCase\Supply\New;
+namespace BaksDev\Wildberries\Package\Messenger\Orders;
 
-use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 
-final class WbSupplyNewHandler extends AbstractHandler
+use BaksDev\Wildberries\Package\Messenger\Package\WbPackageMessage;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+#[AsMessageHandler(priority: 0)]
+final class UpdateOrderStatusExtraditionByAddSupply
 {
-    public function handle(WbSupplyNewDTO $command): string|WbSupply
+    /**
+     * Метод обновляет заказы на статус Extradition «Готов к выдаче» при добавлении в поставку
+     */
+    public function __invoke(WbPackageMessage $message): bool
     {
-        $this->setCommand($command);
 
-        $this->preEventPersistOrUpdate(WbSupply::class, WbSupplyEvent::class);
+        dump($message);
 
-        /** Валидация всех объектов */
-        if($this->validatorCollection->isInvalid())
-        {
-            return $this->validatorCollection->getErrorUniqid();
-        }
-
-        $this->flush();
-
-        /* Отправляем сообщение в шину */
-        $this->messageDispatch
-            ->addClearCacheOther('wildberries-package')
-            ->dispatch(
-            message: new WbSupplyMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: (string) $command->getProfile(),
-        );
-
-        return $this->main;
+        return true;
     }
 }

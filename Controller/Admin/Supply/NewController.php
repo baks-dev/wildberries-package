@@ -59,7 +59,11 @@ final class NewController extends AbstractController
         /* Проверяем, имеется ли открытая поставка у профиля */
         if($exist)
         {
-            $this->addFlash('danger', 'admin.danger.new', 'admin.wb.supply');
+            $this->addFlash(
+                'danger',
+                'danger.new',
+                'wildberries-package.supply'
+            );
             return $this->redirectToReferer();
         }
 
@@ -67,9 +71,9 @@ final class NewController extends AbstractController
 
         $this->addFlash
         (
-            'admin.page.new',
-            $handle instanceof WbSupply ? 'admin.success.new' : 'admin.danger.new',
-            'admin.wb.supply',
+            'page.new',
+            $handle instanceof WbSupply ? 'success.new' : 'danger.new',
+            'wildberries-package.supply',
             $handle
         );
 

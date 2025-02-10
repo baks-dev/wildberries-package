@@ -37,7 +37,7 @@ use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrder
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\WildberriesSupplyClosed;
+use BaksDev\Wildberries\Package\Api\PostWildberriesSupplyClosedRequest;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByWbSupply\OrdersIdentifierByWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
@@ -53,7 +53,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $openWbSupply,
-        private WildberriesSupplyClosed $wildberriesSupplyClosed,
+        private PostWildberriesSupplyClosedRequest $wildberriesSupplyClosed,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private OrdersIdentifierByWbSupplyInterface $OrdersIdentifierByWbSupply,
         private OpenWbSupplyInterface $OpenWbSupply,
@@ -65,7 +65,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
     ) {}
 
     /**
-     * Метод закрывает полненные заказы
+     * Метод закрывает выполненные заказы
      */
     public function __invoke(WbSupplyMessage $message): void
     {
@@ -134,10 +134,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
                 /**
                  * @var DeliveryProductStockDTO $DeliveryProductStockDTO
                  */
-                $CompletedProductStockDTO = new CompletedProductStockDTO(
-                    $ProductStockEvent->getId(),
-                    $UserProfileUid
-                );
+                $CompletedProductStockDTO = new CompletedProductStockDTO($ProductStockEvent->getId());
 
                 $ProductStockEvent->getDto($CompletedProductStockDTO);
 

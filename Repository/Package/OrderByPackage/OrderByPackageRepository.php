@@ -26,6 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Repository\Package\OrderByPackage;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Materials\Sign\BaksDevMaterialsSignBundle;
+use BaksDev\Materials\Sign\Entity\Code\MaterialSignCode;
+use BaksDev\Materials\Sign\Entity\Event\MaterialSignEvent;
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
@@ -77,7 +80,9 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->createQueryBuilder(self::class)
             ->bindLocal();
 
-        $dbal->from(WbPackageOrder::class, 'package_order');
+        $dbal
+            ->addSelect('package_order.id AS order')
+            ->from(WbPackageOrder::class, 'package_order');
 
         $dbal
             ->where('package_order.event = :event')
@@ -129,12 +134,52 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->addSelect('ord_product.product AS product_event')
             ->addSelect('ord_product.offer AS product_offer')
             ->addSelect('ord_product.variation AS product_variation')
+            ->addSelect('ord_product.modification AS product_modification')
             ->leftJoin(
                 'ord',
                 OrderProduct::class,
                 'ord_product',
                 'ord_product.event = ord.event'
             );
+
+
+        if(class_exists(BaksDevMaterialsSignBundle::class))
+        {
+            $dbal
+                ->addSelect('sign_event.status')
+                ->leftOneJoin(
+                    'package_order',
+                    MaterialSignEvent::class,
+                    'sign_event',
+                    'sign_event.ord = package_order.id ',
+
+                );
+
+
+            $dbal
+                ->addSelect(
+                    "
+                CASE
+                   WHEN code.name IS NOT NULL 
+                   THEN CONCAT ( '/upload/".$dbal->table(MaterialSignCode::class)."' , '/', code.name)
+                   ELSE NULL
+                END AS code_image
+            "
+                )
+                ->addSelect("code.ext AS code_ext")
+                ->addSelect("code.cdn AS code_cdn")
+                ->addSelect("code.event AS code_event")
+                ->addSelect("code.code AS code_string")
+                ->leftJoin(
+                    'sign_event',
+                    MaterialSignCode::class,
+                    'code',
+                    'code.main = sign_event.main'
+                );
+
+
+        }
+
 
         //
         //        $dbal

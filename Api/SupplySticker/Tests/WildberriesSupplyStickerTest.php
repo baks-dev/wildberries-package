@@ -26,7 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api\SupplySticker\Tests;
 
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\SupplySticker\WildberriesSupplySticker;
+use BaksDev\Wildberries\Package\Api\SupplySticker\GetWildberriesSupplyStickerRequest;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
@@ -39,7 +39,7 @@ final class WildberriesSupplyStickerTest extends KernelTestCase
 {
     public function testUseCase(): void
     {
-        /** @var WildberriesSupplySticker $WildberriesSupplySticker */
+        /** @var GetWildberriesSupplyStickerRequest $WildberriesSupplySticker */
         //$WildberriesSupplySticker = self::getContainer()->get(WildberriesSupplySticker::class);
 
 

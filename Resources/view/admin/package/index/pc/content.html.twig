@@ -1,4 +1,4 @@
-{% trans_default_domain('admin.wb.package') %}
+{% trans_default_domain('wildberries-package.package') %}
 
 
 {% set package_open = opens != false and (opens.status == 'new' or opens.status == 'open') %}
@@ -15,7 +15,7 @@
 
             <div class="w-100">
                 <h1 class="h4 text-uppercase fw-bolder mb-0">
-                    {{ 'admin.page.index'|trans }}
+                    {{ 'page.index'|trans }}
                 </h1>
             </div>
 
@@ -26,7 +26,7 @@
                     data-bs-toggle="tooltip"
                     data-bs-placement="bottom"
                     data-bs-delay='{"show":600,"hide":100}'
-                    title="{{ 'admin.breadcrumb.index'|trans({}, 'admin.wb.package') }}"
+                    title="{{ 'breadcrumb.index'|trans({}, 'wildberries-package.package') }}"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-boxes"
                      viewBox="0 0 16 16">
@@ -41,7 +41,7 @@
                data-bs-toggle="tooltip"
                data-bs-placement="bottom"
                data-bs-delay='{"show":600,"hide":100}'
-               title="{{ 'admin.breadcrumb.index'|trans({}, 'admin.wb.supply') }}"
+               title="{{ 'breadcrumb.index'|trans({}, 'wildberries-package.supply') }}"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor"
                      class="bi bi-card-checklist" viewBox="0 0 16 16">

@@ -30,7 +30,7 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\WildberriesSupplyClosed;
+use BaksDev\Wildberries\Package\Api\PostWildberriesSupplyClosedRequest;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
@@ -44,7 +44,7 @@ final readonly class CloseWbSupplyHandler
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $openWbSupply,
-        private WildberriesSupplyClosed $wildberriesSupplyClosed,
+        private PostWildberriesSupplyClosedRequest $wildberriesSupplyClosed,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private DeduplicatorInterface $deduplicator,
         private MessageDispatchInterface $MessageDispatch

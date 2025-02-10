@@ -23,73 +23,63 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Api\SupplyAll;
+namespace BaksDev\Wildberries\Package\Api\SupplyInfo;
 
 use BaksDev\Wildberries\Api\Wildberries;
-use DomainException;
-use Generator;
+use InvalidArgumentException;
 
-final class WildberriesSupplyAllRequest extends Wildberries
+final class FindWildberriesSupplyInfoRequest extends Wildberries
 {
-    private int $next = 0;
 
     /**
-     * Наименование поставки
+     * Идентификатор поставки
+     * Example: WB-GI-1234567
      */
-    private ?string $name = null;
+    private ?string $supply = null;
 
 
-    public function setName(?string $name): self
+    public function withSupply(string $supply): self
     {
-        $this->name = $name;
+        $this->supply = $supply;
+
         return $this;
     }
 
+
     /**
-     * Получить список поставок (LIMIT 100)
+     * Получить информацию о поставке
      *
-     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies/get
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}/get
      *
      */
-    public function all(int $next = 0): Generator
+    public function getInfo(): WildberriesSupplyInfoDTO|false
     {
-        $data = [
-            "limit" => 100,
-            "next" => $next
-        ];
+        if($this->supply === null)
+        {
+            throw new InvalidArgumentException(
+                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")'
+            );
+        }
 
         $response = $this->marketplace()->TokenHttpClient()->request(
             'GET',
-            '/api/v3/supplies',
-            ['query' => $data],
+            '/api/v3/supplies/'.$this->supply,
         );
 
         $content = $response->toArray(false);
 
         if($response->getStatusCode() !== 200)
         {
-            throw new DomainException(
-                message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-                code: $response->getStatusCode()
+
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка при получении информации об открытой поставке %s', $this->supply),
+                [$content, self::class.':'.__LINE__]
             );
+
+            return false;
         }
 
-        $this->next += 100;
-
-        $response->toArray(false);
-
-        foreach($content['supplies'] as $data)
-        {
-            yield new WildberriesSupplyAllDTO($data);
-        }
-    }
-
-    /**
-     * Next
-     */
-    public function getNext(): int
-    {
-        return $this->next;
+        return new WildberriesSupplyInfoDTO($content);
     }
 
 }

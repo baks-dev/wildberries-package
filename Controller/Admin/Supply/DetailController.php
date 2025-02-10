@@ -30,6 +30,8 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
 use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterForm;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
@@ -43,7 +45,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_SUPPLY')]
-final class DetailComtroller extends AbstractController
+final class DetailController extends AbstractController
 {
     /**
      * Заказы в поставке
@@ -54,6 +56,7 @@ final class DetailComtroller extends AbstractController
         #[MapEntity] WbSupply $wbSupply,
         WbSupplyInterface $wbSupplyRepository,
         AllWbSupplyOrdersInterface $allWbSupplyOrders,
+
         //AllWbSupplyInterface $allWbSupplyOrders,
         int $page = 0,
     ): Response
@@ -69,7 +72,7 @@ final class DetailComtroller extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail')]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()])]
             )
             ->handleRequest($request);
 
@@ -78,12 +81,18 @@ final class DetailComtroller extends AbstractController
          * Фильтр товаров
          */
 
-        //        $filter = new WbOrdersProductFilterDTO($request);
-        //        $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
-        //            'action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()]),
-        //        ]);
-        //        $filterForm->handleRequest($request);
-        //        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
+        /**
+         * Фильтр продукции
+         */
+        $filter = new ProductFilterDTO();
+
+        $filterForm = $this
+            ->createForm(
+                type: ProductFilterForm::class,
+                data: $filter,
+                options: ['action' => $this->generateUrl('manufacture-part:admin.index')]
+            )
+            ->handleRequest($request);
 
         // Получаем список
         $orders = $allWbSupplyOrders
@@ -96,7 +105,7 @@ final class DetailComtroller extends AbstractController
                 'query' => $orders,
                 'supply' => $supply,
                 'search' => $searchForm->createView(),
-                //'filter' => $filterForm->createView(),
+                'filter' => $filterForm->createView(),
             ]
         );
     }

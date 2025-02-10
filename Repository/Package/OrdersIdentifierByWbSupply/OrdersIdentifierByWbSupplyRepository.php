@@ -116,7 +116,7 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 'orders',
                 OrderUser::class,
                 'usr',
-                'user.event = orders.event',
+                'usr.event = orders.event',
             );
 
         $dbal

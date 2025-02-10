@@ -1,4 +1,4 @@
-{% trans_default_domain 'admin.wb.supply' %}
+{% trans_default_domain 'wildberries-package.supply' %}
 
 <nav class="small" style="--bs-breadcrumb-divider: '-';" aria-label="breadcrumb">
     <ol class="breadcrumb small opacity-75">
@@ -38,26 +38,17 @@
         <li class="breadcrumb-item">
             <a href="{{ path('wildberries-package:admin.package.index') }}"
                class="text-decoration-none"
-               aria-label="{{ 'admin.page.index'|trans({}, 'admin.wb.package') }}"
-               title="{{ 'admin.page.index'|trans({}, 'admin.wb.package') }}">
-                {{ 'admin.page.index'|trans({}, 'admin.wb.package') }}
+               aria-label="{{ 'breadcrumb.index'|trans({}, 'wildberries-package.package') }}"
+               title="{{ 'breadcrumb.index'|trans({}, 'wildberries-package.package') }}">
+                {{ 'breadcrumb.index'|trans({}, 'wildberries-package.package') }}
             </a>
         </li>
 
-
-        <li class="breadcrumb-item">
-            <a href="{{ path('wildberries-package:admin.supply.index') }}"
-               class="text-decoration-none"
-               aria-label="{{ 'admin.page.index'|trans }}"
-               title="{{ 'admin.page.index'|trans }}">
-                {{ 'admin.page.index'|trans }}
-            </a>
-        </li>
 
         <li class="breadcrumb-item active text-muted" aria-current="page"
-            aria-label="{{ 'admin.breadcrumb.products'|trans }}"
-            title="{{ 'admin.breadcrumb.products'|trans }}">
-            {{ 'admin.breadcrumb.products'|trans }}
+            aria-label="{{ 'breadcrumb.products'|trans }}"
+            title="{{ 'breadcrumb.detail'|trans }}">
+            {{ 'breadcrumb.detail'|trans }}
         </li>
     </ol>
 </nav>

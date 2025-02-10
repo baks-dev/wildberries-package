@@ -27,6 +27,7 @@ namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupplyIdentifier;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
@@ -41,7 +42,10 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
 {
     private UserProfileUid|false $profile;
 
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
+    ) {}
 
 
     public function forProfile(UserProfile|UserProfileUid|string $profile): self
@@ -74,7 +78,7 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
             ->where('invariable.profile = :profile')
             ->setParameter(
                 key: 'profile',
-                value: $this->profile,
+                value: $this->profile ?: $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE);
 
         $dbal

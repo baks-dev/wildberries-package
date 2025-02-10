@@ -1,0 +1,29 @@
+page:
+  index: 'Packaging Wildberries orders'
+  open: 'Open delivery of Wildberries'
+  close: 'Close supply of Wildberries'
+  delete: 'Delete delivery of Wildberries'
+  add: 'Add Wildberries to delivery'
+
+
+breadcrumb:
+  index: 'Packaging Wildberries orders'
+  open: 'Open delivery of Wildberries'
+  close: 'Close supply of Wildberries'
+  delete: 'Delete delivery of Wildberries'
+  add: 'Add Wildberries to delivery'
+
+success:
+  open: 'Delivery opened successfully'
+  close: 'Delivery successfully closed'
+  delete: 'The delivery was successfully deleted'
+  restore: 'The delivery was successfully restored successfully'
+  add: 'Orders added successfully'
+
+
+danger:
+  open: '%s: Error opening delivery'
+  close: '%s: Error closing delivery'
+  delete: '%s: Error deleting delivery'
+  restore: '%s: Error while restoring delivery'
+  add: '%s: Error adding orders to delivery'

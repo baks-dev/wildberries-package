@@ -29,7 +29,7 @@ use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-final class WildberriesSupplyAllDTO
+final class WildberriesSupplyDTO
 {
     /**
      * Идентификатор поставки

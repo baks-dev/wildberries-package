@@ -29,11 +29,15 @@ namespace BaksDev\Wildberries\Package\Repository\Supply\AllWbSupplyOrders;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Entity\Products\Price\OrderPrice;
+use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
+use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
 use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
@@ -41,6 +45,7 @@ use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
@@ -118,47 +123,36 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 'supply_order.event = supply_package.event'
             );
 
-        $dbal
-            ->addSelect('wb_order.ord AS order_number')
-            ->leftJoin(
-                'supply_order',
-                WbOrders::class,
-                'wb_order',
-                'wb_order.id = supply_order.id'
-            );
-
-
-        $dbal->addSelect('wb_order_event.created AS wb_order_date');
-        $dbal->addSelect('wb_order_event.barcode AS wb_order_barcode');
-        $dbal->addSelect('wb_order_event.status AS wb_order_status');
-        $dbal->addSelect('wb_order_event.wildberries AS wb_order_wildberries');
-
-        $dbal->join('wb_order',
-            WbOrdersEvent::class,
-            'wb_order_event',
-            'wb_order_event.id = wb_order.event'
-        );
-
-
-        $dbal
-            ->addSelect('wb_order_sticker.sticker')
-            ->leftJoin(
-                'supply_order',
-                WbOrdersSticker::class,
-                'wb_order_sticker',
-                'wb_order_sticker.main = wb_order.id'
-            );
-
 
         /**
          * Системный заказ
          */
 
-        $dbal->leftJoin('wb_order',
+        $dbal->leftJoin(
+            'supply_order',
             Order::class,
-            'ord',
-            'ord.id = wb_order.id'
+            'orders',
+            'orders.id = supply_order.id'
         );
+
+        $dbal
+            ->addSelect('invariable.number AS order_number')
+            ->leftJoin(
+                'orders',
+                OrderInvariable::class,
+                'invariable',
+                'invariable.main = orders.id'
+            );
+
+        $dbal
+            ->addSelect('event.created AS order_data')
+            ->join(
+                'orders',
+                OrderEvent::class,
+                'event',
+                'event.id = orders.event'
+            );
+
 
 
         $dbal->addSelect('order_product.product AS wb_product_event');
@@ -166,10 +160,10 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         $dbal->addSelect('order_product.variation AS wb_product_variation');
         $dbal->addSelect('order_product.modification AS wb_product_modification');
 
-        $dbal->leftJoin('ord',
+        $dbal->leftJoin('orders',
             OrderProduct::class,
             'order_product',
-            'order_product.event = ord.event'
+            'order_product.event = orders.event'
         );
 
         //        $dbal->addSelect('order_price.price AS order_price');
@@ -206,16 +200,16 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         );
 
 
-        if($this->filter?->getCategory())
-        {
-            $dbal->join('order_product',
-                ProductCategory::class,
-                'product_category',
-                'product_category.event = product_event.id AND product_category.category = :category AND product_category.root = true'
-            );
-
-            $dbal->setParameter('category', $this->filter->getCategory(), CategoryProductUid::TYPE);
-        }
+        //        if($this->filter?->getCategory())
+        //        {
+        //            $dbal->join('order_product',
+        //                ProductCategory::class,
+        //                'product_category',
+        //                'product_category.event = product_event.id AND product_category.category = :category AND product_category.root = true'
+        //            );
+        //
+        //            $dbal->setParameter('category', $this->filter->getCategory(), CategoryProductUid::TYPE);
+        //        }
 
 
         /*
@@ -277,6 +271,28 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'category_variation.id = product_variation.category_variation'
         );
 
+        /**
+         * Модификации множественного варианта
+         */
+
+        $dbal
+            ->addSelect('product_modification.value AS product_modification_value')
+            ->addSelect('product_modification.postfix AS product_modification_postfix')
+            ->leftJoin(
+                'product_variation',
+                ProductModification::class,
+                'product_modification',
+                'product_modification.id = order_product.modification AND product_modification.variation = product_variation.id'
+            );
+
+        $dbal
+            ->addSelect('category_modification.reference AS product_modification_reference')
+            ->leftJoin(
+                'product_modification',
+                CategoryProductModification::class,
+                'category_modification',
+                'category_modification.id = product_modification.category_modification'
+            );
 
         /** Артикул продукта */
 

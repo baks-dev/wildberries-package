@@ -23,37 +23,36 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\UseCase\Supply\New;
+namespace BaksDev\Wildberries\Package\Controller\Admin\Supply;
 
-use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 
-final class WbSupplyNewHandler extends AbstractHandler
+use BaksDev\Core\Controller\AbstractController;
+use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
+use chillerlan\QRCode\QRCode;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[AsController]
+#[RoleSecurity('ROLE_WB_SUPPLY_PRINT')]
+final class OrderController extends AbstractController
 {
-    public function handle(WbSupplyNewDTO $command): string|WbSupply
+    /**
+     * Печать стикеров заказа
+     */
+    #[Route('/admin/wb/supply/order/{id}', name: 'admin.supply.order', methods: ['GET', 'POST'])]
+    public function printer(
+        Request $request,
+        #[MapEntity] WbSupplyWildberries $WbSupplyWildberries
+    ): Response
     {
-        $this->setCommand($command);
-
-        $this->preEventPersistOrUpdate(WbSupply::class, WbSupplyEvent::class);
-
-        /** Валидация всех объектов */
-        if($this->validatorCollection->isInvalid())
-        {
-            return $this->validatorCollection->getErrorUniqid();
-        }
-
-        $this->flush();
-
-        /* Отправляем сообщение в шину */
-        $this->messageDispatch
-            ->addClearCacheOther('wildberries-package')
-            ->dispatch(
-            message: new WbSupplyMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: (string) $command->getProfile(),
+        return $this->render(
+            [
+                'supply' => $WbSupplyWildberries
+            ]
         );
-
-        return $this->main;
     }
 }

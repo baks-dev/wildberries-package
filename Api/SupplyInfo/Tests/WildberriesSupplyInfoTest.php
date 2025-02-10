@@ -26,9 +26,9 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api\SupplyInfo\Tests;
 
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyAllDTO;
-use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyAllRequest;
-use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoRequest;
+use BaksDev\Wildberries\Package\Api\SupplyAll\FindAllWildberriesSupplyRequest;
+use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyDTO;
+use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Type\Authorization\WbAuthorizationToken;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
@@ -49,16 +49,16 @@ final class WildberriesSupplyInfoTest extends KernelTestCase
 
     public function testUseCase(): void
     {
-        /** @var WildberriesSupplyAllRequest $WildberriesSupplyAll */
-        $WildberriesSupplyAll = self::getContainer()->get(WildberriesSupplyAllRequest::class);
+        /** @var FindAllWildberriesSupplyRequest $WildberriesSupplyAll */
+        $WildberriesSupplyAll = self::getContainer()->get(FindAllWildberriesSupplyRequest::class);
         $WildberriesSupplyAll->TokenHttpClient(new WbAuthorizationToken(new UserProfileUid(), self::$tocken));
 
-        /** @var WildberriesSupplyAllDTO $WildberriesSupply */
+        /** @var WildberriesSupplyDTO $WildberriesSupply */
         $WildberriesSupply = ($WildberriesSupplyAll->all())->current();
 
 
-        /** @var WildberriesSupplyInfoRequest $WildberriesSupplyInfo */
-        $WildberriesSupplyInfo = self::getContainer()->get(WildberriesSupplyInfoRequest::class);
+        /** @var FindWildberriesSupplyInfoRequest $WildberriesSupplyInfo */
+        $WildberriesSupplyInfo = self::getContainer()->get(FindWildberriesSupplyInfoRequest::class);
         $WildberriesSupplyInfo->TokenHttpClient(new WbAuthorizationToken(new UserProfileUid(), self::$tocken));
 
 

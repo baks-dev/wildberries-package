@@ -27,20 +27,23 @@ namespace BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
+use BaksDev\Users\Profile\UserProfile\Repository\UserProfileTokenStorage\UserProfileTokenStorageInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
-use InvalidArgumentException;
 
 
 final class LastWbSupplyRepository implements LastWbSupplyInterface
 {
     private UserProfileUid|false $profile;
 
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
+    ) {}
 
 
     public function forProfile(UserProfile|UserProfileUid|string $profile): self
@@ -65,24 +68,19 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
      */
     public function find(): array|false
     {
-        if(false === $this->profile)
-        {
-            throw new InvalidArgumentException('Invalid Argument Profile');
-        }
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-
-        $qb
+        $dbal
             ->addSelect('invariable.total')
             ->from(WbSupplyInvariable::class, 'invariable')
             ->where('invariable.profile = :profile')
             ->setParameter(
                 'profile',
-                $this->profile,
+                $this->UserProfileTokenStorage->getProfile(),
                 UserProfileUid::TYPE
             );
 
-        $qb
+        $dbal
             ->addSelect('supply.id')
             ->addSelect('supply.event')
             ->join(
@@ -93,7 +91,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
             );
 
 
-        $qb
+        $dbal
             ->addSelect('event.status')
             ->leftJoin(
                 'supply',
@@ -102,7 +100,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
                 'event.id = supply.event'
             );
 
-        $qb
+        $dbal
             ->addSelect('modify.mod_date AS supply_date')
             ->leftJoin(
                 'supply',
@@ -112,7 +110,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
             );
 
 
-        $qb
+        $dbal
             ->addSelect('wb.identifier')
             ->addSelect('wb.sticker')
             ->leftJoin(
@@ -123,10 +121,10 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
             );
 
 
-        $qb->orderBy('modify.mod_date', 'DESC');
-        $qb->setMaxResults(1);
+        $dbal->orderBy('modify.mod_date', 'DESC');
+        $dbal->setMaxResults(1);
 
-        return $qb
+        return $dbal
             ->enableCache('wildberries-package', 3600)
             ->fetchAssociative();
     }

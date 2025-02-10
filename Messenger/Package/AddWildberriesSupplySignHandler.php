@@ -23,43 +23,44 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Messenger\Orders;
+namespace BaksDev\Wildberries\Package\Messenger\Package;
 
+use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
-use BaksDev\Wildberries\Orders\Entity\WbOrders;
-use BaksDev\Wildberries\Orders\Repository\WbOrderProfile\WbOrderProfileInterface;
-use BaksDev\Wildberries\Orders\Repository\WbOrdersById\WbOrdersByIdInterface;
-use BaksDev\Wildberries\Orders\Type\OrderStatus\Status\WbOrderStatusConfirm;
-use BaksDev\Wildberries\Orders\UseCase\Command\Sticker\StickerWbOrderDTO;
-use BaksDev\Wildberries\Orders\UseCase\Command\Sticker\StickerWbOrderHandler;
-use BaksDev\Wildberries\Package\Messenger\Package\WbPackageMessage;
+use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
+use BaksDev\Wildberries\Orders\Api\PostWildberriesSgtinRequest;
+use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage\OrdersIdentifierByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
+use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
-final readonly class UpdateOrdersStickerHandler
+#[AsMessageHandler(priority: -5)]
+final readonly class AddWildberriesSupplySignHandler
 {
     public function __construct(
-        #[Target('wildberriesOrdersLogger')] private LoggerInterface $logger,
-        private OrdersIdentifierByPackageInterface $OrdersIdentifierByPackage,
-        private SupplyByPackageInterface $SupplyByPackage,
+        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $OpenWbSupply,
-        private GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest,
+        private OrdersIdentifierByPackageInterface $OrdersIdentifierByPackage,
+        private PostWildberriesAddOrderToSupplyRequest $AddOrderToSupplyRequest,
+        private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
+        private UpdatePackageOrderStatusHandler $orderStatusHandler,
+        private SupplyByPackageInterface $SupplyByPackage,
+        private CentrifugoPublishInterface $CentrifugoPublish,
+        private PostWildberriesSgtinRequest $PostWildberriesSgtinRequest,
         private DeduplicatorInterface $Deduplicator
     ) {}
 
     /**
-     * При обновлении статуса заказа Confirm (Добавлен к поставке, на сборке) получаем и обновляет стикер
+     * Метод отправляет Wildberries (Api) на указанные заказы код маркировки честного знака
      */
     public function __invoke(WbPackageMessage $message): void
     {
-
         $DeduplicatorExecuted = $this->Deduplicator
             ->namespace('wildberries-package')
             ->deduplication([
@@ -71,7 +72,6 @@ final readonly class UpdateOrdersStickerHandler
         {
             return;
         }
-
 
         /* Получаем системную поставку, которой соответствует упаковка */
         $WbSupplyUid = $this->SupplyByPackage
@@ -93,11 +93,20 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
+        /* Получаем открытую поставку Wildberries API */
+        $wildberriesSupplyInfo = $this->WildberriesSupplyInfoRequest
+            ->profile($UserProfileUid)
+            ->withSupply($UserProfileUid->getAttr())
+            ->getInfo();
 
-        /* Получаем упаковку, все её заказы со статусом ADD и идентификаторами заказов Wildberries */
+        if($wildberriesSupplyInfo->isDone())
+        {
+            return;
+        }
+
+        /* Получаем упаковку, все её заказы со статусом NEW и идентификаторами заказов Wildberries */
         $orders = $this->OrdersIdentifierByPackage
             ->forPackageEvent($message->getEvent())
-            ->onlyAddSupply()
             ->findAll();
 
         if(false === $orders || false === $orders->valid())
@@ -105,12 +114,43 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
-        // TODO: при закрытии поставки поставки вызвать диспатчер с транспортом wildberries-orders для очистки
+        // Присваиваем первоначальные настройки
+        $this->PostWildberriesSgtinRequest
+            ->profile($UserProfileUid);
 
-        $WildberriesOrdersSticker = $this->WildberriesOrdersStickerRequest
-            ->profile($UserProfileUid)
-            ->forOrderWb($UserProfileUid->getAttr())
-            ->getOrderSticker();
+        /**
+         * Добавляем по очереди заказы в открытую поставку
+         * @var OrderUid $OrderUid
+         */
 
+        $this->Deduplicator
+            ->namespace('wildberries-package')
+            ->expiresAfter('1 hour');
+
+        foreach($orders as $OrderUid)
+        {
+            $Deduplicator = $this->Deduplicator
+                ->deduplication([$OrderUid, self::class]);
+
+            if($Deduplicator->isExecuted())
+            {
+                return;
+            }
+
+            //            $this->PostWildberriesSgtinRequest
+            //                ->forOrder()
+            //                ->sgtin()
+
+            /** Получаем честные знаки */
+
+            $this->logger->info('Отправляем честные знаки Wildberries',
+                [
+                    'supply' => $UserProfileUid->getAttr(),
+                    'order' => $OrderUid->getAttr(),
+                    self::class.':'.__LINE__
+                ]);
+        }
+
+        $DeduplicatorExecuted->save();
     }
 }

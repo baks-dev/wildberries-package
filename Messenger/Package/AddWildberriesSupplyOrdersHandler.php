@@ -29,8 +29,8 @@ use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Orders\Api\WildberriesAddOrderToSupplyRequest;
-use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoRequest;
+use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
+use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage\OrdersIdentifierByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
@@ -50,8 +50,8 @@ final readonly class AddWildberriesSupplyOrdersHandler
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $OpenWbSupply,
         private OrdersIdentifierByPackageInterface $OrdersIdentifierByPackage,
-        private WildberriesAddOrderToSupplyRequest $AddOrderToSupplyRequest,
-        private WildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
+        private PostWildberriesAddOrderToSupplyRequest $AddOrderToSupplyRequest,
+        private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
         private UpdatePackageOrderStatusHandler $orderStatusHandler,
         private SupplyByPackageInterface $SupplyByPackage,
         private CentrifugoPublishInterface $CentrifugoPublish,

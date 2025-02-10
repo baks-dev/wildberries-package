@@ -68,7 +68,7 @@ final class DeleteController extends AbstractController
             (
                 'admin.page.delete',
                 $handle instanceof WbSupply ? 'admin.success.delete' : 'admin.danger.delete',
-                'admin.wb.supply',
+                'wildberries-package.supply',
                 $handle
             );
 

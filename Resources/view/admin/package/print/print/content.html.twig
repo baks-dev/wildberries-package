@@ -1,23 +1,24 @@
 {# ПЕЧАТЬ #}
+<div class="{{ app.request.headers.get('X-Requested-With') is not null ? 'd-none' }} d-print-block p-0 w-100">
 
-<div class="{# d-none #} d-print-block">
     {% for order in item %}
 
-
         {% if stickers[order.order] %}
-
-
+            {{ dd(order) }}
         {% endif %}
 
 
         {# Честный знак #}
 
-        <img src='{{ cdn_image_path(order.code_image, order.code_ext, order.code_cdn, 'min') }}' alt='Штрихкод'
-             style="height: 100px;"/>
+        {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn, 'min') %}
+
+        {% if sign != '/assets/img/blank.svg' %}
+            <img src='{{ cdn_image_path(order.code_image, order.code_ext, order.code_cdn, 'min') }}' alt='Штрихкод'
+                 style="height: 100px;"/>
+            <div style="page-break-after: always !important;"></div>
+        {% endif %}
 
         {% for i in 1..counter %}
-
-            <div style="page-break-after: always !important;"></div>
 
             <div style="width: 5cm; margin-left: 0.7cm; margin-top: 0.3cm;">
 
@@ -47,6 +48,7 @@
         {% endif %}
 
     {% endfor %}
+
 </div>
 
 
@@ -70,29 +72,27 @@
             <div class="mt-3 gap-3 d-flex">
 #}
 {# Отмена #}{#
-
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                    {{ 'btn.cancel'|trans({}, 'core.btn') }}
-                </button>
+<button type="button" class="btn btn-light" data-bs-dismiss="modal">
+    {{ 'btn.cancel'|trans({}, 'core.btn') }}
+</button>
 #}
 {# Печать #}{#
+<button id="print_all" type="button" class="btn btn-primary">
 
-                <button id="print_all" type="button" class="btn btn-primary">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+         class="bi bi-printer-fill"
+         viewBox="0 0 16 16">
+        <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+        <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+    </svg>
 
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                         class="bi bi-printer-fill"
-                         viewBox="0 0 16 16">
-                        <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
-                        <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-                    </svg>
+    Печать {{ item|length }} шт.
+</button>
 
-                    Печать {{ item|length }} шт.
-                </button>
+</div>
+</div>
 
-            </div>
-        </div>
-
-    </div>
+</div>
 </div>
 #}
 

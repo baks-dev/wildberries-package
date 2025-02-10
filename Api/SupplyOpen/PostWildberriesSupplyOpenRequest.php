@@ -27,7 +27,7 @@ namespace BaksDev\Wildberries\Package\Api\SupplyOpen;
 
 use BaksDev\Wildberries\Api\Wildberries;
 
-final class WildberriesSupplyOpenRequest extends Wildberries
+final class PostWildberriesSupplyOpenRequest extends Wildberries
 {
     /**
      * Наименование поставки
@@ -49,12 +49,12 @@ final class WildberriesSupplyOpenRequest extends Wildberries
      * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies/post
      *
      */
-    public function open(): WildberriesSupplyOpenDTO|false
+    public function open(): WildberriesSupplyOpenDTO|bool
     {
         if($this->isExecuteEnvironment() === false)
         {
             $this->logger->critical('Запрос может быть выполнен только в PROD окружении', [self::class.':'.__LINE__]);
-            return false;
+            return true;
         }
 
         $data = ["name" => $this->name];

@@ -31,7 +31,7 @@
                         data-bs-toggle="tooltip"
                         data-bs-placement="bottom"
                         data-bs-delay='{"show":600,"hide":100}'
-                        title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
+                        title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'>
                 <button
                         id="supply-{{ supply.id }}"
                         data-href="{{ path('wildberries-package:admin.supply.print', { id : supply.id }) }}"

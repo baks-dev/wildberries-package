@@ -31,7 +31,7 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\SupplyOpen\WildberriesSupplyOpenRequest;
+use BaksDev\Wildberries\Package\Api\SupplyOpen\PostWildberriesSupplyOpenRequest;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
@@ -48,7 +48,7 @@ final readonly class OpenWbSupplyHandler
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $OpenWbSupply,
-        private WildberriesSupplyOpenRequest $WildberriesSupplyOpen,
+        private PostWildberriesSupplyOpenRequest $WildberriesSupplyOpen,
         private WbSupplyCurrentEventInterface $WbSupplyCurrentEvent,
         private WbSupplyOpenHandler $wbSupplyOpenHandler,
         private CentrifugoPublishInterface $CentrifugoPublish,

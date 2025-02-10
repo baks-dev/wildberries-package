@@ -1,4 +1,4 @@
-{% trans_default_domain('admin.wb.package') %}
+{% trans_default_domain('wildberries-package.package') %}
 
 
 <section class="card card-flush alert {{ opens.status == 'complete' ? 'alert-success' : 'alert-warning' }} p-0 w-100 "
@@ -34,7 +34,7 @@
                         data-bs-toggle="tooltip"
                         data-bs-placement="bottom"
                         data-bs-delay='{"show":600,"hide":100}'
-                        title='{{ opens.sticker ? 'QR поставки' : 'close'|trans({}, 'admin.wb.supply') }}'>
+                        title='{{ opens.sticker ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'>
                 <button
                         id="supply-{{ opens.id }}"
                         data-href="{{ path('wildberries-package:admin.supply.print', { id : opens.id }) }}"
@@ -82,7 +82,7 @@
 
             </div>
 
-            <div>
+            {# <div>
 
                 <div
 
@@ -92,7 +92,7 @@
                         data-bs-delay='{"show":600,"hide":100}'
                         title="Печатать всех"
                 >
-                    <a href="{{ path('wildberries-package:admin.package.prints', { id : opens.id }) }}"
+                    <a href=" #}{# {{ path('wildberries-package:admin.package.prints', { id : opens.id }) }} #}{# "
                        class="btn btn-warning modal-link disabled"
                        data-bs-toggle="modal"
                        data-bs-target="#modal"
@@ -106,7 +106,7 @@
                 </div>
 
 
-            </div>
+            </div> #}
 
         </div>
 

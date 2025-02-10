@@ -28,7 +28,7 @@ namespace BaksDev\Wildberries\Package\Messenger\Supply;
 use App\Kernel;
 use BaksDev\Core\Doctrine\ORMQueryBuilder;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\WildberriesSupplyDelete;
+use BaksDev\Wildberries\Package\Api\PostWildberriesSupplyDeleteRequest;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
@@ -43,7 +43,7 @@ final readonly class DeleteWbSupplyHandler
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $openWbSupply,
-        private WildberriesSupplyDelete $wildberriesSupplyDelete,
+        private PostWildberriesSupplyDeleteRequest $wildberriesSupplyDelete,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private ORMQueryBuilder $ORMQueryBuilder
     ) {}

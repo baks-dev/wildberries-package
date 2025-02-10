@@ -84,9 +84,9 @@ final class CloseController extends AbstractController
 
             $this->addFlash
             (
-                'admin.page.close',
-                $handle instanceof WbSupply ? 'admin.success.close' : 'admin.danger.close',
-                'admin.wb.supply',
+                'page.close',
+                $handle instanceof WbSupply ? 'success.close' : 'danger.close',
+                'wildberries-package.supply',
                 $handle
             );
 

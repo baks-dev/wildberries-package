@@ -28,7 +28,7 @@ namespace BaksDev\Wildberries\Package\Api\SupplySticker;
 use BaksDev\Wildberries\Api\Wildberries;
 use InvalidArgumentException;
 
-final class WildberriesSupplySticker extends Wildberries
+final class GetWildberriesSupplyStickerRequest extends Wildberries
 {
 
     /**
@@ -58,7 +58,7 @@ final class WildberriesSupplySticker extends Wildberries
      * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}~1barcode/get
      *
      */
-    public function sticker(): WildberriesSupplyStickerDTO|false
+    public function getSupplySticker(): WildberriesSupplyStickerDTO|false
     {
         if($this->supply === null)
         {

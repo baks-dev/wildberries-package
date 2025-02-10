@@ -30,20 +30,16 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Validator\ValidatorCollectionInterface;
 use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
 use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
-use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
-use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class UpdatePackageOrderStatusHandler extends AbstractHandler
 {
     public function __construct(
-        private readonly ProductStocksByOrderInterface $ProductStocksByOrder,
-        private readonly ExtraditionProductStockHandler $ExtraditionProductStockHandler,
+
 
         EntityManagerInterface $entityManager,
         MessageDispatchInterface $messageDispatch,
@@ -87,28 +83,9 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
 
         $this->flush();
 
-        if($command->getStatus()->equals(WbPackageStatusError::class))
-        {
-            return $WbPackageOrder;
-        }
-
-
-        /**
-         * Если заказ был добавлен без ошибок - меняем статус складской заявки (квитанции) на статус «Готов к выдаче»
-         */
-
-        $invoices = $this->ProductStocksByOrder->findByOrder($command->getId());
-
-        /** @var ProductStockEvent $ProductStockEvent */
-        foreach($invoices as $ProductStockEvent)
-        {
-            $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
-            $ProductStockEvent->getDto($ExtraditionProductStockDTO);
-
-            $this->ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
-        }
-
 
         return $WbPackageOrder;
+
+
     }
 }

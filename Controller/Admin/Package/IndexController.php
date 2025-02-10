@@ -32,6 +32,9 @@ use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Manufacture\Part\Type\Complete\ManufacturePartComplete;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Wildberries\Manufacture\Repository\AllWbOrdersGroup\AllWbOrdersManufactureInterface;
 use BaksDev\Wildberries\Manufacture\Type\ManufacturePartComplete\ManufacturePartCompleteWildberriesFbs;
 use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
@@ -74,25 +77,44 @@ final class IndexController extends AbstractController
             ->handleRequest($request);
 
         // Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
-        $opens = $LastWbSupply
-            ->forProfile($this->getProfileUid())
-            ->find();
+        $opens = $LastWbSupply->find();
+
 
         /* Получаем заказа, которые не были напечатаны  */
         $print = isset($opens['id']) ? $printOrdersPackageSupply->fetchAllPrintOrdersPackageSupplyAssociative(new WbSupplyUid($opens['id'])) : null;
 
+        //        /**
+        //         * Фильтр заказов
+        //         */
+        //
+        //        $filter = new WbOrdersProductFilterDTO($request);
+        //
+        //        $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
+        //            'action' => $this->generateUrl('wildberries-package:admin.package.index'),
+        //        ]);
+        //        $filterForm->handleRequest($request);
+        //        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
+
+
         /**
-         * Фильтр заказов
+         * Фильтр продукции
          */
+        $filter = new ProductFilterDTO();
 
-        $filter = new WbOrdersProductFilterDTO($request);
+        if($opens)
+        {
+            /* Если открыт производственный процесс - жестко указываем категорию и скрываем выбор */
+            //$filter->setCategory(new CategoryProductUid($opens['category_id'], $opens['category_name']));
+            //$filter->categoryInvisible();
+        }
 
-        $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
-            'action' => $this->generateUrl('wildberries-package:admin.package.index'),
-        ]);
-        $filterForm->handleRequest($request);
-        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
-
+        $filterForm = $this
+            ->createForm(
+                type: ProductFilterForm::class,
+                data: $filter,
+                options: ['action' => $this->generateUrl('manufacture-part:admin.index')]
+            )
+            ->handleRequest($request);
 
         /**
          * Получаем список заказов

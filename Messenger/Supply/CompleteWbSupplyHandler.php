@@ -30,7 +30,7 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\SupplySticker\WildberriesSupplySticker;
+use BaksDev\Wildberries\Package\Api\SupplySticker\GetWildberriesSupplyStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
@@ -49,7 +49,7 @@ final readonly class CompleteWbSupplyHandler
         private OpenWbSupplyInterface $openWbSupply,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private WbSupplyStickerHandler $WbSupplyStickerHandler,
-        private WildberriesSupplySticker $wildberriesSupplySticker,
+        private GetWildberriesSupplyStickerRequest $wildberriesSupplySticker,
         private CentrifugoPublishInterface $CentrifugoPublish,
         private MessageDispatchInterface $MessageDispatch,
         private DeduplicatorInterface $deduplicator
@@ -104,7 +104,7 @@ final readonly class CompleteWbSupplyHandler
         $WildberriesSupplyStickerDTO = $this->wildberriesSupplySticker
             ->profile($UserProfileUid)
             ->withSupply($UserProfileUid->getAttr())
-            ->sticker();
+            ->getSupplySticker();
 
         if(false === $WildberriesSupplyStickerDTO)
         {
