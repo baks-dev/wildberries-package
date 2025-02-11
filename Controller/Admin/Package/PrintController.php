@@ -141,7 +141,6 @@ final class PrintController extends AbstractController
         }
 
         $Code = $BarcodeWrite->render();
-
         $BarcodeWrite->remove();
 
         /**
@@ -154,15 +153,14 @@ final class PrintController extends AbstractController
         /** Применяем настройки по умолчанию */
         if(false === $BarcodeSettings)
         {
+            $BarcodeSettings = null;
             $BarcodeSettings['offer'] = false;
             $BarcodeSettings['variation'] = false;
             $BarcodeSettings['modification'] = false;
 
         }
 
-
         $property = $BarcodeSettings ? $wbBarcodeProperty->getPropertyCollection(new ProductEventUid($order['product_event'])) : [];
-
 
         /** Отправляем сообщение в шину и отмечаем принт упаковки */
         $messageDispatch->dispatch(

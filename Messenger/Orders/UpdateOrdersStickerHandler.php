@@ -26,6 +26,7 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Orders;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Orders\Entity\WbOrders;
@@ -92,7 +93,7 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
-        /* Получаем упаковку, все её заказы со статусом ADD и идентификаторами заказов Wildberries */
+        /* Получаем упаковку, все её заказы со статусом ADD и идентификаторами заказов Wildberries в качестве аттрибута */
         $orders = $this->OrdersIdentifierByPackage
             ->forPackageEvent($message->getEvent())
             ->onlyAddSupply()
@@ -103,13 +104,16 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
-        /** Прогреваем кеш со стикерами */
-        $this->WildberriesOrdersStickerRequest
-            ->profile($UserProfileUid)
-            ->forOrderWb($UserProfileUid->getAttr())
-            ->getOrderSticker();
+        /** @var OrderUid $OrderUid */
+        foreach($orders as $OrderUid)
+        {
+            /** Прогреваем кеш со стикерами */
+            $this->WildberriesOrdersStickerRequest
+                ->profile($UserProfileUid)
+                ->forOrderWb($OrderUid->getAttr()) // идентификатор заказа Wildberries
+                ->getOrderSticker();
+        }
 
         $DeduplicatorExecuted->save();
-
     }
 }

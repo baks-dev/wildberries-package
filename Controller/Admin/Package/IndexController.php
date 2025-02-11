@@ -25,20 +25,16 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Controller\Admin\Package;
 
-
 use BaksDev\Centrifugo\Services\Token\TokenUserGenerator;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Manufacture\Part\Type\Complete\ManufacturePartComplete;
-use BaksDev\Products\Category\Type\Id\CategoryProductUid;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Wildberries\Manufacture\Repository\AllWbOrdersGroup\AllWbOrdersManufactureInterface;
 use BaksDev\Wildberries\Manufacture\Type\ManufacturePartComplete\ManufacturePartCompleteWildberriesFbs;
-use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
-use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterForm;
 use BaksDev\Wildberries\Package\Repository\Package\PrintOrdersPackageSupply\PrintOrdersPackageSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LastWbSupplyInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
@@ -79,34 +75,14 @@ final class IndexController extends AbstractController
         // Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
         $opens = $LastWbSupply->find();
 
-
-        /* Получаем заказа, которые не были напечатаны  */
-        $print = isset($opens['id']) ? $printOrdersPackageSupply->fetchAllPrintOrdersPackageSupplyAssociative(new WbSupplyUid($opens['id'])) : null;
-
-        //        /**
-        //         * Фильтр заказов
-        //         */
-        //
-        //        $filter = new WbOrdersProductFilterDTO($request);
-        //
-        //        $filterForm = $this->createForm(WbOrdersProductFilterForm::class, $filter, [
-        //            'action' => $this->generateUrl('wildberries-package:admin.package.index'),
-        //        ]);
-        //        $filterForm->handleRequest($request);
-        //        !$filterForm->isSubmitted() ?: $this->redirectToReferer();
+        /** Получаем заказы, которые не были напечатаны  */
+        $print = isset($opens['status']) && $opens['status'] !== 'close' ? $printOrdersPackageSupply->fetchAllPrintOrdersPackageSupplyAssociative(new WbSupplyUid($opens['id'])) : null;
 
 
         /**
          * Фильтр продукции
          */
         $filter = new ProductFilterDTO();
-
-        if($opens)
-        {
-            /* Если открыт производственный процесс - жестко указываем категорию и скрываем выбор */
-            //$filter->setCategory(new CategoryProductUid($opens['category_id'], $opens['category_name']));
-            //$filter->categoryInvisible();
-        }
 
         $filterForm = $this
             ->createForm(
@@ -128,14 +104,6 @@ final class IndexController extends AbstractController
                 class_exists(ManufacturePartCompleteWildberriesFbs::class) ? new ManufacturePartComplete(ManufacturePartCompleteWildberriesFbs::class) : null
             );
 
-
-        // Фильтр
-        // $filter = new ProductsStocksFilterDTO($request, $ROLE_ADMIN ? null : $this->getProfileUid());
-        // $filterForm = $this->createForm(ProductsStocksFilterForm::class, $filter);
-        // $filterForm->handleRequest($request);
-
-        // Получаем список
-        //$WbPackage = $allWbPackage->fetchAllWbPackageAssociative($search);
 
         return $this->render(
             [

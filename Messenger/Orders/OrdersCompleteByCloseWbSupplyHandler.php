@@ -34,11 +34,12 @@ use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByWbSupply\OrdersIdentifierByWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
-use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusComplete;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -73,15 +74,19 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
         /**
          * Получаем активное событие системной поставки
          */
-        $Event = $this->wbSupplyCurrentEvent
+        $WbSupplyEvent = $this->wbSupplyCurrentEvent
             ->forSupply($message->getId())
             ->find();
 
-        if(false === $Event || false === $Event->getStatus()->equals(WbSupplyStatusComplete::STATUS))
+        if(false === ($WbSupplyEvent instanceof WbSupplyEvent))
         {
             return;
         }
 
+        if(false === $WbSupplyEvent->getStatus()->equals(WbSupplyStatusClose::class))
+        {
+            return;
+        }
 
         /* Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
         $UserProfileUid = $this->OpenWbSupply
@@ -93,10 +98,11 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
             return;
         }
 
-        /** Получаем все заказы в поставке */
+        /** Получаем все добавленные заказы в поставке */
 
         $orders = $this->OrdersIdentifierByWbSupply
-            ->supply($Event->getMain())
+            ->supply($WbSupplyEvent->getMain())
+            ->onlyAdOrders()
             ->findAll();
 
         if(false === $orders || false === $orders->valid())
@@ -105,18 +111,8 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
         }
 
         /** @var OrderUid $OrderUid */
-
         foreach($orders as $OrderUid)
         {
-            /**
-             * Если заказ был добавлен без ошибок - меняем статус складской заявки (квитанции) на статус «Готов к выдаче»
-             */
-
-            if($OrderUid->getAttr() !== '')
-            {
-                continue;
-            }
-
             $invoices = $this->ProductStocksByOrder->findByOrder($OrderUid);
 
             /** @var ProductStockEvent $ProductStockEvent */

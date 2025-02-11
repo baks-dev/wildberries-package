@@ -1,7 +1,11 @@
 {% if card %}
     <div class="lh-normal w-100">
 
-        <div class="fw-bolder">{{ card.product_name }}</div>
+        <div class="fw-bolder" style="white-space: nowrap;">
+            {{ string_width(card.product_name, 32) }}
+        </div>
+
+        <div>Категория: {{ card.category_name }}</div>
 
         <div>
             {% if settings.offer %}
@@ -15,14 +19,13 @@
             {% endif %}
         </div>
 
-        <div>Арт: {{ card.product_article }}</div>
-
         {% for props in property %}
             {% if props.value %}
                 <div>{{ props.name }}: {{ props.value }}</div>
             {% endif %}
         {% endfor %}
 
+        <div>Арт: {{ card.product_article }}</div>
         <div>Дата производства: {{ "now"|date("d.m.Y") }}</div>
     </div>
 
@@ -37,4 +40,3 @@
     </div>
 
 {% endif %}
-

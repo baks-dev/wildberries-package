@@ -31,6 +31,8 @@ interface OrdersIdentifierByWbSupplyInterface
 {
     public function supply(WbSupply|WbSupplyUid|string $supply): self;
 
+    public function onlyAdOrders(): self;
+
     /**
      * Метод возвращает все идентификаторы заказов в поставке
      */

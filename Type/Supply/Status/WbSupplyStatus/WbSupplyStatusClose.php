@@ -28,12 +28,13 @@ namespace BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbSupplyStatusInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
+/**
+ * Статус Close «Закрыто»
+ */
+
 #[AutoconfigureTag('baks.wb.supply.status')]
 final class WbSupplyStatusClose implements WbSupplyStatusInterface
 {
-    /**
-     * Статус Добавлен в поставку Wildberries
-     */
     public const string STATUS = 'close';
 
     public function __toString(): string

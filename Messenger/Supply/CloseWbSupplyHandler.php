@@ -79,19 +79,11 @@ final readonly class CloseWbSupplyHandler
             return;
         }
 
-        if(false === $WbSupplyEvent->getStatus()->equals(WbSupplyStatusClose::STATUS))
+        // только если статус поставки закрото
+        if(false === $WbSupplyEvent->getStatus()->equals(WbSupplyStatusClose::class))
         {
             return;
         }
-
-        /**
-         * Не закрываем поставку если в ней нет заказов
-         * TODO: проверить обновление счетчика
-         */
-        //        if(0 === $WbSupplyEvent->getTotal())
-        //        {
-        //            return;
-        //        }
 
         /** Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
         $UserProfileUid = $this->openWbSupply
@@ -130,7 +122,7 @@ final readonly class CloseWbSupplyHandler
         );
 
         /**
-         * Прогреваем кеш стикера
+         * Прогреваем кеш стикера поставки
          */
 
         $this

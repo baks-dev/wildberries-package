@@ -71,10 +71,15 @@ final class PostWildberriesSupplyClosedRequest extends Wildberries
             );
         }
 
+
         $response = $this->marketplace()->TokenHttpClient()->request(
             'PATCH',
             sprintf('/api/v3/supplies/%s/deliver', $this->supply),
         );
+
+        /**
+         * Результат не возвращает контента, проверяем только по статусу 204
+         */
 
         if($response->getStatusCode() !== 204)
         {

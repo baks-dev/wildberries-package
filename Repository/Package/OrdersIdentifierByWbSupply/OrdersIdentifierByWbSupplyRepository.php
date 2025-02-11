@@ -36,6 +36,8 @@ use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use Generator;
 use InvalidArgumentException;
@@ -44,6 +46,8 @@ use InvalidArgumentException;
 final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWbSupplyInterface
 {
     private WbSupplyUid|false $supply;
+
+    private string|false $status = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
@@ -60,6 +64,13 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
         }
 
         $this->supply = $supply;
+
+        return $this;
+    }
+
+    public function onlyAdOrders(): self
+    {
+        $this->status = WbPackageStatusAdd::class;
 
         return $this;
     }
@@ -87,10 +98,10 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
 
         $dbal
             ->join(
-                'package_supply',
+                'supply',
                 WbPackage::class,
                 'package',
-                'package.id = package_supply.main'
+                'package.id = supply.main'
             );
 
         $dbal
@@ -100,12 +111,21 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 'package',
                 WbPackageOrder::class,
                 'package_order',
-                'package_order.event = package.event'
+                'package_order.event = package.event '.($this->status ? ' AND package_order.status = :status' : '')
             );
+
+        if($this->status !== false)
+        {
+            $dbal->setParameter(
+                key: 'status',
+                value: $this->status,
+                type: WbPackageStatus::TYPE
+            );
+        }
 
         $dbal
             ->leftJoin(
-                'package_order.id',
+                'package_order',
                 Order::class,
                 'orders',
                 'orders.id = package_order.id',

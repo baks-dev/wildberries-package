@@ -85,7 +85,6 @@ final class AddController extends AbstractController
     ): Response
     {
 
-
         $PackageOrdersDTO = new AddOrdersPackageDTO($this->getProfileUid());
 
         if($request->isMethod('GET'))
@@ -145,8 +144,7 @@ final class AddController extends AbstractController
              * Перебираем все количество продукции в упаковке
              */
 
-            $total = $PackageOrdersDTO->getTotal();
-
+            $total = (int) $PackageOrdersDTO->getTotal();
 
             for($i = 1; $i <= $total; $i++)
             {
@@ -236,8 +234,7 @@ final class AddController extends AbstractController
                     }
                 }
 
-                //$DeduplicatorPack->save();
-
+                $DeduplicatorPack->save();
 
                 /** Не добавляем, если заказ уже имеется в упаковке */
                 if($ExistOrderPackage->forOrder($OrderEvent->getMain())->isExist())

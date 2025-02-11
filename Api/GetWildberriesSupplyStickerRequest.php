@@ -100,14 +100,14 @@ final class GetWildberriesSupplyStickerRequest extends Wildberries
                 return false;
             }
 
-            if(empty($sticker['file']))
+            if(empty($content['file']))
             {
                 return false;
             }
 
             $item->expiresAfter(DateInterval::createFromDateString('1 day'));
 
-            return $sticker['file'];
+            return $content['file'];
         });
 
         return $file;

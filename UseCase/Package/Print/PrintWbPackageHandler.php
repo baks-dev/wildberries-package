@@ -27,6 +27,7 @@ namespace BaksDev\Wildberries\Package\UseCase\Package\Print;
 
 use BaksDev\Core\Entity\AbstractHandler;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
