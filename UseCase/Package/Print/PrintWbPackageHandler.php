@@ -32,11 +32,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class PrintWbPackageHandler extends AbstractHandler
 {
-    public function __invoke(PrintWbPackageDTO $command): void
+    public function __invoke(PrintWbPackageMessage $command): void
     {
-        /* Валидация DTO  */
-        $this->validatorCollection->add($command);
-
         $this->clear();
 
         /** @var WbPackageSupply $WbPackageSupply */
@@ -44,6 +41,8 @@ final class PrintWbPackageHandler extends AbstractHandler
 
         if($this->validatorCollection->add($WbPackageSupply, context: [self::class.':'.__LINE__]))
         {
+            $this->setCommand($command);
+
             $WbPackageSupply->setEntity($command);
 
             /* Валидация всех объектов */

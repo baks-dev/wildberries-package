@@ -26,18 +26,14 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Orders;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\Core\Messenger\MessageDelay;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Delivery\DeliveryProductStockDTO;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
+use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
-use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
-use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\PostWildberriesSupplyClosedRequest;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByWbSupply\OrdersIdentifierByWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
@@ -52,20 +48,16 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
 {
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
-        private OpenWbSupplyInterface $openWbSupply,
-        private PostWildberriesSupplyClosedRequest $wildberriesSupplyClosed,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private OrdersIdentifierByWbSupplyInterface $OrdersIdentifierByWbSupply,
         private OpenWbSupplyInterface $OpenWbSupply,
         private ProductStocksByOrderInterface $ProductStocksByOrder,
-        private ExtraditionProductStockHandler $ExtraditionProductStockHandler,
         private CompletedProductStockHandler $CompletedProductStockHandler,
-        private DeduplicatorInterface $deduplicator,
-        private MessageDispatchInterface $MessageDispatch
+        private DeduplicatorInterface $deduplicator
     ) {}
 
     /**
-     * Метод закрывает выполненные заказы
+     * Метод закрывает выполненные заказы при закрытии поставки
      */
     public function __invoke(WbSupplyMessage $message): void
     {
@@ -112,7 +104,6 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
             return;
         }
 
-
         /** @var OrderUid $OrderUid */
 
         foreach($orders as $OrderUid)
@@ -135,10 +126,17 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
                  * @var DeliveryProductStockDTO $DeliveryProductStockDTO
                  */
                 $CompletedProductStockDTO = new CompletedProductStockDTO($ProductStockEvent->getId());
-
                 $ProductStockEvent->getDto($CompletedProductStockDTO);
 
-                $this->CompletedProductStockHandler->handle($CompletedProductStockDTO);
+                $ProductStock = $this->CompletedProductStockHandler->handle($CompletedProductStockDTO);
+
+                if(false === ($ProductStock instanceof ProductStock))
+                {
+                    $this->logger->critical(
+                        sprintf('wildberries-package: Ошибка %s при изменении складской заявки при закрытии поставки', $ProductStock),
+                        [$message, self::class.':'.__LINE__]
+                    );
+                }
             }
         }
 

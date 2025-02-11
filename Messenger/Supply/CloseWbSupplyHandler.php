@@ -30,7 +30,9 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Package\Api\GetWildberriesSupplyStickerRequest;
 use BaksDev\Wildberries\Package\Api\PostWildberriesSupplyClosedRequest;
+use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
@@ -47,7 +49,8 @@ final readonly class CloseWbSupplyHandler
         private PostWildberriesSupplyClosedRequest $wildberriesSupplyClosed,
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private DeduplicatorInterface $deduplicator,
-        private MessageDispatchInterface $MessageDispatch
+        private MessageDispatchInterface $MessageDispatch,
+        private GetWildberriesSupplyStickerRequest $GetWildberriesSupplyStickerRequest,
     ) {}
 
     /**
@@ -67,11 +70,16 @@ final readonly class CloseWbSupplyHandler
         /**
          * Получаем активное событие системной поставки
          */
-        $Event = $this->wbSupplyCurrentEvent
+        $WbSupplyEvent = $this->wbSupplyCurrentEvent
             ->forSupply($message->getId())
             ->find();
 
-        if(false === $Event || false === $Event->getStatus()->equals(WbSupplyStatusClose::STATUS))
+        if(false === ($WbSupplyEvent instanceof WbSupplyEvent))
+        {
+            return;
+        }
+
+        if(false === $WbSupplyEvent->getStatus()->equals(WbSupplyStatusClose::STATUS))
         {
             return;
         }
@@ -79,7 +87,7 @@ final readonly class CloseWbSupplyHandler
         /**
          * Не закрываем поставку если в ней нет заказов
          */
-        if(0 === $Event->getTotal())
+        if(0 === $WbSupplyEvent->getTotal())
         {
             return;
         }
@@ -119,5 +127,15 @@ final readonly class CloseWbSupplyHandler
             sprintf('%s: Закрыли поставку Wildberries', $UserProfileUid->getAttr()),
             [self::class.':'.__LINE__,]
         );
+
+        /**
+         * Прогреваем кеш стикера
+         */
+
+        $this
+            ->GetWildberriesSupplyStickerRequest
+            ->profile($UserProfileUid)
+            ->withSupply($UserProfileUid->getAttr())
+            ->getSupplySticker();
     }
 }

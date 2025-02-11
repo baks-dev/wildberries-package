@@ -32,7 +32,7 @@ interface OrdersIdentifierByPackageInterface
     public function forPackageEvent(WbPackageEvent|WbPackageEventUid|string $event): self;
 
 
-    public function onlyNew(): self;
+    public function onlyNewStatus(): self;
 
     public function onlyAddSupply(): self;
 

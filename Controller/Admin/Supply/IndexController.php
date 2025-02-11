@@ -79,6 +79,7 @@ final class IndexController extends AbstractController
             if($filterForm->get('next')->isClicked())
             {
                 $filter->setDate($filter->getDate()?->add(new DateInterval('P1D')));
+
                 return $this->redirectToReferer();
             }
         }

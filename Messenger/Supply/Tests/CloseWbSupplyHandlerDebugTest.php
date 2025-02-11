@@ -25,15 +25,10 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Messenger\Supply\Tests;
 
-use BaksDev\Core\Doctrine\DBALQueryBuilder;
-use BaksDev\Manufacture\Part\Messenger\ManufacturePartMessage;
-use BaksDev\Manufacture\Part\Type\Event\ManufacturePartEventUid;
-use BaksDev\Manufacture\Part\Type\Id\ManufacturePartUid;
-use BaksDev\Wildberries\Package\Messenger\Supply\OpenWbSupplyHandler;
+use BaksDev\Wildberries\Package\Messenger\Supply\CloseWbSupplyHandler;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -47,7 +42,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @group wildberries-package
  */
 #[When(env: 'test')]
-class OpenWbSupplyHandlerTest extends KernelTestCase
+class CloseWbSupplyHandlerDebugTest extends KernelTestCase
 {
 
     public function testUseCase(): void
@@ -58,15 +53,15 @@ class OpenWbSupplyHandlerTest extends KernelTestCase
         $dispatcher->dispatch($event, 'console.command');
 
 
-        /** @var OpenWbSupplyHandler $OpenWbSupplyHandler */
-        $OpenWbSupplyHandler = self::getContainer()->get(OpenWbSupplyHandler::class);
+        /** @var CloseWbSupplyHandler $CloseWbSupplyHandler */
+        $CloseWbSupplyHandler = self::getContainer()->get(CloseWbSupplyHandler::class);
 
         $ManufacturePartMessage = new WbSupplyMessage(
-            new WbSupplyUid('0194ed4a-cd92-7a22-9b9e-2ae8f8ac2ced'),
-            new WbSupplyEventUid('0194ed5c-78a3-7c76-ba72-1859fc9de613')
+            new WbSupplyUid(),
+            new WbSupplyEventUid()
         );
 
-        $OpenWbSupplyHandler($ManufacturePartMessage);
+        $CloseWbSupplyHandler($ManufacturePartMessage);
     }
 
 

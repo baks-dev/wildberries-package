@@ -72,7 +72,6 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
-
         /* Получаем системную поставку, которой соответствует упаковка */
         $WbSupplyUid = $this->SupplyByPackage
             ->forPackageEvent($message->getEvent())
@@ -93,7 +92,6 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
-
         /* Получаем упаковку, все её заказы со статусом ADD и идентификаторами заказов Wildberries */
         $orders = $this->OrdersIdentifierByPackage
             ->forPackageEvent($message->getEvent())
@@ -105,12 +103,13 @@ final readonly class UpdateOrdersStickerHandler
             return;
         }
 
-        // TODO: при закрытии поставки поставки вызвать диспатчер с транспортом wildberries-orders для очистки
-
-        $WildberriesOrdersSticker = $this->WildberriesOrdersStickerRequest
+        /** Прогреваем кеш со стикерами */
+        $this->WildberriesOrdersStickerRequest
             ->profile($UserProfileUid)
             ->forOrderWb($UserProfileUid->getAttr())
             ->getOrderSticker();
+
+        $DeduplicatorExecuted->save();
 
     }
 }

@@ -39,6 +39,7 @@ use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Repository\Package\OrderByPackage\OrderByPackageInterface;
+use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
 use chillerlan\QRCode\QRCode;
@@ -95,10 +96,7 @@ final class PrintController extends AbstractController
 
         foreach($orders as $order)
         {
-            //$stickers[$order['order']] = false;
-            //continue;
-
-            $stickers[$order['$orders']] = $WildberriesOrdersStickerRequest
+            $stickers[$order['orders']] = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
                 ->forOrderWb($order['number'])
                 ->getOrderSticker();
@@ -168,11 +166,11 @@ final class PrintController extends AbstractController
         $property = $BarcodeSettings ? $wbBarcodeProperty->getPropertyCollection(new ProductEventUid($order['product_event'])) : [];
 
 
-        //        /** Отправляем сообщение в шину и отмечаем принт упаковки */
-        //        $messageDispatch->dispatch(
-        //            message: new PrintWbPackageDTO($wbPackage->getId()),
-        //            transport: 'wildberries-package',
-        //        );
+        /** Отправляем сообщение в шину и отмечаем принт упаковки */
+        $messageDispatch->dispatch(
+            message: new PrintWbPackageMessage($wbPackage->getId()),
+            transport: 'wildberries-package',
+        );
 
         return $this->render(
             [

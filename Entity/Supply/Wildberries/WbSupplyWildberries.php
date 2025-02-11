@@ -55,19 +55,12 @@ class WbSupplyWildberries extends EntityReadonly
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private WbSupplyEvent $event;
 
-
     /**
      * Идентификатор поставки @example WB-GI-1234567
      */
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 15)]
     private string $identifier;
-
-    /**
-     * Стикер SVG (Штрихкод) поставки
-     */
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $sticker = null;
 
 
     public function __construct(WbSupplyEvent $event)
@@ -111,13 +104,4 @@ class WbSupplyWildberries extends EntityReadonly
     {
         return $this->identifier;
     }
-
-    /**
-     * Sticker
-     */
-    public function getSticker(): string
-    {
-        return $this->sticker;
-    }
-
 }

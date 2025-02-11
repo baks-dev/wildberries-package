@@ -23,10 +23,13 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Api\SupplySticker;
+namespace BaksDev\Wildberries\Package\Api;
 
 use BaksDev\Wildberries\Api\Wildberries;
+use DateInterval;
 use InvalidArgumentException;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Contracts\Cache\ItemInterface;
 
 final class GetWildberriesSupplyStickerRequest extends Wildberries
 {
@@ -50,15 +53,17 @@ final class GetWildberriesSupplyStickerRequest extends Wildberries
         return $this;
     }
 
-
     /**
      * Получить QR поставки
      * Возвращает QR в svg, zplv (вертикальный), zplh (горизонтальный), png.
      *
+     * По умолчанию SVG
+     *
      * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}~1barcode/get
      *
      */
-    public function getSupplySticker(): WildberriesSupplyStickerDTO|false
+
+    public function getSupplySticker(): string|false
     {
         if($this->supply === null)
         {
@@ -67,28 +72,45 @@ final class GetWildberriesSupplyStickerRequest extends Wildberries
             );
         }
 
-        $data = ["type" => $this->type];
+        $cache = new FilesystemAdapter('wildberries-package');
+        $key = md5($this->getProfile().$this->supply.self::class);
+        //$cache->deleteItem($key);
 
-        $response = $this->marketplace()->TokenHttpClient()->request(
-            'GET',
-            '/api/v3/supplies/'.$this->supply.'/barcode',
-            ['query' => $data],
-        );
+        $file = $cache->get($key, function(ItemInterface $item): string|false {
 
-        $content = $response->toArray(false);
+            $item->expiresAfter(DateInterval::createFromDateString('1 second'));
 
-        if($response->getStatusCode() !== 200)
-        {
+            $data = ["type" => $this->type];
 
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка при получении QR поставки %s', $this->supply),
-                [$content, self::class.':'.__LINE__]
+            $response = $this->marketplace()->TokenHttpClient()->request(
+                'GET',
+                '/api/v3/supplies/'.$this->supply.'/barcode',
+                ['query' => $data],
             );
 
-            return false;
-        }
+            $content = $response->toArray(false);
 
-        return new WildberriesSupplyStickerDTO($content);
+            if($response->getStatusCode() !== 200)
+            {
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка при получении QR поставки %s', $this->supply),
+                    [$content, self::class.':'.__LINE__]
+                );
+
+                return false;
+            }
+
+            if(empty($sticker['file']))
+            {
+                return false;
+            }
+
+            $item->expiresAfter(DateInterval::createFromDateString('1 day'));
+
+            return $sticker['file'];
+        });
+
+        return $file;
     }
 
     /**

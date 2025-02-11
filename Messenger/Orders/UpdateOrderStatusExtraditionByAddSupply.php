@@ -37,9 +37,6 @@ final class UpdateOrderStatusExtraditionByAddSupply
      */
     public function __invoke(WbPackageMessage $message): bool
     {
-
-        dump($message);
-
         return true;
     }
 }

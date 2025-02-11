@@ -31,12 +31,14 @@ use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
+use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage\OrdersIdentifierByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
 use Psr\Log\LoggerInterface;
@@ -55,15 +57,18 @@ final readonly class AddWildberriesSupplyOrdersHandler
         private UpdatePackageOrderStatusHandler $orderStatusHandler,
         private SupplyByPackageInterface $SupplyByPackage,
         private CentrifugoPublishInterface $CentrifugoPublish,
-        private DeduplicatorInterface $Deduplicator
-    ) {}
+        private DeduplicatorInterface $deduplicator
+    )
+    {
+        $this->deduplicator->namespace('wildberries-package');
+    }
 
     /**
      * Метод добавляет заказы в указанную поставку Wildberries (Api) и обновляет статусы в системной упаковке
      */
     public function __invoke(WbPackageMessage $message): void
     {
-        $DeduplicatorExecuted = $this->Deduplicator
+        $DeduplicatorExecuted = $this->deduplicator
             ->namespace('wildberries-package')
             ->deduplication([
                 $message->getId(),
@@ -80,7 +85,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
             ->forPackageEvent($message->getEvent())
             ->find();
 
-        if(false === $WbSupplyUid)
+        if(false === ($WbSupplyUid instanceof WbSupplyUid))
         {
             return;
         }
@@ -101,6 +106,11 @@ final readonly class AddWildberriesSupplyOrdersHandler
             ->withSupply($UserProfileUid->getAttr())
             ->getInfo();
 
+        if(false === ($wildberriesSupplyInfo instanceof WildberriesSupplyInfoDTO))
+        {
+            return;
+        }
+
         if($wildberriesSupplyInfo->isDone())
         {
             return;
@@ -109,7 +119,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
         /* Получаем упаковку, все её заказы со статусом NEW и идентификаторами заказов Wildberries */
         $orders = $this->OrdersIdentifierByPackage
             ->forPackageEvent($message->getEvent())
-            ->onlyNew()
+            ->onlyNewStatus()
             ->findAll();
 
         if(false === $orders || false === $orders->valid())
@@ -117,8 +127,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
             return;
         }
 
-
-        // Присваиваем первоначальные настройки
+        // Присваиваем первоначальные настройки Request
         $AddOrderToSupplyRequest = $this->AddOrderToSupplyRequest
             ->profile($UserProfileUid)
             ->withSupply($UserProfileUid->getAttr());
@@ -128,13 +137,9 @@ final readonly class AddWildberriesSupplyOrdersHandler
          * @var OrderUid $OrderUid
          */
 
-        $this->Deduplicator
-            ->namespace('wildberries-package')
-            ->expiresAfter('1 hour');
-
         foreach($orders as $OrderUid)
         {
-            $Deduplicator = $this->Deduplicator
+            $Deduplicator = $this->deduplicator
                 ->deduplication([$OrderUid, self::class]);
 
             if($Deduplicator->isExecuted())
@@ -142,14 +147,18 @@ final readonly class AddWildberriesSupplyOrdersHandler
                 return;
             }
 
+            /** Отправляем сокет с идентификатором заказа */
+            $this->CentrifugoPublish
+                ->addData(['identifier' => (string) $OrderUid])
+                ->send('publish');
+
             $UpdateOrderStatusDTO = new UpdatePackageOrderStatusDTO($OrderUid);
 
-            $this->logger->info('Добавляем заказ в открытую поставку Wildberries',
-                [
-                    'supply' => $UserProfileUid->getAttr(),
-                    'order' => $OrderUid->getAttr(),
-                    self::class.':'.__LINE__
-                ]);
+            $this->logger->info(
+                sprintf(
+                    'Добавляем заказ %s в открытую поставку Wildberries %s',
+                    $OrderUid->getAttr(), $UserProfileUid->getAttr()
+                ), [self::class.':'.__LINE__]);
 
             $isAdd = $AddOrderToSupplyRequest
                 ->withOrder($OrderUid->getAttr())
@@ -157,6 +166,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
 
             /**
              * Применяем статус добавления заказа к поставке
+             * Приступаем к отправке Честных знаков @see AddWildberriesSupplySignHandler
              */
 
             $WbPackageStatus = $isAdd ? WbPackageStatusAdd::class : WbPackageStatusError::class;
@@ -167,8 +177,8 @@ final readonly class AddWildberriesSupplyOrdersHandler
             if(false === ($WbPackageOrder instanceof WbPackageOrder))
             {
                 $this->logger->critical(
-                    'Ошибка при добавления заказа в поставку Wildberries',
-                    [$WbPackageOrder, self::class.':'.__LINE__]
+                    sprintf('wildberries-package: Ошибка %s при добавления заказа в поставку Wildberries', $WbPackageOrder),
+                    [$message, self::class.':'.__LINE__]
                 );
             }
 
@@ -176,10 +186,5 @@ final readonly class AddWildberriesSupplyOrdersHandler
         }
 
         $DeduplicatorExecuted->save();
-
-        /** Отправляем сокет с идентификатором упаковки */
-        $this->CentrifugoPublish
-            ->addData(['identifier' => (string) $message->getId()]) // ID упаковки
-            ->send('publish');
     }
 }

@@ -68,7 +68,7 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
         return $this;
     }
 
-    public function onlyNew(): self
+    public function onlyNewStatus(): self
     {
         $this->status = WbPackageStatusNew::class;
 
@@ -122,14 +122,14 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
                 'orders',
                 OrderInvariable::class,
                 'invariable',
-                'invariable.id = orders.id',
+                'invariable.main = orders.id',
             );
 
         $dbal->leftJoin(
             'invariable',
             OrderUser::class,
             'usr',
-            'user.event = invariable.event',
+            'usr.event = invariable.event',
         );
 
         $dbal->join(

@@ -23,14 +23,42 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Messenger\Supply;
+namespace BaksDev\Wildberries\Package\UseCase\Package\Print;
 
-use BaksDev\Core\Cache\AppCacheInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupplyInterface;
+use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
+use Symfony\Component\Validator\Constraints as Assert;
 
-#[AsMessageHandler]
-final class WbSupplyNullHandler
+/** @see WbPackageSupply */
+final class PrintWbPackageMessage implements WbPackageSupplyInterface
 {
-    public function __invoke(WbSupplyMessage $message): void {}
+    /**
+     * Идентификатор WbSupply
+     */
+    #[Assert\NotBlank]
+    #[Assert\Uuid]
+    private readonly WbPackageUid $main;
+
+    /**
+     * Статус печати стикеров упаковки
+     */
+    private readonly bool $print;
+
+
+    public function __construct(WbPackageUid $main)
+    {
+        $this->main = $main;
+        $this->print = true;
+    }
+
+    public function getMain(): WbPackageUid
+    {
+        return $this->main;
+    }
+
+    public function getPrint(): bool
+    {
+        return $this->print;
+    }
+
 }

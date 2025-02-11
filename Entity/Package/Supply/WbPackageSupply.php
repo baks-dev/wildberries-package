@@ -53,7 +53,7 @@ class WbPackageSupply extends EntityReadonly
      */
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    #[ORM\OneToOne(inversedBy: 'supply', targetEntity: WbPackageEvent::class)]
+    #[ORM\OneToOne(targetEntity: WbPackageEvent::class, inversedBy: 'supply')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private WbPackageEvent $event;
 

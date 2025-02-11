@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,10 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Controller\Admin\Supply;
 
-
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
+use BaksDev\Wildberries\Package\Api\GetWildberriesSupplyStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
-use chillerlan\QRCode\QRCode;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,13 +45,15 @@ final class PrintController extends AbstractController
     #[Route('/admin/wb/supply/print/{id}', name: 'admin.supply.print', methods: ['GET', 'POST'])]
     public function printer(
         Request $request,
-        #[MapEntity] WbSupplyWildberries $WbSupplyWildberries
+        #[MapEntity] WbSupplyWildberries $WbSupplyWildberries,
+        GetWildberriesSupplyStickerRequest $wildberriesSupplySticker
     ): Response
     {
-        return $this->render(
-            [
-                'supply' => $WbSupplyWildberries
-            ]
-        );
+        $sticker = $wildberriesSupplySticker
+            ->profile($this->getProfileUid())
+            ->withSupply($WbSupplyWildberries->getIdentifier())
+            ->getSupplySticker();
+
+        return $this->render(['sticker' => $sticker]);
     }
 }

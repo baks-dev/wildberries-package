@@ -23,38 +23,46 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Api\SupplySticker\Tests;
+namespace BaksDev\Wildberries\Package\Messenger\Supply\Tests;
 
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Package\Api\SupplySticker\GetWildberriesSupplyStickerRequest;
+use BaksDev\Wildberries\Package\Messenger\Supply\OpenWbSupplyHandler;
+use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
+use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
 
 /**
- * @group wildberries
- * @group wildberries-api
+ * @group wildberries-package
  */
 #[When(env: 'test')]
-final class WildberriesSupplyStickerTest extends KernelTestCase
+class OpenWbSupplyHandlerDebugTest extends KernelTestCase
 {
+
     public function testUseCase(): void
     {
-        /** @var GetWildberriesSupplyStickerRequest $WildberriesSupplySticker */
-        //$WildberriesSupplySticker = self::getContainer()->get(WildberriesSupplySticker::class);
+        // Бросаем событие консольной комманды
+        $dispatcher = self::getContainer()->get(EventDispatcherInterface::class);
+        $event = new ConsoleCommandEvent(new Command(), new StringInput(''), new NullOutput());
+        $dispatcher->dispatch($event, 'console.command');
 
 
-        /** TODO: получить номер заказа и получить по нему стикер */
+        /** @var OpenWbSupplyHandler $OpenWbSupplyHandler */
+        $OpenWbSupplyHandler = self::getContainer()->get(OpenWbSupplyHandler::class);
 
-        self::assertTrue(true);
+        $ManufacturePartMessage = new WbSupplyMessage(
+            new WbSupplyUid(),
+            new WbSupplyEventUid()
+        );
 
-        //        $WildberriesSupplySticker = $WildberriesSupplySticker
-        //            ->profile(new UserProfileUid())
-        //            ->withSupply('WB-GI-7654321')
-        //            ->request()
-        //        ;
-        //
-        //        self::assertEquals('WB-GI-7654321', $WildberriesSupplySticker->getIdentifier());
-        //        self::assertNotNull($WildberriesSupplySticker->getSticker());
-
+        $OpenWbSupplyHandler($ManufacturePartMessage);
     }
+
+
 }

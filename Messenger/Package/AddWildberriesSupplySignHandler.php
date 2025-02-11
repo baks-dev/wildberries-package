@@ -25,17 +25,19 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Messenger\Package;
 
-use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Materials\Sign\BaksDevMaterialsSignBundle;
+use BaksDev\Materials\Sign\Repository\MaterialSignByOrder\MaterialSignByOrderRepository;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Products\Sign\BaksDevProductsSignBundle;
+use BaksDev\Products\Sign\Repository\ProductSignByOrder\ProductSignByOrderRepository;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesSgtinRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage\OrdersIdentifierByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
-use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -47,21 +49,22 @@ final readonly class AddWildberriesSupplySignHandler
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $OpenWbSupply,
         private OrdersIdentifierByPackageInterface $OrdersIdentifierByPackage,
-        private PostWildberriesAddOrderToSupplyRequest $AddOrderToSupplyRequest,
         private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
-        private UpdatePackageOrderStatusHandler $orderStatusHandler,
         private SupplyByPackageInterface $SupplyByPackage,
-        private CentrifugoPublishInterface $CentrifugoPublish,
         private PostWildberriesSgtinRequest $PostWildberriesSgtinRequest,
-        private DeduplicatorInterface $Deduplicator
-    ) {}
+        private DeduplicatorInterface $deduplicator,
+        private DBALQueryBuilder $DBALQueryBuilder,
+    )
+    {
+        $this->deduplicator->namespace('wildberries-package');
+    }
 
     /**
-     * Метод отправляет Wildberries (Api) на указанные заказы код маркировки честного знака
+     * Метод отправляет Честные знаки на указанные заказы Wildberries (Api)
      */
     public function __invoke(WbPackageMessage $message): void
     {
-        $DeduplicatorExecuted = $this->Deduplicator
+        $DeduplicatorExecuted = $this->deduplicator
             ->namespace('wildberries-package')
             ->deduplication([
                 $message->getId(),
@@ -107,6 +110,7 @@ final readonly class AddWildberriesSupplySignHandler
         /* Получаем упаковку, все её заказы со статусом NEW и идентификаторами заказов Wildberries */
         $orders = $this->OrdersIdentifierByPackage
             ->forPackageEvent($message->getEvent())
+            ->onlyAddSupply() // только если поставка открыта
             ->findAll();
 
         if(false === $orders || false === $orders->valid())
@@ -114,22 +118,14 @@ final readonly class AddWildberriesSupplySignHandler
             return;
         }
 
-        // Присваиваем первоначальные настройки
-        $this->PostWildberriesSgtinRequest
-            ->profile($UserProfileUid);
-
         /**
-         * Добавляем по очереди заказы в открытую поставку
+         * Отправляем по очереди честные знаки
          * @var OrderUid $OrderUid
          */
 
-        $this->Deduplicator
-            ->namespace('wildberries-package')
-            ->expiresAfter('1 hour');
-
         foreach($orders as $OrderUid)
         {
-            $Deduplicator = $this->Deduplicator
+            $Deduplicator = $this->deduplicator
                 ->deduplication([$OrderUid, self::class]);
 
             if($Deduplicator->isExecuted())
@@ -137,18 +133,63 @@ final readonly class AddWildberriesSupplySignHandler
                 return;
             }
 
-            //            $this->PostWildberriesSgtinRequest
-            //                ->forOrder()
-            //                ->sgtin()
+            $this->PostWildberriesSgtinRequest
+                ->profile($UserProfileUid)
+                ->forOrder($OrderUid->getAttr());
 
-            /** Получаем честные знаки */
+            /** Получаем честные знаки по заказу в сырье */
 
-            $this->logger->info('Отправляем честные знаки Wildberries',
-                [
-                    'supply' => $UserProfileUid->getAttr(),
-                    'order' => $OrderUid->getAttr(),
-                    self::class.':'.__LINE__
-                ]);
+            if(class_exists(BaksDevMaterialsSignBundle::class))
+            {
+                $MaterialSignByOrder = new MaterialSignByOrderRepository($this->DBALQueryBuilder);
+
+                $materialSign = $MaterialSignByOrder->forOrder($OrderUid)->findAll();
+
+                if($materialSign)
+                {
+                    foreach($materialSign as $sign)
+                    {
+                        $this->PostWildberriesSgtinRequest->sgtin($sign['code_string']);
+
+                        $this->logger->info(
+                            sprintf('%s: отправляем честные знак %s', $OrderUid->getAttr(), $sign['code_string']),
+                            [$message, self::class.':'.__LINE__]
+                        );
+                    }
+                }
+            }
+
+            /** Получаем честные знаки по заказу в продукции */
+
+            if(class_exists(BaksDevProductsSignBundle::class))
+            {
+                $ProductSignByOrder = new ProductSignByOrderRepository($this->DBALQueryBuilder);
+
+                $productSign = $ProductSignByOrder->forOrder($OrderUid)->findAll();
+
+                if($productSign)
+                {
+                    foreach($productSign as $sign)
+                    {
+                        $this->PostWildberriesSgtinRequest->sgtin($sign['code_string']);
+
+                        $this->logger->info(
+                            sprintf('%s: отправляем честные знак %s', $OrderUid->getAttr(), $sign['code_string']),
+                            [$OrderUid->getAttr(), self::class.':'.__LINE__]
+                        );
+                    }
+                }
+            }
+
+            $isUpdate = $this->PostWildberriesSgtinRequest->update();
+
+            if(false === $isUpdate)
+            {
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка при отправке честных знаков заказа %s', $OrderUid->getAttr()),
+                    [$message, self::class.':'.__LINE__]
+                );
+            }
         }
 
         $DeduplicatorExecuted->save();
