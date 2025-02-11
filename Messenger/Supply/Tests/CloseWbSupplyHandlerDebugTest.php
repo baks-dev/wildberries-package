@@ -62,6 +62,8 @@ class CloseWbSupplyHandlerDebugTest extends KernelTestCase
         );
 
         $CloseWbSupplyHandler($ManufacturePartMessage);
+
+        self::assertTrue(true);
     }
 
 

@@ -86,11 +86,12 @@ final readonly class CloseWbSupplyHandler
 
         /**
          * Не закрываем поставку если в ней нет заказов
+         * TODO: проверить обновление счетчика
          */
-        if(0 === $WbSupplyEvent->getTotal())
-        {
-            return;
-        }
+        //        if(0 === $WbSupplyEvent->getTotal())
+        //        {
+        //            return;
+        //        }
 
         /** Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
         $UserProfileUid = $this->openWbSupply

@@ -90,7 +90,9 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             );
 
 
-        return $dbal->fetchHydrate(UserProfileUid::class);
+        return $dbal
+            ->enableCache()
+            ->fetchHydrate(UserProfileUid::class);
 
     }
 

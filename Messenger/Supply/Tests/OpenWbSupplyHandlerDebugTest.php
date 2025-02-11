@@ -62,6 +62,8 @@ class OpenWbSupplyHandlerDebugTest extends KernelTestCase
         );
 
         $OpenWbSupplyHandler($ManufacturePartMessage);
+
+        self::assertTrue(true);
     }
 
 

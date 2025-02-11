@@ -169,7 +169,7 @@ class WbSupplyEvent extends EntityEvent
      */
     public function getTotal(): int
     {
-        return $this->const->getTotal();
+        return $this->invariable->getTotal();
     }
 
 

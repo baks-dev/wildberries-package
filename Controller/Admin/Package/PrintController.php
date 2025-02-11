@@ -42,8 +42,6 @@ use BaksDev\Wildberries\Package\Repository\Package\OrderByPackage\OrderByPackage
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
-use chillerlan\QRCode\QRCode;
-use Picqer\Barcode\BarcodeGeneratorSVG;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Response;
