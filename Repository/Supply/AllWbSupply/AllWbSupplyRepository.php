@@ -129,7 +129,6 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
 
         $qb
             ->addSelect('wb.identifier')
-            ->addSelect('wb.sticker')
             ->leftJoin(
                 'supply',
                 WbSupplyWildberries::class,

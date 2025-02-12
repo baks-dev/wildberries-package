@@ -112,7 +112,6 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
 
         $dbal
             ->addSelect('wb.identifier')
-            ->addSelect('wb.sticker')
             ->leftJoin(
                 'supply',
                 WbSupplyWildberries::class,

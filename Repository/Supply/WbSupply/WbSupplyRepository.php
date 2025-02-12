@@ -86,7 +86,6 @@ final readonly class WbSupplyRepository implements WbSupplyInterface
 
         $qb
             ->addSelect('wb.identifier')
-            ->addSelect('wb.sticker')
             ->leftJoin(
                 'supply',
                 WbSupplyWildberries::class,
