@@ -1,7 +1,7 @@
 {% if card %}
-    <div class="lh-normal w-100">
+    <div style="">
 
-        <div class="fw-bolder" style="white-space: nowrap;">
+        <div style="white-space: nowrap;">
             {{ string_width(card.product_name, 32) }}
         </div>
 
@@ -19,13 +19,14 @@
             {% endif %}
         </div>
 
+        <div>Арт: {{ card.product_article }}</div>
+
         {% for props in property %}
             {% if props.value %}
                 <div>{{ props.name }}: {{ props.value }}</div>
             {% endif %}
         {% endfor %}
 
-        <div>Арт: {{ card.product_article }}</div>
         <div>Дата производства: {{ "now"|date("d.m.Y") }}</div>
     </div>
 
@@ -40,3 +41,4 @@
     </div>
 
 {% endif %}
+

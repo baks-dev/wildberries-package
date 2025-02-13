@@ -73,7 +73,7 @@ final class PrintController extends AbstractController
         /* Скрываем у все пользователей заказ для печати */
         $CentrifugoPublish
             ->addData(['identifier' => (string) $wbPackage->getId()]) // ID продукта
-            ->addData(['profile' => $this->getCurrentProfileUid()])
+            ->addData(['profile' => false])
             ->send('remove');
 
         /* Получаем все заказы в упаковке  */
@@ -94,7 +94,7 @@ final class PrintController extends AbstractController
 
         foreach($orders as $order)
         {
-            $stickers[$order['orders']] = $WildberriesOrdersStickerRequest
+            $stickers[$order['order']] = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
                 ->forOrderWb($order['number'])
                 ->getOrderSticker();

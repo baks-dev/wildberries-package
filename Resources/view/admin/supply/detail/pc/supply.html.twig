@@ -1,4 +1,4 @@
-<section class="card card-flush alert {{ supply.status == 'complete' ? 'alert-success' : 'alert-warning' }} p-0 w-100 "
+<section class="card card-flush alert {{ supply.status == 'close' ? 'alert-success' : 'alert-warning' }} p-0 w-100 "
          style="background-image: var(--bs-gradient);">
 
     {# <div class="px-3 pt-3 d-flex gap-3">
@@ -31,14 +31,14 @@
                         data-bs-toggle="tooltip"
                         data-bs-placement="bottom"
                         data-bs-delay='{"show":600,"hide":100}'
-                        title='{{ supply.sticker ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'>
+                        title='{{ supply.status == 'close' ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'>
                 <button
                         id="supply-{{ supply.id }}"
-                        data-href="{{ path('wildberries-package:admin.supply.print', { id : supply.id }) }}"
-                        {% if supply.sticker is null %}
+                        data-href="{{ path('wildberries-package:admin.supply.print', { id : supply.id, print: true }) }}"
+                        {% if supply.status != 'close' %}
                             disabled="disabled"
                         {% endif %}
-                        class="btn-link btn p-1 icon modal-link disabled"
+                        class="btn-link btn p-1 icon modal-link prnt disabled"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
                         style="width: 40px; height: 40px;"

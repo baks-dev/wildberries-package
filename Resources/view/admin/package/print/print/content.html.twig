@@ -4,81 +4,72 @@
 
     {% for order in item %}
 
-        {# {% if stickers[order.order] %}
-            {{ dd(order) }}
-        {% endif %} #}
-
-        {# {{ stickers[order.order] }} #}
-
-        <img
-                style="height: 150px; max-width: 300px;"
-                src='data:image/svg+xml;base64,{{ stickers[order.order] }}'
-                alt='Штрихкод Wildberries'
-
-        />
-
-        <div style="page-break-after: always !important;"></div>
-
-        {# Честный знак #}
-
-        {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn) %}
-
-        {% if sign != '/assets/img/blank.svg' %}
-            <img
-                    src='{{ cdn_image_path(order.code_image, order.code_ext, order.code_cdn) }}'
-                    alt='Штрихкод Честный Знак'
-                    style="height: 150px; margin: 2px;"
-            />
+        {% if not loop.first %}
             <div style="page-break-after: always !important;"></div>
         {% endif %}
 
+        {# QRCode Wildberries #}
+        <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+            <img
+                    src='data:image/svg+xml;base64,{{ stickers[order.order] }}'
+                    alt='QRCode Wildberries'
+                    style="height: 100%;"
+            />
+        </div>
+
         {% for i in 1..counter %}
 
-            <div style="max-width: 200px; margin-left: 20px;">
+            {# QRCode Честный Знак #}
 
-                <div
-                        style="
-                width: 100%;
-                margin-bottom: 1px;
-"
-                >
+            {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn) %}
 
-                    {# <img src='data:image/svg+xml;base64,{{ barcode }}' alt='Штрихкод {{ barcode }}'
-                         style="height: 1.2cm;"/> #}
+            {% if sign != '/assets/img/blank.svg' %}
+                <div style="page-break-after: always !important;"></div>
 
-                    {# {{ barcode|raw }} #}
+                <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+                    <img
+                            src='{{ cdn_image_path(order.code_image, order.code_ext, order.code_cdn) }}'
+                            alt='QRCode Честный Знак'
+                            style="height: 100%;"
+                    />
+                </div>
 
+            {% endif %}
+
+            <div style="page-break-after: always !important;"></div>
+
+            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
+
+                {# Штрикхкод #}
+                <div style="text-align: center;">
                     <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            style="width: 100%; height: 50px;" fill="currentColor"
-                            viewBox="5 0 125 15"
+                            fill="currentColor"
+                            style="width: 180px;"
+                            viewBox="5 0 125 25"
                     >
                         {{ barcode|striptags('<path>')|raw }}
                     </svg>
-
                 </div>
 
-                <div style="width: 100%; text-align: center;">
+
+                {# Штрикхкод #}
+                <div style="width: 100%; text-align: center; margin-bottom: 5px;">
                     {{ card.product_barcode }}
                 </div>
 
-                <div
-                        style="
+                <div style="
                      width: 100%;
                      display: flex;
                      justify-content: space-between;
                      align-items: flex-end;
-                     font-size: 10px;"
+                     font-size: 8px;"
                 >
                     {{ include(_self|replace({ "content.html.twig" : "sticker.html.twig" })) }}
                 </div>
             </div>
+
         {% endfor %}
-
-
-        {% if not loop.last %}
-            <div style="page-break-after: always !important;"></div>
-        {% endif %}
 
     {% endfor %}
 

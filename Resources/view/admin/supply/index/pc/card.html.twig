@@ -1,5 +1,6 @@
 {% trans_default_domain('wildberries-package.supply') %}
 
+
 <tr class="vertical-middle">
 
 
@@ -7,8 +8,11 @@
         {# Пользовательское меню #}
         {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }}
     </td>
-    <td class="text-center text-nowrap">
-        {{ item.supply_date|date('d.m.Y H:i') }}
+
+    <td>
+        <span class="badge {{ item.status == 'close' ? 'bg-success' : 'bg-warning text-dark' }} shadow">
+            {{ item.status|trans }}
+        </span>
     </td>
 
     <td class="text-center">
@@ -19,15 +23,15 @@
                 data-bs-toggle="tooltip"
                 data-bs-placement="bottom"
                 data-bs-delay='{"show":600,"hide":100}'
-                title='{{ item.sticker ? 'QR поставки' : 'close'|trans }}'
+                title='{{ item.status == 'close' ? 'QR поставки' : 'close'|trans }}'
         >
                 <button
-                        data-href="{{ item.sticker ? path('wildberries-package:admin.supply.print', { id : item.id }) }}"
-                        class="btn-link btn p-0 icon {{ item.sticker ? 'modal-link': 'text-muted' }}"
+                        data-href="{{ item.status == 'close' ? path('wildberries-package:admin.supply.print', { id : item.id, print: true }) }}"
+                        class="btn-link btn p-0 icon {{ item.status == 'close' ? 'modal-link prnt': 'text-muted' }}"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
                         style="width: 55px; height: 55px;"
-                        {% if item.sticker is null %}
+                        {% if item.status != 'close' %}
                             disabled="disabled"
                         {% endif %}
                 >
@@ -43,7 +47,7 @@
             </span>
     </td>
 
-    <td class="w-100">
+    <td class="text-center w-25">
         <a href="{{ path('wildberries-package:admin.supply.detail', { id: item.id }) }}"
            class="fw-bolder mb-1 text-decoration-none product-name">
             {{ item.identifier ?: 'new'|trans }}
@@ -54,10 +58,12 @@
         {{ item.total }}
     </td>
 
-    <td class="text-center">
-        <span class="badge {{ item.status == 'complete' ? 'bg-success' : 'bg-warning text-dark' }} shadow">
-            {{ item.status|trans }}
-        </span>
+    <td class="text-center text-nowrap">
+        {{ item.supply_date|date('d.m.Y H:i') }}
+    </td>
+
+    <td class="w-100">
+        &nbsp;
     </td>
 
 </tr>

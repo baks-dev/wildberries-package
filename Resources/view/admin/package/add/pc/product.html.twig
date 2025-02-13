@@ -33,7 +33,7 @@
 
     <div class="w-100">
 
-        <div class="fw-bolder">{{ card.product_name }}</div>
+        <div class="fw-bolder fw-bolder text-truncate" style="max-width: 350px;">{{ card.product_name }}</div>
 
         <div>
             {% if card.product_offer_name %}
@@ -67,7 +67,7 @@
         <button
 
                 id="print-{{ card.id }}"
-                class="btn btn-sm btn-primary  disabled prnt"
+                class="btn btn-primary disabled prnt"
                 data-href="{{ path('wildberries-package:admin.package.print', { id : card.id, print: true }) }}"
                 data-bs-toggle="modal"
                 data-bs-target="#modal"

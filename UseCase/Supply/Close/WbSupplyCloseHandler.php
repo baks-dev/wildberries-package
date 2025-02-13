@@ -49,6 +49,7 @@ final class WbSupplyCloseHandler extends AbstractHandler
         /* Отправляем сообщение в шину */
         $this->messageDispatch
             ->addClearCacheOther('wildberries-orders')
+            ->addClearCacheOther('wildberries-package')
             ->dispatch(
                 message: new WbSupplyMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
                 transport: (string) $command->getProfile(),

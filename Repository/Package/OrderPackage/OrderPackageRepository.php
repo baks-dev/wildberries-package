@@ -23,62 +23,72 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Repository\Package\CountOrdersSupply;
+namespace BaksDev\Wildberries\Package\Repository\Package\OrderPackage;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
-use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use InvalidArgumentException;
 
-final class CountOrdersSupplyRepository implements CountOrdersSupplyInterface
+
+interface OrderPackageInterface
 {
-    private WbSupplyUid|false $supply = false;
+    public function findAll(): array|bool;
+}
+
+final class OrderPackageRepository implements OrderPackageInterface
+{
+    private OrderUid|false $order = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
-    public function forSupply(WbSupply|WbSupplyUid|string $supply): self
+    public function forOrder(Order|OrderUid|string $order): self
     {
-        if(is_string($supply))
+        if(empty($order))
         {
-            $supply = new WbSupplyUid($supply);
+            $order = false;
+            return $this;
         }
 
-        if($supply instanceof WbSupply)
+        if(is_string($order))
         {
-            $supply = $supply->getId();
+            $order = new OrderUid($order);
         }
 
-        $this->supply = $supply;
+        if($order instanceof Order)
+        {
+            $order = $order->getId();
+        }
+
+        $this->order = $order;
 
         return $this;
     }
 
-    /**
-     * Метод возвращает количество всех заказов в поставке
-     */
-    public function count(): int
+    public function find(): array|bool
     {
-        if(false === ($this->supply instanceof WbSupplyUid))
+        if(false === ($this->order instanceof OrderUid))
         {
-            throw new InvalidArgumentException('Invalid Argument WbSupply');
+            throw new InvalidArgumentException('Invalid Argument Order');
         }
 
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $dbal
-            ->from(WbPackageSupply::class, 'package_supply')
-            ->where('package_supply.supply = :supply')
-            ->setParameter('supply', $this->supply, WbSupplyUid::TYPE);
+            ->from(WbPackageOrder::class, 'ord')
+            ->where('ord.order = :order')
+            ->setParameter(
+                key: 'order',
+                value: $this->order,
+                type: OrderUid::TYPE
+            );
 
-        $dbal->leftJoin(
-            'package_supply',
-            WbPackageOrder::class,
-            'package_order',
-            'package_order.event = package_supply.event'
-        );
+        $dbal
+            ->select('ord.id AS value');
 
-        return $dbal->count();
+        return $dbal
+            // ->enableCache('Namespace', 3600)
+            ->fetchAllAssociative();
     }
 }
