@@ -34,7 +34,7 @@ use InvalidArgumentException;
 
 interface OrderPackageInterface
 {
-    public function findAll(): array|bool;
+    public function find(): array|bool;
 }
 
 final class OrderPackageRepository implements OrderPackageInterface
