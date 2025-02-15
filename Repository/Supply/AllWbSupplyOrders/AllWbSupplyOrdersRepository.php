@@ -33,48 +33,36 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
-use BaksDev\Orders\Order\Entity\Products\Price\OrderPrice;
-use BaksDev\Orders\Order\Type\Status\OrderStatus;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
-use BaksDev\Products\Category\Type\Id\CategoryProductUid;
-use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
 use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
-use BaksDev\Wildberries\Orders\Entity\Event\WbOrdersEvent;
-use BaksDev\Wildberries\Orders\Entity\Sticker\WbOrdersSticker;
-use BaksDev\Wildberries\Orders\Entity\WbOrders;
-use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
+use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardOffer;
-use BaksDev\Wildberries\Products\Entity\Cards\WbProductCardVariation;
+
 
 final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
 {
-    private PaginatorInterface $paginator;
-    private DBALQueryBuilder $DBALQueryBuilder;
     private ?SearchDTO $search = null;
-    private ?WbOrdersProductFilterDTO $filter = null;
+
+    private ?ProductFilterDTO $filter = null;
 
     public function __construct(
-        DBALQueryBuilder $DBALQueryBuilder,
-        PaginatorInterface $paginator,
-    )
-    {
-        $this->paginator = $paginator;
-        $this->DBALQueryBuilder = $DBALQueryBuilder;
-    }
+        private readonly DBALQueryBuilder $DBALQueryBuilder,
+        private readonly PaginatorInterface $paginator,
+    ) {}
 
 
     public function search(SearchDTO $search): self
@@ -83,7 +71,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         return $this;
     }
 
-    public function filter(WbOrdersProductFilterDTO $filter): self
+    public function filter(ProductFilterDTO $filter): self
     {
         $this->filter = $filter;
         return $this;
@@ -154,7 +142,6 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             );
 
 
-
         $dbal->addSelect('order_product.product AS wb_product_event');
         $dbal->addSelect('order_product.offer AS wb_product_offer');
         $dbal->addSelect('order_product.variation AS wb_product_variation');
@@ -185,7 +172,9 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'product_event.id = order_product.product'
         );
 
-        $dbal->leftJoin('order_product',
+        $dbal
+            ->addSelect('product_info.article AS card_article')
+            ->leftJoin('order_product',
             ProductInfo::class,
             'product_info',
             'product_info.product = product_event.main'
@@ -198,19 +187,6 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'product_trans',
             'product_trans.event = order_product.product AND product_trans.local = :local'
         );
-
-
-        //        if($this->filter?->getCategory())
-        //        {
-        //            $dbal->join('order_product',
-        //                ProductCategory::class,
-        //                'product_category',
-        //                'product_category.event = product_event.id AND product_category.category = :category AND product_category.root = true'
-        //            );
-        //
-        //            $dbal->setParameter('category', $this->filter->getCategory(), CategoryProductUid::TYPE);
-        //        }
-
 
         /*
          * Торговое предложение
@@ -296,15 +272,14 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
 
         /** Артикул продукта */
 
-        $dbal->addSelect("
-					CASE
-					   WHEN product_variation.article IS NOT NULL THEN product_variation.article
-					   WHEN product_offer.article IS NOT NULL THEN product_offer.article
-					   WHEN product_info.article IS NOT NULL THEN product_info.article
-					   ELSE NULL
-					END AS product_article
-				"
-        );
+        $dbal->addSelect('
+            COALESCE(
+                product_modification.article, 
+                product_variation.article, 
+                product_offer.article, 
+                product_info.article
+            ) AS product_article
+		');
 
 
         /** Фото продукта */
@@ -317,28 +292,41 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         );
 
         $dbal->leftJoin(
-            'product_offer',
+            'order_product',
             ProductOfferImage::class,
             'product_offer_images',
             'product_offer_images.offer = order_product.offer AND product_offer_images.root = true'
         );
 
         $dbal->leftJoin(
-            'product_offer',
+            'order_product',
             ProductVariationImage::class,
             'product_variation_image',
             'product_variation_image.variation = order_product.variation AND product_variation_image.root = true'
         );
 
+        $dbal->leftJoin(
+            'order_product',
+            ProductModificationImage::class,
+            'product_modification_image',
+            'product_modification_image.modification = order_product.variation AND product_modification_image.root = true'
+        );
+
 
         $dbal->addSelect("
 			CASE
-			   WHEN product_variation_image.name IS NOT NULL THEN
-					CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_variation_image.name)
-			   WHEN product_offer_images.name IS NOT NULL THEN
-					CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
-			   WHEN product_photo.name IS NOT NULL THEN
-					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
+			    WHEN product_modification_image.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductModificationImage::class)."' , '/', product_modification_image.name)
+			
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductVariationImage::class)."' , '/', product_variation_image.name)
+			   
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductOfferImage::class)."' , '/', product_offer_images.name)
+			   
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
+			   
 			   ELSE NULL
 			END AS product_image
 		"
@@ -347,12 +335,18 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         /** Флаг загрузки файла CDN */
         $dbal->addSelect("
 			CASE
-			   WHEN product_variation_image.name IS NOT NULL THEN
-					product_variation_image.ext
-			   WHEN product_offer_images.name IS NOT NULL THEN
-					product_offer_images.ext
-			   WHEN product_photo.name IS NOT NULL THEN
-					product_photo.ext
+			    WHEN product_modification_image.name IS NOT NULL 
+			   THEN product_modification_image.ext
+			   
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN product_variation_image.ext
+			   
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN product_offer_images.ext
+			   
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN product_photo.ext
+			   
 			   ELSE NULL
 			END AS product_image_ext
 		");
@@ -360,12 +354,18 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         /** Флаг загрузки файла CDN */
         $dbal->addSelect("
 			CASE
-			   WHEN product_variation_image.name IS NOT NULL THEN
-					product_variation_image.cdn
-			   WHEN product_offer_images.name IS NOT NULL THEN
-					product_offer_images.cdn
-			   WHEN product_photo.name IS NOT NULL THEN
-					product_photo.cdn
+			   WHEN product_modification_image.name IS NOT NULL 
+			   THEN product_modification_image.cdn
+			   
+			   WHEN product_variation_image.name IS NOT NULL 
+			   THEN product_variation_image.cdn
+			  
+			   WHEN product_offer_images.name IS NOT NULL 
+			   THEN product_offer_images.cdn
+			   
+			   WHEN product_photo.name IS NOT NULL 
+			   THEN product_photo.cdn
+			   
 			   ELSE NULL
 			END AS product_image_cdn
 		");
@@ -394,13 +394,16 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         {
             $dbal
                 ->createSearchQueryBuilder($this->search)
-                ->addSearchEqualUid('supply_order.id')
+                //->addSearchEqualUid('supply_order.id')
+                ->addSearchLike('product_modification.article')
                 ->addSearchLike('product_variation.article')
                 ->addSearchLike('product_offer.article')
                 ->addSearchLike('product_info.article')
-                ->addSearchLike('wb_order_event.barcode')
-                ->addSearchLike('wb_order_sticker.part')
-                ->addSearchEqual('wb_order.ord');
+                ->addSearchLike('invariable.number')
+                //->addSearchLike('wb_order_event.barcode')
+                //->addSearchLike('wb_order_sticker.part')
+                //->addSearchEqual('wb_order.ord')
+            ;
 
         }
 

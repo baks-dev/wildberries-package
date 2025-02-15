@@ -29,9 +29,11 @@ use Generator;
 
 interface OrdersIdentifierByWbSupplyInterface
 {
-    public function supply(WbSupply|WbSupplyUid|string $supply): self;
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self;
 
     public function onlyAdOrders(): self;
+
+    public function onlyPrint(): self;
 
     /**
      * Метод возвращает все идентификаторы заказов в поставке

@@ -27,6 +27,7 @@ namespace BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByWbSup
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Delivery\Type\Id\DeliveryUid;
+use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
@@ -49,9 +50,11 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
 
     private string|false $status = false;
 
+    private bool $print = false;
+
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
-    public function supply(WbSupply|WbSupplyUid|string $supply): self
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self
     {
         if(is_string($supply))
         {
@@ -71,6 +74,13 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
     public function onlyAdOrders(): self
     {
         $this->status = WbPackageStatusAdd::class;
+
+        return $this;
+    }
+
+    public function onlyPrint(): OrdersIdentifierByWbSupplyInterface
+    {
+        $this->print = true;
 
         return $this;
     }
@@ -96,6 +106,11 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 type: WbSupplyUid::TYPE
             );
 
+        if($this->print)
+        {
+            $dbal->andWhere('supply.print IS NOT TRUE');
+        }
+
         $dbal
             ->join(
                 'supply',
@@ -106,7 +121,7 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
 
         $dbal
             ->addSelect('package_order.id AS value')
-            ->addSelect('package_order.status AS attr')
+            ->addSelect('package_order.status AS option')
             ->leftJoin(
                 'package',
                 WbPackageOrder::class,
@@ -129,6 +144,15 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 Order::class,
                 'orders',
                 'orders.id = package_order.id',
+            );
+
+        $dbal
+            ->addSelect('invariable.number AS attr')
+            ->leftJoin(
+                'package_order',
+                OrderInvariable::class,
+                'invariable',
+                'invariable.main = package_order.id',
             );
 
         $dbal
@@ -158,4 +182,6 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
 
         return $result->valid() ? $result : false;
     }
+
+
 }

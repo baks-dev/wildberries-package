@@ -101,7 +101,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
         /** Получаем все добавленные заказы в поставке */
 
         $orders = $this->OrdersIdentifierByWbSupply
-            ->supply($WbSupplyEvent->getMain())
+            ->forSupply($WbSupplyEvent->getMain())
             ->onlyAdOrders()
             ->findAll();
 

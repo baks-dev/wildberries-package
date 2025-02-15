@@ -34,11 +34,9 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
-use BaksDev\Products\Product\Type\Event\ProductEventUid;
-use BaksDev\Products\Product\Type\Id\ProductUid;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
-use BaksDev\Wildberries\Package\Repository\Package\OrderByPackage\OrderByPackageInterface;
+use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -51,16 +49,20 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_PACKAGE_PRINT')]
-final class PrintController extends AbstractController
+final class PrintPackageController extends AbstractController
 {
+    private ?array $stickers = null;
+
+    private ?array $barcodes = null;
+
     /**
      * Печать штрихкодов и QR заказов в упаковке
      */
-    #[Route('/admin/wb/packages/print/{id}', name: 'admin.package.print', methods: ['GET', 'POST'])]
+    #[Route('/admin/wb/packages/print/pack/{id}', name: 'admin.package.print.pack', methods: ['GET', 'POST'])]
     public function printer(
         #[MapEntity] WbPackage $wbPackage,
         CentrifugoPublishInterface $CentrifugoPublish,
-        OrderByPackageInterface $orderByPackage,
+        OrdersByPackageInterface $orderByPackage,
         WbBarcodeSettingsInterface $barcodeSettings,
         WbBarcodePropertyByProductEventInterface $wbBarcodeProperty,
         ProductDetailByUidInterface $productDetail,
@@ -70,13 +72,7 @@ final class PrintController extends AbstractController
     ): Response
     {
 
-        /* Скрываем у все пользователей заказ для печати */
-        $CentrifugoPublish
-            ->addData(['identifier' => (string) $wbPackage->getId()]) // ID продукта
-            ->addData(['profile' => false])
-            ->send('remove');
-
-        /* Получаем все заказы в упаковке  */
+        /* Получаем все заказы в упаковке вместе с честными занками при наличии */
         $orders = $orderByPackage
             ->forPackageEvent($wbPackage->getEvent())
             ->findAll();
@@ -86,25 +82,25 @@ final class PrintController extends AbstractController
             throw new RouteNotFoundException('Orders Not Found');
         }
 
-        $stickers = null;
-
         /**
          * Получаем стикеры заказа Wildberries
          */
 
         foreach($orders as $order)
         {
-            $stickers[$order['order']] = $WildberriesOrdersStickerRequest
+            $this->stickers[$order['order']] = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
                 ->forOrderWb($order['number'])
                 ->getOrderSticker();
         }
 
-        /** Получаем честные знаки на заказ из материалов */
+        /**
+         * Получаем честные знаки на заказ из материалов
+         */
 
 
         /**
-         * Получаем продукцию для штрихкода
+         * Получаем продукцию для штрихкода (в упаковке всегда один и тот же продукт)
          */
         $order = current($orders);
 
@@ -128,7 +124,7 @@ final class PrintController extends AbstractController
             ->text($Product['product_barcode'])
             ->type(BarcodeType::Code128)
             ->format(BarcodeFormat::SVG)
-            ->generate(implode(DIRECTORY_SEPARATOR, ['barcode', 'test']));
+            ->generate();
 
         if($barcode === false)
         {
@@ -140,27 +136,23 @@ final class PrintController extends AbstractController
             throw new RuntimeException('Barcode write error');
         }
 
-        $Code = $BarcodeWrite->render();
+
+        $this->barcodes[(string) $wbPackage->getId()] = $BarcodeWrite->render();
         $BarcodeWrite->remove();
 
         /**
          * Получаем настройки бокового стикера
          */
 
-        $ProductUid = new ProductUid($Product['main']);
-        $BarcodeSettings = $barcodeSettings->findWbBarcodeSettings($ProductUid);
+        $BarcodeSettings = $Product['main'] ? $barcodeSettings
+            ->forProduct($Product['main'])
+            ->find() : false;
 
-        /** Применяем настройки по умолчанию */
-        if(false === $BarcodeSettings)
-        {
-            $BarcodeSettings = null;
-            $BarcodeSettings['offer'] = false;
-            $BarcodeSettings['variation'] = false;
-            $BarcodeSettings['modification'] = false;
 
-        }
-
-        $property = $BarcodeSettings ? $wbBarcodeProperty->getPropertyCollection(new ProductEventUid($order['product_event'])) : [];
+        /** Скрываем у все пользователей упаковку для печати */
+        $CentrifugoPublish
+            ->addData(['identifier' => (string) $wbPackage->getId()]) // ID упаковки
+            ->send('remove');
 
         /** Отправляем сообщение в шину и отмечаем принт упаковки */
         $messageDispatch->dispatch(
@@ -168,16 +160,18 @@ final class PrintController extends AbstractController
             transport: 'wildberries-package',
         );
 
+
         return $this->render(
             [
-                'item' => $orders,
-                'barcode' => $Code,
-                'counter' => $BarcodeSettings['counter'] ?? 1,
+                'packages' => [(string) $wbPackage->getId()],
+                'orders' => [(string) $wbPackage->getId() => $orders],
+                'barcodes' => $this->barcodes,
                 'settings' => $BarcodeSettings,
                 'card' => $Product,
-                'property' => $property,
-                'stickers' => $stickers
-            ]
+                'stickers' => $this->stickers
+            ],
+            routingName: 'admin.package',
+            file: '/print/print.html.twig'
         );
     }
 }

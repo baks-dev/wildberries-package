@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Repository\Package\OrderByPackage;
+namespace BaksDev\Wildberries\Package\Repository\Package\OrderPackage;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Materials\Sign\BaksDevMaterialsSignBundle;
@@ -33,47 +33,42 @@ use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Wildberries\Orders\Entity\Event\WbOrdersEvent;
-use BaksDev\Wildberries\Orders\Entity\Sticker\WbOrdersSticker;
-use BaksDev\Wildberries\Orders\Entity\WbOrders;
-use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
-use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
+use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use InvalidArgumentException;
 
 
-final class OrderByPackageRepository implements OrderByPackageInterface
+final class WbPackageOrderRepository implements WbPackageOrderInterface
 {
-    private WbPackageEventUid|false $event = false;
+    private OrderUid|false $order = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
-    public function forPackageEvent(WbPackageEvent|WbPackageEventUid|string $event): self
+    public function forOrder(Order|OrderUid|string $order): self
     {
-        if(is_string($event))
+        if(is_string($order))
         {
-            $event = new WbPackageEventUid();
+            $order = new OrderUid($order);
         }
 
-        if($event instanceof WbPackageEvent)
+        if($order instanceof Order)
         {
-            $event = $event->getId();
+            $order = $order->getId();
         }
 
-        $this->event = $event;
+        $this->order = $order;
 
         return $this;
     }
 
-
     /**
-     * Метод получает все заказы в упаковке со стикерами
+     * Метод получает по идентификатору заказ в упаковке со стикерами «Честных знаков»
      */
-    public function findAll(): ?array
+    public function find(): WbPackageOrderResult|false
     {
-        if(false === ($this->event instanceof WbPackageEventUid))
+        if(false === ($this->order instanceof OrderUid))
         {
-            throw new InvalidArgumentException('Invalid Argument WbPackageEvent');
+            throw new InvalidArgumentException('Invalid Argument Order');
         }
 
         $dbal = $this->DBALQueryBuilder
@@ -85,32 +80,21 @@ final class OrderByPackageRepository implements OrderByPackageInterface
             ->from(WbPackageOrder::class, 'package_order');
 
         $dbal
-            ->where('package_order.event = :event')
+            ->where('package_order.id = :order')
             ->setParameter(
-                key: 'event',
-                value: $this->event,
-                type: WbPackageEventUid::TYPE
+                key: 'order',
+                value: $this->order,
+                type: OrderUid::TYPE
             );
 
         $dbal
-            ->addSelect('package_event.total')
-            ->leftJoin(
+            ->addSelect('package.id AS package')
+            ->join(
                 'package_order',
-                WbPackageEvent::class,
-                'package_event',
-                'package_event.id = package_order.event'
+                WbPackage::class,
+                'package',
+                'package.event = package_order.event'
             );
-
-
-        //        $dbal
-        //            ->addSelect('wb_sticker.sticker')
-        //            ->leftJoin(
-        //                'package_order',
-        //                WbOrdersSticker::class,
-        //                'wb_sticker',
-        //                'wb_sticker.main = package_order.id'
-        //            );
-
 
         $dbal
             ->leftJoin(
@@ -176,33 +160,10 @@ final class OrderByPackageRepository implements OrderByPackageInterface
                     'code',
                     'code.main = sign_event.main'
                 );
-
-
         }
-
-
-        //
-        //        $dbal
-        //            ->leftJoin(
-        //                'package_order',
-        //                WbOrders::class,
-        //                'wb_orders',
-        //                'wb_orders.id = package_order.id'
-        //            );
-        //
-        //        $dbal
-        //            ->addSelect('wb_orders_event.barcode')
-        //            ->leftJoin(
-        //                'wb_orders',
-        //                WbOrdersEvent::class,
-        //                'wb_orders_event',
-        //                'wb_orders_event.id = wb_orders.event'
-        //            );
-
 
         return $dbal
             ->enableCache('wildberries-package')
-            ->fetchAllAssociative();
+            ->fetchHydrate(WbPackageOrderResult::class);
     }
-
 }

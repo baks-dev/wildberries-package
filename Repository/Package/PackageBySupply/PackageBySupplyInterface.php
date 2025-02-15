@@ -21,19 +21,20 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Wildberries\Package\Repository\Package\OrderByPackage;
+namespace BaksDev\Wildberries\Package\Repository\Package\PackageBySupply;
 
-use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
-use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use Generator;
 
-interface OrderByPackageInterface
+interface PackageBySupplyInterface
 {
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self;
 
-    public function forPackageEvent(WbPackageEvent|WbPackageEventUid|string $event): self;
+    public function onlyPrint(): self;
 
     /**
-     * Метод получает заказы в упаковке со стикерами
+     * Метод возвращает все идентификаторы упаковок в поставке
      */
-    public function findAll(): ?array;
-
+    public function findAll(): Generator|false;
 }

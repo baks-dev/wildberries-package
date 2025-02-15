@@ -21,35 +21,17 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Wildberries\Package\Repository\Package\OrderPackage;
 
-namespace BaksDev\Wildberries\Package\Type\Package\Id;
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Type\Id\OrderUid;
 
-use BaksDev\Core\Type\UidType\Uid;
-use Symfony\Component\Uid\AbstractUid;
-
-final class WbPackageUid extends Uid
+interface WbPackageOrderInterface
 {
-    public const string TEST = '018af20a-c80c-7c7a-9d66-4e69f9fa0fe7';
+    public function forOrder(Order|OrderUid|string $order): self;
 
-    public const string TYPE = 'wb_package';
-
-    public function __construct(
-        AbstractUid|string|null $value = null,
-        private readonly mixed $attr = null,
-        private readonly mixed $option = null,
-    )
-    {
-        parent::__construct($value);
-    }
-
-    public function getAttr(): mixed
-    {
-        return $this->attr;
-    }
-
-    public function getOption(): mixed
-    {
-        return $this->option;
-    }
+    /**
+     * Метод получает по идентификатору заказ в упаковке со стикерами «Честных знаков»
+     */
+    public function find(): WbPackageOrderResult|false;
 }

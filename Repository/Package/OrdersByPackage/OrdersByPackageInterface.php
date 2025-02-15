@@ -21,35 +21,19 @@
  *  THE SOFTWARE.
  */
 
-declare(strict_types=1);
+namespace BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage;
 
-namespace BaksDev\Wildberries\Package\Type\Package\Id;
+use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
+use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 
-use BaksDev\Core\Type\UidType\Uid;
-use Symfony\Component\Uid\AbstractUid;
-
-final class WbPackageUid extends Uid
+interface OrdersByPackageInterface
 {
-    public const string TEST = '018af20a-c80c-7c7a-9d66-4e69f9fa0fe7';
 
-    public const string TYPE = 'wb_package';
+    public function forPackageEvent(WbPackageEvent|WbPackageEventUid|string $event): self;
 
-    public function __construct(
-        AbstractUid|string|null $value = null,
-        private readonly mixed $attr = null,
-        private readonly mixed $option = null,
-    )
-    {
-        parent::__construct($value);
-    }
+    /**
+     * Метод получает заказы в упаковке со стикерами
+     */
+    public function findAll(): ?array;
 
-    public function getAttr(): mixed
-    {
-        return $this->attr;
-    }
-
-    public function getOption(): mixed
-    {
-        return $this->option;
-    }
 }

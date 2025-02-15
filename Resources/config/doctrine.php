@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,12 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatusType;
 use Symfony\Config\DoctrineConfig;
 
 return static function(ContainerConfigurator $container, DoctrineConfig $doctrine) {
+
+    $services = $container->services()
+        ->defaults()
+        ->autowire()
+        ->autoconfigure();
+
     $emDefault = $doctrine->orm()->entityManager('default')->autoMapping(true);
 
 
@@ -46,8 +52,9 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
     $doctrine->dbal()->type(WbPackageEventUid::TYPE)->class(WbPackageEventType::class);
     $doctrine->dbal()->type(WbPackageStatus::TYPE)->class(WbPackageStatusType::class);
 
-
     $doctrine->dbal()->type(WbSupplyUid::TYPE)->class(WbSupplyType::class);
+    $services->set(WbSupplyUid::class)->class(WbSupplyUid::class);
+
     $doctrine->dbal()->type(WbSupplyEventUid::TYPE)->class(WbSupplyEventType::class);
     $doctrine->dbal()->type(WbSupplyStatus::TYPE)->class(WbSupplyStatusType::class);
 

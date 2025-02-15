@@ -1,0 +1,101 @@
+{# ПЕЧАТЬ #}
+
+{% set counter = settings ? settings.counter : 1 %}
+
+<div class="{{ app.request.headers.get('X-Requested-With') is not null ? 'd-none' }} d-print-block p-0 w-100">
+
+    {% for package in packages %}
+
+        {% set package = package|trim %}
+
+        {% for order in orders[package] %}
+
+            {% set order_id = order.order|trim %}
+
+            {% if not loop.first %}
+                <div style="page-break-after: always !important;"></div>
+            {% endif %}
+
+            {# QRCode Wildberries #}
+            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+                <img
+                        src='data:image/svg+xml;base64,{{ stickers[order_id] }}'
+                        alt='QRCode Wildberries'
+                        style="height: 100%;"
+                />
+            </div>
+
+
+            {% for i in 1..counter %}
+
+                {# QRCode Честный Знак #}
+
+                {% set sign = false %}
+
+                {% if order.code_image is defined %}
+                    {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn) %}
+                {% endif %}
+
+
+                {# @var order \BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderResult #}
+
+                {% if order.sign is defined and order.sign is not empty %}
+                    {% set sign = cdn_image_path(order.codeImage, order.codeExt, order.codeCdn) %}
+                {% endif %}
+
+                {% if sign and sign != '/assets/img/blank.svg' %}
+                    <div style="page-break-after: always !important;"></div>
+
+                    <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+                        <img
+                                src='{{ sign }}'
+                                alt='QRCode Честный Знак'
+                                style="height: 100%;"
+                        />
+                    </div>
+
+                {% endif %}
+
+
+                <div style="page-break-after: always !important;"></div>
+
+                <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
+
+                    {# Штрикхкод #}
+                    <div style="text-align: center;">
+                        <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor"
+                                style="width: 180px;"
+                                viewBox="5 0 125 25"
+                        >
+                            {{ barcodes[package]|striptags('<path>')|raw }}
+                        </svg>
+                    </div>
+
+
+                    {# Идентификатор штрихкода #}
+
+                    <div style="width: 100%; text-align: center; margin-bottom: 5px;">
+                        {{ card.product_barcode }}
+                    </div>
+
+                    <div style="
+                     width: 100%;
+                     display: flex;
+                     justify-content: space-between;
+                     align-items: flex-end;
+                     font-size: 8px;"
+                    >
+                        {{ include(_self|replace({ "print.html.twig" : "sticker.html.twig" })) }}
+                    </div>
+                </div>
+
+            {% endfor %}
+
+        {% endfor %}
+
+    {% endfor %}
+
+
+</div>

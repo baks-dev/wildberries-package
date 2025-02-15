@@ -67,33 +67,6 @@
                 </div>
 
             </div>
-
-            {# <div>
-
-                <div
-
-                        role="tooltip"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-delay='{"show":600,"hide":100}'
-                        title="Печатать всех"
-                >
-                    <a href=" #}{# {{ path('wildberries-package:admin.package.prints', { id : opens.id }) }} #}{# "
-                       class="btn btn-warning modal-link disabled"
-                       data-bs-toggle="modal"
-                       data-bs-target="#modal"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                             class="bi bi-printer-fill" viewBox="0 0 16 16">
-                            <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"></path>
-                            <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"></path>
-                        </svg>
-                    </a>
-                </div>
-
-
-            </div> #}
-
         </div>
 
 
@@ -127,10 +100,17 @@
                     </div>
 
 
-                    <div class="w-25">
+                    <div class="w-25"
+                         role="tooltip"
+                         data-bs-toggle="tooltip"
+                         data-bs-placement="bottom"
+                         data-bs-delay='{"show":600,"hide":100}'
+                         title="Печать всех стикеров поставки"
+                    >
+
                         <button
                                 class="btn btn-light disabled prnt"
-                                data-href="#"
+                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id, print: true }) }}"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modal"
                                 {# {{ isSticker ?: 'disabled="disabled"' }} #}
@@ -172,15 +152,15 @@
                         title="Отправить поставку на склад Wildberries"
                 >
 
-                    <a
-                            href="{{ path('wildberries-package:admin.supply.close', { id: opens.id }) }}"
+                    <button
+                            data-href="{{ path('wildberries-package:admin.supply.close', { id: opens.id }) }}"
                             id="close_supply_btn"
                             class="btn modal-btn btn-danger modal-link disabled text-nowrap"
                             data-bs-toggle="modal"
                             data-bs-target="#modal"
                     >
                         Закрыть поставку
-                    </a>
+                    </button>
                 </div>
 
 
