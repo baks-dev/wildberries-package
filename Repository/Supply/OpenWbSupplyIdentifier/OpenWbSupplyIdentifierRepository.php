@@ -40,7 +40,7 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatus
 
 final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierInterface
 {
-    private UserProfileUid|false $profile;
+    private UserProfileUid|false $profile = false;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,

@@ -142,7 +142,7 @@
 
 
         <div class="text-end w-25">
-            {% if opens.status == 'new' or opens.status == 'open' %}
+            {% if is_granted('ROLE_WB_SUPPLY_CLOSE') and opens.status == 'open' %}
 
                 <div
                         role="tooltip"
@@ -164,7 +164,7 @@
                 </div>
 
 
-            {% else %}
+            {% elseif opens.status != 'new' %}
 
                 <a
                         href="{{ path('wildberries-package:admin.supply.new') }}"

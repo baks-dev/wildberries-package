@@ -51,7 +51,7 @@ class WbPackageModify extends EntityEvent
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[ORM\Id]
-    #[ORM\OneToOne(inversedBy: 'modify', targetEntity: WbPackageEvent::class)]
+    #[ORM\OneToOne(targetEntity: WbPackageEvent::class, inversedBy: 'modify')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private WbPackageEvent $event;
 
@@ -125,10 +125,10 @@ class WbPackageModify extends EntityEvent
     }
 
 
-    public function upModifyAgent(IpAddress $ip, string $agent): void
+    public function upModifyAgent(IpAddress $ip, ?string $agent): void
     {
         $this->ip = $ip;
-        $this->agent = $agent;
+        !$agent ?: $this->agent = $agent;
         $this->modDate = new DateTimeImmutable();
     }
 
