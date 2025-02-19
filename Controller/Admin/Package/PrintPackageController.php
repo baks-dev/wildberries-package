@@ -40,12 +40,13 @@ use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPacka
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_PACKAGE_PRINT')]
@@ -60,6 +61,7 @@ final class PrintPackageController extends AbstractController
      */
     #[Route('/admin/wb/packages/print/pack/{id}', name: 'admin.package.print.pack', methods: ['GET', 'POST'])]
     public function printer(
+        #[Target('wildberriesPackageLogger')] LoggerInterface $logger,
         #[MapEntity] WbPackage $wbPackage,
         CentrifugoPublishInterface $CentrifugoPublish,
         OrdersByPackageInterface $orderByPackage,
@@ -79,7 +81,12 @@ final class PrintPackageController extends AbstractController
 
         if(empty($orders))
         {
-            throw new RouteNotFoundException('Orders Not Found');
+            $logger->critical(
+                'wildberries-package: Заказов на упаковку не найдено',
+                [$wbPackage->getEvent(), self::class.':'.__LINE__]
+            );
+
+            return new Response('Заказов на упаковку не найдено', Response::HTTP_NOT_FOUND);
         }
 
         /**
@@ -113,7 +120,22 @@ final class PrintPackageController extends AbstractController
 
         if(!$Product)
         {
-            throw new RouteNotFoundException('Product Not Found');
+            $logger->critical(
+                'wildberries-package: Продукция в упаковке не найдена',
+                [$order, self::class.':'.__LINE__]
+            );
+
+            return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
+        }
+
+        if(empty($Product['product_barcode']))
+        {
+            $logger->critical(
+                'wildberries-package: В продукции не указан артикул либо штрихкод',
+                [$Product, self::class.':'.__LINE__]
+            );
+
+            return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
         }
 
         /**
@@ -154,12 +176,12 @@ final class PrintPackageController extends AbstractController
             ->addData(['identifier' => (string) $wbPackage->getId()]) // ID упаковки
             ->send('remove');
 
+
         /** Отправляем сообщение в шину и отмечаем принт упаковки */
         $messageDispatch->dispatch(
             message: new PrintWbPackageMessage($wbPackage->getId()),
             transport: 'wildberries-package',
         );
-
 
         return $this->render(
             [

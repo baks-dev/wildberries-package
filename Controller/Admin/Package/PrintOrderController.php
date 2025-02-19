@@ -37,7 +37,9 @@ use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterfac
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
@@ -46,15 +48,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[RoleSecurity('ROLE_WB_PACKAGE_PRINT')]
 final class PrintOrderController extends AbstractController
 {
-    private ?array $stickers = null;
-
-    private ?array $barcodes = null;
-
     /**
      * Печать штрихкодов и QR заказа
      */
     #[Route('/admin/wb/packages/print/order/{id}', name: 'admin.package.print.order', methods: ['GET', 'POST'])]
     public function printer(
+        #[Target('wildberriesPackageLogger')] LoggerInterface $logger,
         #[ParamConverter(OrderUid::class)] OrderUid $OrderUid,
         WbPackageOrderInterface $WbPackageOrder,
         WbBarcodeSettingsInterface $barcodeSettings,
@@ -89,7 +88,22 @@ final class PrintOrderController extends AbstractController
 
         if(!$Product)
         {
-            return new Response('Product not found', Response::HTTP_NOT_FOUND);
+            $logger->critical(
+                'wildberries-package: Продукция в упаковке не найдена',
+                [$WbPackageOrderResult, self::class.':'.__LINE__]
+            );
+
+            return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
+        }
+
+        if(empty($Product['product_barcode']))
+        {
+            $logger->critical(
+                'wildberries-package: В продукции не указан артикул либо штрихкод',
+                [$Product, self::class.':'.__LINE__]
+            );
+
+            return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
         }
 
 

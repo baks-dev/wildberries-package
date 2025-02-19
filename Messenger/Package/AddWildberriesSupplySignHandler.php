@@ -42,6 +42,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Отправляет Честные знаки на указанные в упаковке заказы Wildberries (Api)
+ */
 #[AsMessageHandler(priority: -5)]
 final readonly class AddWildberriesSupplySignHandler
 {
@@ -59,9 +62,7 @@ final readonly class AddWildberriesSupplySignHandler
         $this->deduplicator->namespace('wildberries-package');
     }
 
-    /**
-     * Метод отправляет Честные знаки на указанные заказы Wildberries (Api)
-     */
+
     public function __invoke(WbPackageMessage $message): void
     {
         $DeduplicatorExecuted = $this->deduplicator

@@ -13,7 +13,7 @@
 {% endif %}
 
 
-<div id="{{ card.id }}" data-name="{{ card.product_name }}" class="d-flex gap-3 align-items-center mb-2 pack">
+<div id="{{ card.id }}" data-name="{{ card.product_name|lower }}" class="d-flex gap-3 align-items-center mb-2 pack">
 
     {# Обложка #}
     <button class="btn btn-link icon bg-cover rounded-2 lazy img-product m-0"
