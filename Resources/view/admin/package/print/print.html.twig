@@ -18,11 +18,13 @@
 
             {# QRCode Wildberries #}
             <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
-                <img
+                {# <img
                         src='data:image/svg+xml;base64,{{ stickers[order_id] }}'
                         alt='QRCode Wildberries'
                         style="height: 100%;"
-                />
+                /> #}
+
+                {{ stickers[order_id]|raw }}
             </div>
 
 
