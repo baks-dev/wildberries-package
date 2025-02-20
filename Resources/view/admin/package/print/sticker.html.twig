@@ -1,9 +1,12 @@
 {% if card %}
     <div style="">
 
+        <div>Номер: {{ order.number|replace({ 'W-' : '' }) }}</div>
+
         {# <div style="white-space: nowrap;">
             {{ string_width(card.product_name, 32) }}
         </div> #}
+
 
         <div>Категория: {{ card.category_name }}</div>
 
