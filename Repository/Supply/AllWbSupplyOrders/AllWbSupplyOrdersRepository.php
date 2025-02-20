@@ -36,6 +36,8 @@ use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
+use BaksDev\Products\Category\Type\Id\CategoryProductUid;
+use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
@@ -76,7 +78,6 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         $this->filter = $filter;
         return $this;
     }
-
 
     /** Метод возвращает пагинатор WbSupply */
     public function fetchAllWbSupplyOrdersAssociative(WbSupply|WbSupplyUid $supply): PaginatorInterface
@@ -162,7 +163,6 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         //            'order_price.product = order_product.id'
         //        );
 
-
         /**
          * Продукт
          */
@@ -180,6 +180,25 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'product_info',
             'product_info.product = product_event.main'
         );
+
+        if($this->filter?->getCategory())
+        {
+            $dbal->join('order_product',
+                ProductCategory::class,
+                'product_category',
+                '
+                product_category.event = product_info.event AND 
+                product_category.category = :category AND 
+                product_category.root = true'
+            )
+                ->setParameter(
+                    key: 'category',
+                    value: $this->filter->getCategory(),
+                    type: CategoryProductUid::TYPE
+                );
+
+        }
+
 
 
         $dbal->addSelect('product_trans.name AS product_name');
