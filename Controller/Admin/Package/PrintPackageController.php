@@ -93,13 +93,21 @@ final class PrintPackageController extends AbstractController
          * Получаем стикеры заказа Wildberries
          */
 
+        $isPrint = true;
+
         foreach($orders as $order)
         {
-            $this->stickers[$order['order']] = $WildberriesOrdersStickerRequest
+            if($isPrint === true && $order['order_status'] !== 'add')
+            {
+                $isPrint = false;
+            }
+
+            $this->stickers[$order['order']] = $order['order_status'] === 'add' ? $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
                 ->forOrderWb($order['number'])
-                ->getOrderSticker();
+                ->getOrderSticker() : null;
         }
+
 
         /**
          * Получаем честные знаки на заказ из материалов
@@ -176,12 +184,14 @@ final class PrintPackageController extends AbstractController
             ->addData(['identifier' => (string) $wbPackage->getId()]) // ID упаковки
             ->send('remove');
 
-
-        /** Отправляем сообщение в шину и отмечаем принт упаковки */
-        $messageDispatch->dispatch(
-            message: new PrintWbPackageMessage($wbPackage->getId()),
-            transport: 'wildberries-package',
-        );
+        if($isPrint)
+        {
+            /** Отправляем сообщение в шину и отмечаем принт упаковки */
+            $messageDispatch->dispatch(
+                message: new PrintWbPackageMessage($wbPackage->getId()),
+                transport: 'wildberries-package',
+            );
+        }
 
         return $this->render(
             [

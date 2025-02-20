@@ -57,7 +57,6 @@ final class DetailController extends AbstractController
         WbSupplyInterface $wbSupplyRepository,
         AllWbSupplyOrdersInterface $allWbSupplyOrders,
 
-        //AllWbSupplyInterface $allWbSupplyOrders,
         int $page = 0,
     ): Response
     {
@@ -78,10 +77,6 @@ final class DetailController extends AbstractController
 
 
         /**
-         * Фильтр товаров
-         */
-
-        /**
          * Фильтр продукции
          */
         $filter = new ProductFilterDTO();
@@ -90,14 +85,14 @@ final class DetailController extends AbstractController
             ->createForm(
                 type: ProductFilterForm::class,
                 data: $filter,
-                options: ['action' => $this->generateUrl('manufacture-part:admin.index')]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()])]
             )
             ->handleRequest($request);
 
         // Получаем список
         $orders = $allWbSupplyOrders
             ->search($search)
-            //->filter($filter)
+            ->filter($filter)
             ->fetchAllWbSupplyOrdersAssociative($wbSupply);
 
         return $this->render(

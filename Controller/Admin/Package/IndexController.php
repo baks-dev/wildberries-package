@@ -88,7 +88,7 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: ProductFilterForm::class,
                 data: $filter,
-                options: ['action' => $this->generateUrl('manufacture-part:admin.index')]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')]
             )
             ->handleRequest($request);
 

@@ -23,63 +23,65 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\UseCase\Package\OrderStatus;
+namespace BaksDev\Wildberries\Package\Messenger\Orders\Confirm;
+
 
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrderInterface;
-use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
-use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\Collection\WbPackageStatusInterface;
-use Symfony\Component\Validator\Constraints as Assert;
+use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-/** @see WbPackageOrder */
-final class UpdatePackageOrderStatusDTO implements WbPackageOrderInterface
+final class ConfirmOrderWildberriesMessage
 {
-    /**
-     * ID заказа
-     */
-    #[Assert\NotBlank]
-    #[Assert\Uuid]
-    private readonly OrderUid $id;
+    private string $profile;
 
+    private string $identifier;
 
-    /**
-     * Статус отправки заказа
-     */
-    #[Assert\NotBlank]
-    private WbPackageStatus $status;
+    private string $supply;
 
+    private string $order;
 
-    public function __construct(OrderUid $id)
+    public function __construct(
+        UserProfileUid|string $profile,
+        OrderUid|string $identifier,
+        string $supply,
+        string $order
+    )
     {
-        $this->id = $id;
+        $this->identifier = (string) $identifier;
+        $this->profile = (string) $profile;
+        $this->supply = $supply;
+        $this->order = $order;
     }
 
     /**
-     * Id
+     * Идентификатор системного заказа
      */
-    public function getId(): OrderUid
+    public function getIdentifier(): OrderUid
     {
-        return $this->id;
+        return new OrderUid($this->identifier);
+    }
+
+
+    /**
+     * Profile
+     */
+    public function getProfile(): UserProfileUid
+    {
+        return new UserProfileUid($this->profile);
     }
 
     /**
-     * Status
+     * Supply
      */
-    public function setStatus(WbPackageStatus|WbPackageStatusInterface|string $status): self
+    public function getSupply(): string
     {
-        if(is_string($status) && class_exists($status))
-        {
-            $status = new $status();
-        }
-
-        $this->status = $status instanceof WbPackageStatusInterface ? new WbPackageStatus($status) : $status;
-
-        return $this;
+        return $this->supply;
     }
 
-    public function getStatus(): WbPackageStatus
+    /**
+     * Order
+     */
+    public function getOrder(): string
     {
-        return $this->status;
+        return $this->order;
     }
-
 }

@@ -60,7 +60,6 @@ final readonly class UpdateOrdersStickerHandler
      */
     public function __invoke(WbPackageMessage $message): void
     {
-
         $DeduplicatorExecuted = $this->Deduplicator
             ->namespace('wildberries-package')
             ->deduplication([

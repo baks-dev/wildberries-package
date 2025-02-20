@@ -78,6 +78,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
 
         $dbal
             ->addSelect('package_order.id AS order')
+            ->addSelect('package_order.status AS order_status')
             ->from(WbPackageOrder::class, 'package_order');
 
         $dbal

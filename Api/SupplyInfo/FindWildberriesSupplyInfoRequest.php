@@ -26,11 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Api\SupplyInfo;
 
 use BaksDev\Wildberries\Api\Wildberries;
+use DateInterval;
 use InvalidArgumentException;
+use Symfony\Contracts\Cache\ItemInterface;
 
 final class FindWildberriesSupplyInfoRequest extends Wildberries
 {
-
     /**
      * Идентификатор поставки
      * Example: WB-GI-1234567
@@ -61,25 +62,38 @@ final class FindWildberriesSupplyInfoRequest extends Wildberries
             );
         }
 
-        $response = $this->marketplace()->TokenHttpClient()->request(
-            'GET',
-            '/api/v3/supplies/'.$this->supply,
-        );
+        $cache = $this->getCacheInit('wildberries-package');
+        $key = md5($this->getProfile().$this->supply.self::class);
+        // $cache->deleteItem($key);
 
-        $content = $response->toArray(false);
+        $content = $cache->get($key, function(ItemInterface $item): array|false {
 
-        if($response->getStatusCode() !== 200)
-        {
+            $item->expiresAfter(DateInterval::createFromDateString('1 second'));
 
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка при получении информации об открытой поставке %s', $this->supply),
-                [$content, self::class.':'.__LINE__]
+            $response = $this->marketplace()->TokenHttpClient()->request(
+                'GET',
+                '/api/v3/supplies/'.$this->supply,
             );
 
-            return false;
-        }
+            $content = $response->toArray(false);
 
-        return new WildberriesSupplyInfoDTO($content);
+            if($response->getStatusCode() !== 200)
+            {
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка при получении информации об открытой поставке %s', $this->supply),
+                    [$content, self::class.':'.__LINE__]
+                );
+
+                return false;
+            }
+
+            $item->expiresAfter(DateInterval::createFromDateString('3 second'));
+
+            return $content;
+        });
+
+
+        return $content ? new WildberriesSupplyInfoDTO($content) : false;
     }
 
 }

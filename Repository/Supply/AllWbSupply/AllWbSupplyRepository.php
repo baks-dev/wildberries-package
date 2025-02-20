@@ -149,6 +149,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
                 ->addSearchLike('wb.identifier');
         }
 
+
         return $this->paginator->fetchAllAssociative($qb);
     }
 }

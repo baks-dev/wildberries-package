@@ -104,6 +104,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
 
         $dbal
             ->addSelect('supply_order.id as order_id')
+            ->addSelect('supply_order.status')
             ->join(
                 'supply',
                 WbPackageOrder::class,

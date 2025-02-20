@@ -28,7 +28,6 @@ namespace BaksDev\Wildberries\Package\Api;
 use BaksDev\Wildberries\Api\Wildberries;
 use DateInterval;
 use InvalidArgumentException;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\Cache\ItemInterface;
 
 final class GetWildberriesSupplyStickerRequest extends Wildberries
@@ -72,7 +71,7 @@ final class GetWildberriesSupplyStickerRequest extends Wildberries
             );
         }
 
-        $cache = new FilesystemAdapter('wildberries-package');
+        $cache = $this->getCacheInit('wildberries-package');
         $key = md5($this->getProfile().$this->supply.self::class);
         //$cache->deleteItem($key);
 
