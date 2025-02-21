@@ -33,6 +33,7 @@ use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrders
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
+use BaksDev\Wildberries\Package\Messenger\Orders\Sign\OrderWildberriesSignMessage;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
@@ -143,5 +144,21 @@ final readonly class ConfirmOrderWildberriesDispatcher
                 [$message, self::class.':'.__LINE__]
             );
         }
+
+        /**
+         * Отправляем Честные знаки на указанные в упаковке заказы Wildberries
+         */
+
+        $OrderWildberriesSignMessage = new OrderWildberriesSignMessage(
+            $message->getProfile(),
+            $message->getIdentifier(), // идентификатор системного заказа
+            $message->getOrder() // идентификатор заказа Wildberries
+        );
+
+        $this->MessageDispatch->dispatch(
+            message: $OrderWildberriesSignMessage,
+            transport: (string) $message->getProfile()
+        );
+
     }
 }
