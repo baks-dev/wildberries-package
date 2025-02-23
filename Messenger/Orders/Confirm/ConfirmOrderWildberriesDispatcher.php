@@ -34,6 +34,7 @@ use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Messenger\Orders\Sign\OrderWildberriesSignMessage;
+use BaksDev\Wildberries\Package\Repository\Package\ExistOrdersByPackage\ExistOrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
@@ -55,6 +56,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         private UpdatePackageOrderStatusHandler $UpdatePackageOrderStatusHandler,
         private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
         private MessageDispatchInterface $MessageDispatch,
+        private ExistOrdersByPackageInterface $ExistOrdersByPackage
     ) {}
 
     public function __invoke(ConfirmOrderWildberriesMessage $message): void
@@ -83,6 +85,18 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         /** Поставка закрыта */
         if($wildberriesSupplyInfo->isDone())
+        {
+            return;
+        }
+
+
+        /** Проверяем что заказ имеется в упаковке и не был удален пользователем */
+
+        $isOrderExist = $this->ExistOrdersByPackage
+            ->forOrder($message->getIdentifier())
+            ->exist();
+
+        if(false === $isOrderExist)
         {
             return;
         }

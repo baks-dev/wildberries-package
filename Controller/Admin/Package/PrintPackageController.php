@@ -184,16 +184,8 @@ final class PrintPackageController extends AbstractController
             ->addData(['identifier' => (string) $wbPackage->getId()]) // ID упаковки
             ->send('remove');
 
-        if($isPrint)
-        {
-            /** Отправляем сообщение в шину и отмечаем принт упаковки */
-            $messageDispatch->dispatch(
-                message: new PrintWbPackageMessage($wbPackage->getId()),
-                transport: 'wildberries-package',
-            );
-        }
 
-        return $this->render(
+        $render = $this->render(
             [
                 'packages' => [(string) $wbPackage->getId()],
                 'orders' => [(string) $wbPackage->getId() => $orders],
@@ -205,5 +197,17 @@ final class PrintPackageController extends AbstractController
             routingName: 'admin.package',
             file: '/print/print.html.twig'
         );
+
+
+        if($isPrint)
+        {
+            /** Отправляем сообщение в шину и отмечаем принт упаковки */
+            $messageDispatch->dispatch(
+                message: new PrintWbPackageMessage($wbPackage->getId()),
+                transport: 'wildberries-package',
+            );
+        }
+
+        return $render;
     }
 }

@@ -427,6 +427,8 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
 
         }
 
+        $dbal->orderBy('supply_order.event', 'DESC');
+
         return $this->paginator->fetchAllAssociative($dbal);
     }
 }

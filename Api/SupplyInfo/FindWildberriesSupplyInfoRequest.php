@@ -87,9 +87,10 @@ final class FindWildberriesSupplyInfoRequest extends Wildberries
                 return false;
             }
 
-            $item->expiresAfter(DateInterval::createFromDateString('3 second'));
+            $item->expiresAfter(DateInterval::createFromDateString('1 minutes'));
 
             return $content;
+
         });
 
 
