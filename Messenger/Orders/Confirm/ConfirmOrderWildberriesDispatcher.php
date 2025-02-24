@@ -28,12 +28,14 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\Confirm;
 
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Messenger\Orders\Sign\OrderWildberriesSignMessage;
+use BaksDev\Wildberries\Package\Repository\Package\DeleteOrderPackage\DeleteOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\ExistOrdersByPackage\ExistOrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
@@ -56,7 +58,9 @@ final readonly class ConfirmOrderWildberriesDispatcher
         private UpdatePackageOrderStatusHandler $UpdatePackageOrderStatusHandler,
         private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
         private MessageDispatchInterface $MessageDispatch,
-        private ExistOrdersByPackageInterface $ExistOrdersByPackage
+        private ExistOrdersByPackageInterface $ExistOrdersByPackage,
+        private FindAllWildberriesOrdersStatusRequest $FindAllWildberriesOrdersStatusRequest,
+        private DeleteOrderPackageInterface $DeleteOrderPackage,
     ) {}
 
     public function __invoke(ConfirmOrderWildberriesMessage $message): void
@@ -115,22 +119,45 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         if(false === $isAdd)
         {
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка при добавлении заказа %s в поставку %s', $message->getOrder(), $message->getSupply()).
-                'Пробуем повторить попытку через 3 сек',
+            /** Проверяем статус добавленного заказа */
+
+            $isCancel = $this->FindAllWildberriesOrdersStatusRequest
+                ->profile($message->getProfile())
+                ->addOrder($message->getOrder())
+                ->findOrderCancel();
+
+            if(false === $isCancel)
+            {
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка при добавлении заказа %s в поставку %s', $message->getOrder(), $message->getSupply()).
+                    'Пробуем повторить попытку через 3 сек',
+                    [$message, self::class.':'.__LINE__]
+                );
+
+                /** Пробуем повторить попытку через 3 сек */
+                $this->MessageDispatch->dispatch(
+                    message: $message,
+                    stamps: [new MessageDelay('3 seconds')],
+                    transport: 'wildberries-package-low'
+                );
+
+                /** Помечаем статус заказа как с ошибкой */
+                $UpdateOrderStatusDTO->setStatus(WbPackageStatusError::class);
+                $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
+
+                return;
+            }
+
+            /** Если заказ отменен - запускаем отмену */
+
+            $this->DeleteOrderPackage
+                ->forOrder($message->getIdentifier())
+                ->delete();
+
+            $this->logger->warning(
+                sprintf('wildberries-package: Удалили отмененный заказ %s из упаковки поставки %s', $message->getOrder(), $message->getSupply()),
                 [$message, self::class.':'.__LINE__]
             );
-
-            /** Пробуем повторить попытку через 3 сек */
-            $this->MessageDispatch->dispatch(
-                message: $message,
-                stamps: [new MessageDelay('3 seconds')],
-                transport: 'wildberries-package-low'
-            );
-
-            /** Помечаем статус заказа как с ошибкой */
-            $UpdateOrderStatusDTO->setStatus(WbPackageStatusError::class);
-            $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
 
             return;
         }
