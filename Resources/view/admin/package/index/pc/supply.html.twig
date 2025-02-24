@@ -57,7 +57,7 @@
                             href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
                             class="fw-bolder text-decoration-none text-nowrap"
                     >
-                        {{ opens.identifier ?: 'WB-GI-140932791 ' }}
+                        {{ opens.identifier ?: 'Ожидается ...' }}
                     </a>
                 </div>
 
@@ -97,7 +97,6 @@
                         >
                     </div>
 
-
                     <div class="w-25"
                          role="tooltip"
                          data-bs-toggle="tooltip"
@@ -128,7 +127,6 @@
 
                 </div>
             {% endif %}
-
 
             <div id="package-{{ opens.id }}" class="w-100 overflow-auto" style="max-height: 400px;">
                 {# Список продукции для печати #}
