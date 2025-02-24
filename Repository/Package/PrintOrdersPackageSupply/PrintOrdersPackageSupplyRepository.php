@@ -368,6 +368,15 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             );
 
         $dbal
+            //->addSelect('product_event.id AS product_event')
+            ->leftJoin(
+                'ord_product',
+                ProductInfo::class,
+                'product_info',
+                'product_info.product = product_event.main'
+            );
+
+        $dbal
             ->addSelect('product_trans.name AS product_name')
             ->leftJoin(
                 'product_event',
@@ -383,6 +392,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.postfix as product_offer_postfix')
             ->addSelect('product_offer.barcode as product_offer_barcode')
+            ->addSelect('product_offer.name as product_offer_detail_name')
             ->leftJoin(
                 'ord_product',
                 ProductOffer::class,
@@ -571,6 +581,15 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
 			END AS product_image_cdn
 		');
 
+        /* Артикул продукта */
+        $dbal->addSelect('
+			COALESCE(
+                product_modification.article,
+                product_variation.article,
+                product_offer.article,
+                product_info.article
+            ) AS product_article
+		');
 
         return $dbal
             //->enableCache('wildberries-package', 3600)

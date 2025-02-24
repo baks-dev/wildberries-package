@@ -6,10 +6,9 @@
         style="background-image: var(--bs-gradient);"
 >
 
-
     <div class="card-body d-flex gap-3 justify-content-between">
 
-        <div class="w-50 d-flex gap-3 ">
+        <div class="w-25 d-flex gap-3 ">
 
             <div>
 
@@ -48,16 +47,17 @@
             </div>
 
             <div>
-                <div>
+
+                <div class="text-nowrap">
                     <small class="opacity-50">Номер:</small> &nbsp;
                     <a
                             {% if opens.identifier is empty %}
                                 id="number-{{ opens.id }}"
                             {% endif %}
                             href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
-                            class="fw-bolder text-decoration-none"
+                            class="fw-bolder text-decoration-none text-nowrap"
                     >
-                        {{ opens.identifier ?: 'Ожидается ...' }}
+                        {{ opens.identifier ?: 'WB-GI-140932791 ' }}
                     </a>
                 </div>
 
@@ -78,8 +78,6 @@
 
             {% if print is not empty %}
                 <div class="w-100 d-flex mb-3 gap-3">
-
-
                     <div class="w-100 d-flex gap-3">
                         <div class="position-absolute" id="reset_filter">
                             <button class="btn btn-link text-muted">
@@ -141,7 +139,7 @@
         </div>
 
 
-        <div class="text-end w-25">
+        <div class="text-end">
             {% if is_granted('ROLE_WB_SUPPLY_CLOSE') and opens.status == 'open' %}
 
                 <div
@@ -175,7 +173,7 @@
                         data-bs-delay='{"show":600,"hide":100}'
                         title="Открыть новую поставку Wildberries"
                 >
-                    Открыть новую поставку
+                    Открыть поставку
                 </a>
 
             {% endif %}

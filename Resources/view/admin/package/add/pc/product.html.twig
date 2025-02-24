@@ -13,18 +13,27 @@
 {% endif %}
 
 
-<div id="{{ card.id }}" data-name="{{ card.product_name|lower }}" class="d-flex gap-3 align-items-center mb-2 pack">
+<div id="{{ card.id }}"
+     data-name="{{ (card.product_name ~ card.product_offer_detail_name ~ card.product_article)|lower }}"
+     class="d-flex gap-3 align-items-center mb-2 pack">
 
     {# Обложка #}
     <button class="btn btn-link icon bg-cover rounded-2 lazy img-product m-0"
-            style="width: 70px; height: 70px;
+            style="width: 100px; height: 100px;
                     background-image: url({{ cdn_image_path(card.product_image, card.product_image_ext, card.product_image_cdn, 'min') }});"
     >
     </button>
 
     <div class="w-100">
 
-        <div class="fw-bolder fw-bolder text-truncate" style="max-width: 350px;">{{ card.product_name }}</div>
+        <div class="fw-bolder fw-bolder text-truncate" style="max-width: 500px;">
+            {{ card.product_name }} 46546 4654564 64465 465 465 4 45 54 6465445645645 45 465465456 4645645464 554
+            54654654545
+        </div>
+
+        {% if card.product_offer_detail_name %}
+            <small class="opacity-50">{{ card.product_offer_detail_name }}</small>
+        {% endif %}
 
         <div>
             {% if card.product_offer_name %}
@@ -43,6 +52,9 @@
             {% endif %}
 
         </div>
+
+        <small class="opacity-50">Арт:</small> &nbsp;
+        <strong>{{ card.product_article }}</strong>&nbsp;
 
         <div>
             <small class="opacity-50">Количество в заказов:</small> &nbsp;
