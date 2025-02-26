@@ -54,6 +54,8 @@ final class PrintSupplyController extends AbstractController
 {
     private ?array $stickers = null;
 
+    private ?array $products = null;
+
     private ?array $barcodes = null;
 
     /**
@@ -72,7 +74,6 @@ final class PrintSupplyController extends AbstractController
         BarcodeWrite $BarcodeWrite,
     ): Response
     {
-
         /** Получаем все упаковки на печати в поставке */
 
         $packages = $PackageBySupply
@@ -147,11 +148,18 @@ final class PrintSupplyController extends AbstractController
                 continue;
             }
 
+
+            $this->products[(string) $WbPackageUid] = $Product;
+
+
+            //echo $Product['product_barcode'].'<br>';
+
             $barcode = $BarcodeWrite
                 ->text($Product['product_barcode'])
                 ->type(BarcodeType::Code128)
                 ->format(BarcodeFormat::SVG)
                 ->generate();
+
 
             if($barcode === false)
             {
@@ -176,13 +184,12 @@ final class PrintSupplyController extends AbstractController
             ->forProduct($Product['main'])
             ->find() : false;
 
-
         return $this->render(
             [
                 'packages' => $packages,
                 'orders' => $orders,
                 'settings' => $BarcodeSettings,
-                'card' => $Product,
+                'card' => $this->products,
                 'property' => $property,
                 'barcodes' => $this->barcodes,
                 'stickers' => $this->stickers

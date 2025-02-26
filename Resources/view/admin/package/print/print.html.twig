@@ -12,6 +12,7 @@
 
             {% set order_id = order.order|trim %}
 
+
             {% if not loop.first %}
                 <div style="page-break-after: always !important;"></div>
             {% endif %}
@@ -61,6 +62,7 @@
 
                 <div style="page-break-after: always !important;"></div>
 
+
                 <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
 
                     {# Штрикхкод #}
@@ -71,15 +73,16 @@
                                 style="width: 180px;"
                                 viewBox="5 0 125 25"
                         >
-                            {{ barcodes[package]|striptags('<path>')|raw }}
+                            {{ (barcodes[package] ? barcodes[package] : barcodes) |striptags('<path>')|raw }}
                         </svg>
                     </div>
-
 
                     {# Идентификатор штрихкода #}
 
                     <div style="width: 100%; text-align: center; margin-bottom: 5px;">
-                        {{ card.product_barcode }}
+
+                        {{ card[package] ? card[package].product_barcode : card.product_barcode }}
+
                     </div>
 
                     <div style="
@@ -89,7 +92,7 @@
                      align-items: flex-end;
                      font-size: 8px;"
                     >
-                        {{ include(_self|replace({ "print.html.twig" : "sticker.html.twig" })) }}
+                        {{ include(_self|replace({ "print.html.twig" : "sticker.html.twig" }), { card : card[package] ? card[package] : card }) }}
                     </div>
                 </div>
 

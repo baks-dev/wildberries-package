@@ -41,7 +41,6 @@ use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockDTO;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
-use BaksDev\Wildberries\Orders\Repository\WbOrdersByProduct\WbOrdersByProductInterface;
 use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageDTO;
@@ -66,8 +65,6 @@ final class AddController extends AbstractController
     #[Route('/admin/wb/supply/add/{total}', name: 'admin.package.add', methods: ['GET', 'POST'])]
     public function news(
         Request $request,
-        WbOrdersByProductInterface $wbOrdersByProduct,
-        WbPackageHandler $wbPackageHandler,
         ProductDetailByUidInterface $productDetail,
         ExistOrderPackageInterface $ExistOrderPackage,
         WbPackageHandler $WbPackageHandler,
