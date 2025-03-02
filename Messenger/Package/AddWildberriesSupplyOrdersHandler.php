@@ -30,7 +30,6 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
-use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
@@ -57,10 +56,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
         private CentrifugoPublishInterface $CentrifugoPublish,
         private DeduplicatorInterface $deduplicator,
         private MessageDispatchInterface $MessageDispatch
-    )
-    {
-        $this->deduplicator->namespace('wildberries-package');
-    }
+    ) {}
 
     public function __invoke(WbPackageMessage $message): void
     {
