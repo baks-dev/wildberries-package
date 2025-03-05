@@ -29,7 +29,13 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockHandler;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Delivery\DeliveryProductStockDTO;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\OrderStatusMarketplace;
+use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
+use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
@@ -44,6 +50,10 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+
+/**
+ * Метод меняет статус системного заказа на "Передан в службу Маркетплейса"
+ */
 #[AsMessageHandler(priority: 0)]
 final readonly class OrdersCompleteByCloseWbSupplyHandler
 {
@@ -52,14 +62,11 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
         private WbSupplyCurrentEventInterface $wbSupplyCurrentEvent,
         private OrdersIdentifierByWbSupplyInterface $OrdersIdentifierByWbSupply,
         private OpenWbSupplyInterface $OpenWbSupply,
-        private ProductStocksByOrderInterface $ProductStocksByOrder,
-        private CompletedProductStockHandler $CompletedProductStockHandler,
-        private DeduplicatorInterface $deduplicator
+        private DeduplicatorInterface $deduplicator,
+        private CurrentOrderEventInterface $CurrentOrderEvent,
+        private OrderStatusHandler $OrderStatusHandler
     ) {}
 
-    /**
-     * Метод закрывает выполненные заказы при закрытии поставки
-     */
     public function __invoke(WbSupplyMessage $message): void
     {
         $Deduplicator = $this->deduplicator
@@ -113,26 +120,29 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
         /** @var OrderUid $OrderUid */
         foreach($orders as $OrderUid)
         {
-            $invoices = $this->ProductStocksByOrder->findByOrder($OrderUid);
+            $OrderEvent = $this->CurrentOrderEvent
+                ->forOrder($OrderUid)
+                ->find();
 
-            /** @var ProductStockEvent $ProductStockEvent */
-            foreach($invoices as $ProductStockEvent)
+            if(false === ($OrderEvent instanceof OrderEvent))
             {
-                /**
-                 * @var DeliveryProductStockDTO $DeliveryProductStockDTO
-                 */
-                $CompletedProductStockDTO = new CompletedProductStockDTO($ProductStockEvent->getId());
-                $ProductStockEvent->getDto($CompletedProductStockDTO);
+                continue;
+            }
 
-                $ProductStock = $this->CompletedProductStockHandler->handle($CompletedProductStockDTO);
+            $OrderStatusDTO = new OrderStatusDTO(
+                OrderStatusMarketplace::class,
+                $OrderEvent->getId(),
+            )
+                ->setProfile($UserProfileUid);
 
-                if(false === ($ProductStock instanceof ProductStock))
-                {
-                    $this->logger->critical(
-                        sprintf('wildberries-package: Ошибка %s при изменении складской заявки при закрытии поставки', $ProductStock),
-                        [$message, self::class.':'.__LINE__]
-                    );
-                }
+            $Order = $this->OrderStatusHandler->handle($OrderStatusDTO);
+
+            if(false === ($Order instanceof Order))
+            {
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка %s при изменении статуса заказа на «Передан в службу маркетплейса»', $Order),
+                    [$message, self::class.':'.__LINE__]
+                );
             }
         }
 

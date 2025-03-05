@@ -33,8 +33,8 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Manufacture\Part\Type\Complete\ManufacturePartComplete;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
-use BaksDev\Wildberries\Manufacture\Repository\AllWbOrdersGroup\AllWbOrdersManufactureInterface;
 use BaksDev\Wildberries\Manufacture\Type\ManufacturePartComplete\ManufacturePartCompleteWildberriesFbs;
+use BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage\AllOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PrintOrdersPackageSupply\PrintOrdersPackageSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LastWbSupplyInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
@@ -55,7 +55,7 @@ final class IndexController extends AbstractController
         Request $request,
         PrintOrdersPackageSupplyInterface $printOrdersPackageSupply,
         TokenUserGenerator $tokenUserGenerator,
-        AllWbOrdersManufactureInterface $allWbOrdersGroup,
+        AllOrderPackageInterface $allWbOrdersGroup,
         LastWbSupplyInterface $LastWbSupply,
         int $page = 0,
     ): Response
@@ -97,12 +97,9 @@ final class IndexController extends AbstractController
          */
 
         $WbOrders = $allWbOrdersGroup
-            ->fetchAllWbOrdersGroupAssociative(
-                $search,
-                $this->getProfileUid(),
-                $filter,
-                class_exists(ManufacturePartCompleteWildberriesFbs::class) ? new ManufacturePartComplete(ManufacturePartCompleteWildberriesFbs::class) : null
-            );
+            ->search($search)
+            ->filter($filter)
+            ->findPaginator(class_exists(ManufacturePartCompleteWildberriesFbs::class) ? new ManufacturePartComplete(ManufacturePartCompleteWildberriesFbs::class) : null);
 
 
         return $this->render(

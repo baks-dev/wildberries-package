@@ -172,7 +172,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
             ->getOrderSticker();
 
         /**
-         * Обновляем статус заказа в упаковке
+         * Обновляем статус заказа Wildberries в упаковке
          */
 
         $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
