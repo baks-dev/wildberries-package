@@ -34,6 +34,8 @@ use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
+use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
+use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use InvalidArgumentException;
 
@@ -97,6 +99,26 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'package_event',
                 'package_event.id = package_order.event'
             );
+
+
+        $dbal
+            ->leftJoin(
+                'package_event',
+                WbPackageSupply::class,
+                'package_supply',
+                'package_supply.main = package_event.main'
+            );
+
+
+        $dbal
+            ->addSelect('supply.identifier AS supply')
+            ->leftJoin(
+                'package_supply',
+                WbSupplyWildberries::class,
+                'supply',
+                'supply.main = package_supply.supply'
+            );
+
 
         $dbal
             ->leftJoin(

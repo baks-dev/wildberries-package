@@ -36,6 +36,7 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
+use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
@@ -102,10 +103,32 @@ final class PrintPackageController extends AbstractController
                 $isPrint = false;
             }
 
-            $this->stickers[$order['order']] = $order['order_status'] === 'add' ? $WildberriesOrdersStickerRequest
+            $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
                 ->forOrderWb($order['number'])
-                ->getOrderSticker() : null;
+                ->getOrderSticker();
+
+            /** Если стикер не найден - пробуем повторно отправить заказ в поставку */
+            if(false === $WildberriesOrdersSticker)
+            {
+                $ConfirmOrderWildberriesMessage = new ConfirmOrderWildberriesMessage(
+                    $this->getProfileUid(),
+                    $order['order'],
+                    $order['supply'],
+                    $order['number']
+                );
+
+                $messageDispatch->dispatch($ConfirmOrderWildberriesMessage);
+
+                /** Повторно открываем стикер */
+                $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
+                    ->profile($this->getProfileUid())
+                    ->forOrderWb($order['number'])
+                    ->getOrderSticker();
+
+            }
+
+            $this->stickers[$order['order']] = $order['order_status'] === 'add' ? $WildberriesOrdersSticker : null;
         }
 
 
@@ -114,9 +137,7 @@ final class PrintPackageController extends AbstractController
          */
 
 
-        /**
-         * Получаем продукцию для штрихкода (в упаковке всегда один и тот же продукт)
-         */
+        /* Получаем продукцию для штрихкода (в упаковке всегда один и тот же продукт) */
         $order = current($orders);
 
         $Product = $productDetail
