@@ -132,8 +132,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
             $OrderStatusDTO = new OrderStatusDTO(
                 OrderStatusMarketplace::class,
                 $OrderEvent->getId(),
-            )
-                ->setProfile($UserProfileUid);
+            );
 
             $Order = $this->OrderStatusHandler->handle($OrderStatusDTO);
 
