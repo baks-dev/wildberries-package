@@ -21,17 +21,68 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Wildberries\Package\Repository\Supply\WbSupply;
 
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
+use DateTimeImmutable;
 
-interface WbSupplyInterface
+final class WbSupplyResult
 {
-    public function forSupply(WbSupply|WbSupplyUid|string $supply): self;
+    public function __construct(
+        private $id,
+        private $event,
+        private $identifier,
+        private $total,
+        private $status,
+        private $date,
+    ) {}
 
     /**
-     * Получаем поставку по указанному идентификатору
+     * Total
      */
-    public function find(): WbSupplyResult|false;
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    /**
+     * Id
+     */
+    public function getId(): WbSupplyUid
+    {
+        return new WbSupplyUid($this->id);
+    }
+
+    public function getEvent(): WbSupplyEventUid
+    {
+        return new WbSupplyEventUid($this->event);
+    }
+
+    /**
+     * Identifier
+     */
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
+    }
+
+    /**
+     * Status
+     */
+    public function getStatus(): WbSupplyStatus
+    {
+        return new WbSupplyStatus($this->status);
+    }
+
+    /**
+     * Date
+     */
+    public function getDate(): DateTimeImmutable
+    {
+        return new DateTimeImmutable($this->date);
+    }
 }

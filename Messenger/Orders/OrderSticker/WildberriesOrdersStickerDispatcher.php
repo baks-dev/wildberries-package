@@ -21,25 +21,33 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile;
+declare(strict_types=1);
 
+namespace BaksDev\Wildberries\Package\Messenger\Orders\OrderSticker;
 
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
-use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-interface ExistOpenSupplyProfileInterface
+/** Прогревает кеш стикера заказа Wildberries */
+#[AsMessageHandler(priority: 0)]
+final readonly class WildberriesOrdersStickerDispatcher
 {
-    public function forProfile(UserProfile|UserProfileUid|string $profile): self;
+    public function __construct(
+        private GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest
+    ) {}
 
-    public function forIdentifier(string $identifier): self;
+    public function __invoke(WildberriesOrdersStickerMessage $message): void
+    {
 
-    /**
-     * Метод проверяет, имеется ли поставка со статусом «New»
-     */
-    public function isExistNewSupply(): bool;
+        /**
+         * Прогреваем кеш со стикерами
+         */
 
-    /**
-     * Метод проверяет, имеется ли поставка со статусом «New» либо «Open»
-     */
-    public function isExistNewOrOpenSupply(): bool;
+        $this->WildberriesOrdersStickerRequest
+            ->profile($message->getProfile())
+            ->forOrderWb($message->getOrder()) // идентификатор заказа Wildberries
+            ->getOrderSticker();
+
+    }
 }

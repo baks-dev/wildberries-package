@@ -29,6 +29,7 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusNew;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusOpen;
 use Doctrine\DBAL\ArrayParameterType;
@@ -37,7 +38,9 @@ use InvalidArgumentException;
 
 final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileInterface
 {
-    private UserProfileUid|false $profile;
+    private UserProfileUid|false $profile = false;
+
+    private string|false $identifier = false;
 
     public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
 
@@ -54,6 +57,14 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         }
 
         $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function forIdentifier(string $identifier): self
+    {
+
+        $this->identifier = $identifier;
 
         return $this;
     }
@@ -85,6 +96,25 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
                 WbSupplyEvent::class, 'supply_event',
                 'supply_event.id = invariable.event AND supply_event.status IN (:status)'
             );
+
+
+        if($this->identifier)
+        {
+            $dbal
+                ->join(
+                    'invariable',
+                    WbSupplyWildberries::class, 'supply_wildberries',
+                    '
+                    supply_wildberries.main = invariable.main AND 
+                    supply_wildberries.event = invariable.event AND
+                    supply_wildberries.identifier = :identifier
+                    '
+                )
+                ->setParameter(
+                    key: 'identifier',
+                    value: $this->identifier,
+                );
+        }
 
         return $dbal;
     }

@@ -32,29 +32,56 @@ use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use InvalidArgumentException;
 
-final readonly class WbSupplyRepository implements WbSupplyInterface
+final  class WbSupplyRepository implements WbSupplyInterface
 {
-    public function __construct(private DBALQueryBuilder $DBALQueryBuilder) {}
+    private WbSupplyUid|false $supply = false;
+
+    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+
+    public function forSupply(WbSupply|WbSupplyUid|string $supply): self
+    {
+        if(is_string($supply))
+        {
+            $supply = new WbSupplyUid($supply);
+        }
+
+        if($supply instanceof WbSupply)
+        {
+            $supply = $supply->getId();
+        }
+
+        $this->supply = $supply;
+
+        return $this;
+    }
+
 
     /**
      * Получаем поставку по указанному идентификатору
      */
-    public function getWbSupplyById(WbSupply|WbSupplyUid $supply): ?array
+    public function find(): WbSupplyResult|false
     {
+        if(false === ($this->supply instanceof WbSupplyUid))
+        {
+            throw new InvalidArgumentException('Invalid Argument WbSupply');
+        }
 
-        $supply = $supply instanceof WbSupply ? $supply->getId() : $supply;
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $qb = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-
-        $qb
+        $dbal
             ->addSelect('supply_const.total')
             ->from(WbSupply::class, 'supply')
             ->where('supply.id = :supply')
-            ->setParameter('supply', $supply, WbSupplyUid::TYPE);
+            ->setParameter(
+                key: 'supply',
+                value: $this->supply,
+                type: WbSupplyUid::TYPE
+            );
 
 
-        $qb
+        $dbal
             ->addSelect('supply.id')
             ->addSelect('supply.event')
             ->leftJoin(
@@ -65,7 +92,7 @@ final readonly class WbSupplyRepository implements WbSupplyInterface
             );
 
 
-        $qb
+        $dbal
             ->addSelect('event.status')
             ->leftJoin(
                 'supply',
@@ -74,8 +101,8 @@ final readonly class WbSupplyRepository implements WbSupplyInterface
                 'event.id = supply.event'
             );
 
-        $qb
-            ->addSelect('modify.mod_date AS supply_date')
+        $dbal
+            ->addSelect('modify.mod_date AS date')
             ->leftJoin(
                 'supply',
                 WbSupplyModify::class,
@@ -84,7 +111,7 @@ final readonly class WbSupplyRepository implements WbSupplyInterface
             );
 
 
-        $qb
+        $dbal
             ->addSelect('wb.identifier')
             ->leftJoin(
                 'supply',
@@ -93,10 +120,10 @@ final readonly class WbSupplyRepository implements WbSupplyInterface
                 'wb.main = supply.id'
             );
 
-        $qb->setMaxResults(1);
+        $dbal->setMaxResults(1);
 
-        return $qb
+        return $dbal
             ->enableCache('wildberries-package', 3600)
-            ->fetchAssociative();
+            ->fetchHydrate(WbSupplyResult::class);
     }
 }

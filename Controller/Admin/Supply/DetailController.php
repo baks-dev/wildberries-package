@@ -56,13 +56,14 @@ final class DetailController extends AbstractController
         #[MapEntity] WbSupply $wbSupply,
         WbSupplyInterface $wbSupplyRepository,
         AllWbSupplyOrdersInterface $allWbSupplyOrders,
-
         int $page = 0,
     ): Response
     {
 
         // Получаем указанную поставку
-        $supply = $wbSupplyRepository->getWbSupplyById($wbSupply);
+        $WbSupplyResult = $wbSupplyRepository
+            ->forSupply($wbSupply)
+            ->find();
 
         // Поиск
         $search = new SearchDTO();
@@ -98,7 +99,7 @@ final class DetailController extends AbstractController
         return $this->render(
             [
                 'query' => $orders,
-                'supply' => $supply,
+                'supply' => $WbSupplyResult,
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
             ]

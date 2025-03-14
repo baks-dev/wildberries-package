@@ -21,25 +21,47 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile;
+declare(strict_types=1);
+
+namespace BaksDev\Wildberries\Package\Messenger\Orders\OrderSticker;
 
 
-use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 
-interface ExistOpenSupplyProfileInterface
+final class WildberriesOrdersStickerMessage
 {
-    public function forProfile(UserProfile|UserProfileUid|string $profile): self;
-
-    public function forIdentifier(string $identifier): self;
+    /**
+     * Идентификатор
+     */
+    private string $profile;
 
     /**
-     * Метод проверяет, имеется ли поставка со статусом «New»
+     * Идентификатор события
      */
-    public function isExistNewSupply(): bool;
+    private string $order;
+
+    public function __construct(
+        UserProfileUid|string $profile,
+        string $order,
+    )
+    {
+        $this->profile = (string) $profile;
+        $this->order = $order;
+    }
 
     /**
-     * Метод проверяет, имеется ли поставка со статусом «New» либо «Open»
+     * Profile
      */
-    public function isExistNewOrOpenSupply(): bool;
+    public function getProfile(): UserProfileUid
+    {
+        return new UserProfileUid($this->profile);
+    }
+
+    /**
+     * Order
+     */
+    public function getOrder(): string
+    {
+        return $this->order;
+    }
 }

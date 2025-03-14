@@ -30,13 +30,14 @@ use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
-use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
+use BaksDev\Wildberries\Package\Messenger\Orders\OrderSticker\WildberriesOrdersStickerMessage;
 use BaksDev\Wildberries\Package\Messenger\Orders\Sign\OrderWildberriesSignMessage;
 use BaksDev\Wildberries\Package\Repository\Package\DeleteOrderPackage\DeleteOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\ExistOrdersByPackage\ExistOrdersByPackageInterface;
+use BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile\ExistOpenSupplyProfileInterface;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
@@ -54,13 +55,13 @@ final readonly class ConfirmOrderWildberriesDispatcher
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private PostWildberriesAddOrderToSupplyRequest $PostWildberriesAddOrderToSupplyRequest,
-        private GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest,
         private UpdatePackageOrderStatusHandler $UpdatePackageOrderStatusHandler,
         private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
         private MessageDispatchInterface $MessageDispatch,
         private ExistOrdersByPackageInterface $ExistOrdersByPackage,
         private FindAllWildberriesOrdersStatusRequest $FindAllWildberriesOrdersStatusRequest,
         private DeleteOrderPackageInterface $DeleteOrderPackage,
+        private ExistOpenSupplyProfileInterface $ExistOpenSupplyProfile,
     ) {}
 
     public function __invoke(ConfirmOrderWildberriesMessage $message): void
@@ -73,16 +74,26 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         if(false === ($wildberriesSupplyInfo instanceof WildberriesSupplyInfoDTO))
         {
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка при получении информации о поставке %s', $message->getSupply()),
-                [$message, self::class.':'.__LINE__]
-            );
+            /** Проверяем, имеется ли соответствующая открытая поставка */
 
-            $this->MessageDispatch->dispatch(
-                message: $message,
-                stamps: [new MessageDelay('3 seconds')],
-                transport: 'wildberries-package-low'
-            );
+            $isSupplyExistNewOrOpen = $this->ExistOpenSupplyProfile
+                ->forProfile($message->getProfile())
+                ->forIdentifier($message->getSupply())
+                ->isExistNewOrOpenSupply();
+
+            if($isSupplyExistNewOrOpen)
+            {
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка при получении информации о поставке %s', $message->getSupply()),
+                    [$message, self::class.':'.__LINE__]
+                );
+
+                $this->MessageDispatch->dispatch(
+                    message: $message,
+                    stamps: [new MessageDelay('3 seconds')],
+                    transport: 'wildberries-package-low'
+                );
+            }
 
             return;
         }
@@ -166,25 +177,15 @@ final readonly class ConfirmOrderWildberriesDispatcher
          * Прогреваем кеш со стикерами
          */
 
-        $this->WildberriesOrdersStickerRequest
-            ->profile($message->getProfile())
-            ->forOrderWb($message->getOrder()) // идентификатор заказа Wildberries
-            ->getOrderSticker();
+        $WildberriesOrdersStickerMessage = new WildberriesOrdersStickerMessage(
+            $message->getProfile(),
+            $message->getOrder()
+        );
 
-        /**
-         * Обновляем статус заказа Wildberries в упаковке
-         */
-
-        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
-        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
-
-        if(false === ($WbPackageOrder instanceof WbPackageOrder))
-        {
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка %s при обновлении заказа в паковке', $WbPackageOrder),
-                [$message, self::class.':'.__LINE__]
-            );
-        }
+        $this->MessageDispatch->dispatch(
+            message: $WildberriesOrdersStickerMessage,
+            transport: (string) $message->getProfile()
+        );
 
         /**
          * Отправляем Честные знаки на указанные в упаковке заказы Wildberries
@@ -201,5 +202,20 @@ final readonly class ConfirmOrderWildberriesDispatcher
             transport: (string) $message->getProfile()
         );
 
+
+        /**
+         * Обновляем статус заказа Wildberries в упаковке
+         */
+
+        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
+        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
+
+        if(false === ($WbPackageOrder instanceof WbPackageOrder))
+        {
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка %s при обновлении заказа в паковке', $WbPackageOrder),
+                [$message, self::class.':'.__LINE__]
+            );
+        }
     }
 }
