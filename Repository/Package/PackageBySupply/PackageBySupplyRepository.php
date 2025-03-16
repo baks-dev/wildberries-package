@@ -93,7 +93,7 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
 
         if($this->print)
         {
-            $dbal->where('supply.print IS NOT TRUE');
+            $dbal->andWhere('supply.print IS NOT TRUE');
         }
 
         return $dbal

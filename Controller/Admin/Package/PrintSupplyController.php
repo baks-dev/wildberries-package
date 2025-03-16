@@ -36,6 +36,7 @@ use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Type\UidType\ParamConverter;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
+use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PackageBySupply\PackageBySupplyInterface;
 use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
@@ -43,6 +44,7 @@ use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
@@ -64,6 +66,7 @@ final class PrintSupplyController extends AbstractController
     #[Route('/admin/wb/packages/print/supply/{id}', name: 'admin.package.print.supply', methods: ['GET', 'POST'])]
     public function printers(
         #[ParamConverter(WbSupplyUid::class)] WbSupplyUid $WbSupplyUid,
+        Request $request,
         PackageBySupplyInterface $PackageBySupply,
         OrdersByPackageInterface $OrderByPackage,
         ProductDetailByUidInterface $productDetail,
@@ -74,6 +77,7 @@ final class PrintSupplyController extends AbstractController
         BarcodeWrite $BarcodeWrite,
     ): Response
     {
+
         /** Получаем все упаковки на печати в поставке */
 
         $packages = $PackageBySupply
@@ -86,12 +90,62 @@ final class PrintSupplyController extends AbstractController
             return new Response('Package not found', Response::HTTP_NOT_FOUND);
         }
 
+        if($request->isMethod('GET') && is_null($request->get('print')))
+        {
+            /** @var WbPackageUid $WbPackageUid */
+            foreach($packages as $WbPackageUid)
+            {
+                /** Получаем все заказы в упаковке  */
+                $orders = $OrderByPackage
+                    ->forPackageEvent($WbPackageUid->getAttr())
+                    ->findAll();
+
+                foreach($orders as $order)
+                {
+                    /** Прогреваем кеш отсутствующих стикеров  */
+                    $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
+                        ->profile($this->getProfileUid())
+                        ->forOrderWb($order['number'])
+                        ->getOrderSticker();
+
+                    /** Если стикер не найден - пробуем повторно отправить заказ в поставку */
+                    if(false === $WildberriesOrdersSticker)
+                    {
+                        $ConfirmOrderWildberriesMessage = new ConfirmOrderWildberriesMessage(
+                            $this->getProfileUid(),
+                            $order['order'],
+                            $order['supply'],
+                            $order['number']
+                        );
+
+                        $messageDispatch->dispatch($ConfirmOrderWildberriesMessage);
+
+                        /** Повторно прогреваем стикер */
+                        $WildberriesOrdersStickerRequest
+                            ->profile($this->getProfileUid())
+                            ->forOrderWb($order['number'])
+                            ->getOrderSticker();
+                    }
+                }
+            }
+
+            return $this->render([
+                'action' => $this->generateUrl('wildberries-package:admin.package.print.supply',
+                    ['id' => $WbSupplyUid, 'print' => true]),
+            ]);
+        }
+
+
+        /**
+         * Отдаем на печать все стикеры
+         */
 
         $Product = null;
         $property = [];
 
         $packages = iterator_to_array($packages);
 
+        $orders = null;
         $printers = null;
 
         /** @var WbPackageUid $WbPackageUid */
@@ -194,13 +248,15 @@ final class PrintSupplyController extends AbstractController
 
 
         /** Отправляем сообщение в шину и отмечаем принт упаковок */
-
-        foreach($printers as $printer)
+        if($printers)
         {
-            $messageDispatch->dispatch(
-                message: new PrintWbPackageMessage($printer),
-                transport: 'wildberries-package',
-            );
+            foreach($printers as $printer)
+            {
+                $messageDispatch->dispatch(
+                    message: new PrintWbPackageMessage($printer),
+                    transport: 'wildberries-package',
+                );
+            }
         }
 
         return $render;

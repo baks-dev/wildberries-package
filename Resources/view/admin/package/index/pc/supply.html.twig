@@ -75,7 +75,6 @@
 
         <div class="w-100">
 
-
             {% if print is not empty %}
                 <div class="w-100 d-flex mb-3 gap-3">
                     <div class="w-100 d-flex gap-3">
@@ -106,8 +105,9 @@
                     >
 
                         <button
-                                class="btn btn-light disabled prnt"
-                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id, print: true }) }}"
+                                class="btn btn-light disabled {# prnt #}"
+                                {# data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id, print: true }) }}" #}
+                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id }) }}"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modal"
                                 {# {{ isSticker ?: 'disabled="disabled"' }} #}
