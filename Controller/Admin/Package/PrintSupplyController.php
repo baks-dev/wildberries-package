@@ -92,6 +92,8 @@ final class PrintSupplyController extends AbstractController
 
         $packages = iterator_to_array($packages);
 
+        $printers = null;
+
         /** @var WbPackageUid $WbPackageUid */
         foreach($packages as $WbPackageUid)
         {
@@ -109,13 +111,6 @@ final class PrintSupplyController extends AbstractController
             $CentrifugoPublish
                 ->addData(['identifier' => (string) $WbPackageUid]) // ID упаковки
                 ->send('remove');
-
-            /** Отправляем сообщение в шину и отмечаем принт упаковки */
-            $messageDispatch->dispatch(
-                message: new PrintWbPackageMessage($WbPackageUid),
-                transport: 'wildberries-package',
-            );
-
 
             foreach($orders[(string) $WbPackageUid] as $order)
             {
@@ -151,9 +146,6 @@ final class PrintSupplyController extends AbstractController
 
             $this->products[(string) $WbPackageUid] = $Product;
 
-
-            //echo $Product['product_barcode'].'<br>';
-
             $barcode = $BarcodeWrite
                 ->text($Product['product_barcode'])
                 ->type(BarcodeType::Code128)
@@ -174,6 +166,8 @@ final class PrintSupplyController extends AbstractController
             $this->barcodes[(string) $WbPackageUid] = $BarcodeWrite->render();
             $BarcodeWrite->remove();
 
+            $printers[] = $WbPackageUid;
+
         }
 
         /**
@@ -184,7 +178,7 @@ final class PrintSupplyController extends AbstractController
             ->forProduct($Product['main'])
             ->find() : false;
 
-        return $this->render(
+        $render = $this->render(
             [
                 'packages' => $packages,
                 'orders' => $orders,
@@ -197,5 +191,18 @@ final class PrintSupplyController extends AbstractController
             routingName: 'admin.package',
             file: '/print/print.html.twig'
         );
+
+
+        /** Отправляем сообщение в шину и отмечаем принт упаковок */
+
+        foreach($printers as $printer)
+        {
+            $messageDispatch->dispatch(
+                message: new PrintWbPackageMessage($printer),
+                transport: 'wildberries-package',
+            );
+        }
+
+        return $render;
     }
 }
