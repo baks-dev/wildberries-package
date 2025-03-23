@@ -36,14 +36,13 @@
                 {% set sign = false %}
 
                 {% if order.code_image is defined %}
-                    {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn) %}
+                    {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn, 'small', true) %}
                 {% endif %}
-
 
                 {# @var order \BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderResult #}
 
                 {% if order.sign is defined and order.sign is not empty %}
-                    {% set sign = cdn_image_path(order.codeImage, order.codeExt, order.codeCdn) %}
+                    {% set sign = cdn_image_path(order.codeImage, order.codeExt, order.codeCdn, 'small', true) %}
                 {% endif %}
 
                 {% if sign and sign != '/assets/img/blank.svg' %}
