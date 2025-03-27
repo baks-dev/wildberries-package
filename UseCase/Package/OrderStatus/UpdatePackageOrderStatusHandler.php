@@ -61,6 +61,9 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
          * Только заказ в упаковке со статусом «NEW» можно изменить на «ADD» или «ERROR»
          * @var WbPackageOrder $WbPackageOrder
          */
+
+        $this->clear();
+
         $WbPackageOrder = $this
             ->getRepository(WbPackageOrder::class)
             ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);

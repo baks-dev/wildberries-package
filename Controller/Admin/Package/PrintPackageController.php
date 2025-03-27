@@ -128,7 +128,12 @@ final class PrintPackageController extends AbstractController
 
             }
 
-            $this->stickers[$order['order']] = $order['order_status'] === 'add' ? $WildberriesOrdersSticker : null;
+            $this->stickers[$order['order']] = $order['order_status'] === 'add' || !empty($WildberriesOrdersSticker) ? $WildberriesOrdersSticker : null;
+
+            if($isPrint === true && !isset($this->stickers[$order['order']]))
+            {
+                $isPrint = false;
+            }
         }
 
 
