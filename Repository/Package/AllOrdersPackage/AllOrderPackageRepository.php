@@ -43,6 +43,7 @@ use BaksDev\Orders\Order\Entity\Products\Price\OrderPrice;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
 use BaksDev\Orders\Order\Entity\User\OrderUser;
 use BaksDev\Orders\Order\Type\Status\OrderStatus;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPackage;
 use BaksDev\Products\Category\Entity\Offers\CategoryProductOffers;
 use BaksDev\Products\Category\Entity\Offers\Variation\CategoryProductVariation;
 use BaksDev\Products\Category\Entity\Offers\Variation\Modification\CategoryProductModification;
@@ -146,7 +147,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
             )
             ->setParameter(
                 key: 'status',
-                value: OrderStatus\OrderStatusPackage::class, // Только заказа со статусом «На упаковке»
+                value: OrderStatusPackage::class, // Только заказа со статусом «На упаковке»
                 type: OrderStatus::TYPE
             );
 
@@ -223,7 +224,11 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_category.event = product_info.event AND product_category.category = :category AND product_category.root = true'
             );
 
-            $dbal->setParameter('category', $this->filter->getCategory(), CategoryProductUid::TYPE);
+            $dbal->setParameter(
+                'category',
+                $this->filter->getCategory(),
+                CategoryProductUid::TYPE
+            );
 
 
         }
