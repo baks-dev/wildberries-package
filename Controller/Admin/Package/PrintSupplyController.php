@@ -85,7 +85,7 @@ final class PrintSupplyController extends AbstractController
             ->onlyPrint()
             ->findAll();
 
-        if(false === ($packages || $packages->valid()))
+        if(false === $packages || false === $packages->valid())
         {
             return new Response('Package not found', Response::HTTP_NOT_FOUND);
         }
