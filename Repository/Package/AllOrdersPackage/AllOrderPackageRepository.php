@@ -29,10 +29,10 @@ namespace BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\Manufacture\Part\Entity\Event\ManufacturePartEvent;
 use BaksDev\Manufacture\Part\Entity\Invariable\ManufacturePartInvariable;
 use BaksDev\Manufacture\Part\Entity\Products\ManufacturePartProduct;
-use BaksDev\Manufacture\Part\Type\Complete\ManufacturePartComplete;
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus\ManufacturePartStatusClosed;
 use BaksDev\Manufacture\Part\Type\Status\ManufacturePartStatus\ManufacturePartStatusCompleted;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
@@ -115,7 +115,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
     /**
      * Метод возвращает список заказов готовых для добавления в поставку
      */
-    public function findPaginator(?ManufacturePartComplete $complete = null): PaginatorInterface
+    public function findPaginator(?DeliveryUid $complete = null): PaginatorInterface
     {
         $dbal = $this->DBALQueryBuilder
             ->createQueryBuilder(self::class)
@@ -296,8 +296,12 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
         /** ФИЛЬТР по множественным вариантам */
         if($this->filter?->getVariation())
         {
-            $dbal->andWhere('product_variation.value = :variation');
-            $dbal->setParameter('variation', $this->filter->getVariation());
+            $dbal
+                ->andWhere('product_variation.value = :variation')
+                ->setParameter(
+                    'variation',
+                    $this->filter->getVariation()
+                );
         }
 
 
@@ -330,8 +334,12 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
         /** ФИЛЬТР по модификациям множественного варианта */
         if($this->filter?->getModification())
         {
-            $dbal->andWhere('product_modification.value = :modification');
-            $dbal->setParameter('modification', $this->filter->getModification());
+            $dbal
+                ->andWhere('product_modification.value = :modification')
+                ->setParameter(
+                    'modification',
+                    $this->filter->getModification()
+                );
         }
 
         $dbal
@@ -522,7 +530,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 );
 
             /** Только продукция на указанный завершающий этап */
-            $dbal->setParameter('complete', $complete, ManufacturePartComplete::TYPE);
+            $dbal->setParameter('complete', $complete, DeliveryUid::TYPE);
 
             $dbalExist->andWhere('exist_product.product = order_product.product');
             $dbalExist->andWhere('(exist_product.offer = order_product.offer)');

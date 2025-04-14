@@ -51,7 +51,6 @@ class AddWildberriesSupplyOrdersHandlerDebugTest extends KernelTestCase
         $event = new ConsoleCommandEvent(new Command(), new StringInput(''), new NullOutput());
         $dispatcher->dispatch($event, 'console.command');
 
-
         /** @var AddWildberriesSupplyOrdersHandler $AddWildberriesSupplyOrdersHandler */
         $AddWildberriesSupplyOrdersHandler = self::getContainer()->get(AddWildberriesSupplyOrdersHandler::class);
 

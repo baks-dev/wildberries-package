@@ -28,7 +28,9 @@ namespace BaksDev\Wildberries\Package\Api\SupplyAll;
 use BaksDev\Wildberries\Api\Wildberries;
 use DomainException;
 use Generator;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+#[Autoconfigure(public: true)] /* TODO: удалить !!! */
 final class FindAllWildberriesSupplyRequest extends Wildberries
 {
     private int $next = 0;

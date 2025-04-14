@@ -30,10 +30,10 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
-use BaksDev\Manufacture\Part\Type\Complete\ManufacturePartComplete;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
-use BaksDev\Wildberries\Manufacture\Type\ManufacturePartComplete\ManufacturePartCompleteWildberriesFbs;
+use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
 use BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage\AllOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PrintOrdersPackageSupply\PrintOrdersPackageSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LastWbSupplyInterface;
@@ -62,7 +62,7 @@ final class IndexController extends AbstractController
     {
 
         // Поиск
-        $search = new SearchDTO($request);
+        $search = new SearchDTO();
 
         $searchForm = $this
             ->createForm(
@@ -99,7 +99,7 @@ final class IndexController extends AbstractController
         $WbOrders = $allWbOrdersGroup
             ->search($search)
             ->filter($filter)
-            ->findPaginator(class_exists(ManufacturePartCompleteWildberriesFbs::class) ? new ManufacturePartComplete(ManufacturePartCompleteWildberriesFbs::class) : null);
+            ->findPaginator(class_exists(TypeDeliveryFbsWildberries::class) ? new DeliveryUid(TypeDeliveryFbsWildberries::class) : null);
 
 
         return $this->render(

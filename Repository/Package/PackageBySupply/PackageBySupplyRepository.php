@@ -96,6 +96,8 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
             $dbal->andWhere('supply.print IS NOT TRUE');
         }
 
+        $dbal->addOrderBy('supply.event');
+
         return $dbal
             // ->enableCache('wildberries-package', 3600)
             ->fetchAllHydrate(WbPackageUid::class);

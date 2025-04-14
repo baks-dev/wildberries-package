@@ -25,6 +25,7 @@ namespace BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage;
 
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 
 interface AllOrderPackageInterface
@@ -37,5 +38,5 @@ interface AllOrderPackageInterface
     /**
      * Метод возвращает список заказов готовых для поставки
      */
-    public function findPaginator(): PaginatorInterface;
+    public function findPaginator(?DeliveryUid $complete = null): PaginatorInterface;
 }

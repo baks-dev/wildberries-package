@@ -39,8 +39,6 @@ use Doctrine\ORM\EntityManagerInterface;
 final class UpdatePackageOrderStatusHandler extends AbstractHandler
 {
     public function __construct(
-
-
         EntityManagerInterface $entityManager,
         MessageDispatchInterface $messageDispatch,
         ValidatorCollectionInterface $validatorCollection,
@@ -67,6 +65,7 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
         $WbPackageOrder = $this
             ->getRepository(WbPackageOrder::class)
             ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);
+
 
         /**
          * Если объект не найден - ошибка валидации
