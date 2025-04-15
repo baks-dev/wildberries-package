@@ -31,6 +31,9 @@ use BaksDev\Wildberries\Package\UseCase\Supply\Total\WbSupplyInvariableDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Total\WbSupplyTotalHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Метод пересчитывает количество заказов в поставке
+ */
 #[AsMessageHandler(priority: 0)]
 final readonly class UpdateSupplyOrdersTotalHandler
 {
@@ -40,9 +43,6 @@ final readonly class UpdateSupplyOrdersTotalHandler
         private WbSupplyTotalHandler $SupplyTotalHandler,
     ) {}
 
-    /**
-     * Метод пересчитывает количество заказов в поставке
-     */
     public function __invoke(WbPackageMessage $message): void
     {
         $WbSupplyUid = $this->SupplyByPackage

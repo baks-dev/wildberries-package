@@ -48,7 +48,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final readonly class AddWildberriesSupplyOrdersHandler
 {
     public function __construct(
-        #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private OpenWbSupplyInterface $OpenWbSupply,
         private OrdersIdentifierByPackageInterface $OrdersIdentifierByPackage,
         private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
