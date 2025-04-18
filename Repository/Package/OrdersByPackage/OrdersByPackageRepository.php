@@ -37,6 +37,7 @@ use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
+use Generator;
 use InvalidArgumentException;
 
 
@@ -66,8 +67,9 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
 
     /**
      * Метод получает все заказы в упаковке со стикерами
+     * @return Generator{int, OrdersByPackageResult}|false
      */
-    public function findAll(): ?array
+    public function findAll(): Generator|false
     {
         if(false === ($this->event instanceof WbPackageEventUid))
         {
@@ -154,13 +156,13 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
         if(class_exists(BaksDevMaterialsSignBundle::class))
         {
             $dbal
-                ->addSelect('sign_event.status')
+                ->addSelect('sign_event.status AS code_status')
+                ->addSelect("sign_event.id AS code_event")
                 ->leftOneJoin(
                     'package_order',
                     MaterialSignEvent::class,
                     'sign_event',
-                    'sign_event.ord = package_order.id ',
-
+                    'sign_event.ord = package_order.id',
                 );
 
 
@@ -176,7 +178,6 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 )
                 ->addSelect("code.ext AS code_ext")
                 ->addSelect("code.cdn AS code_cdn")
-                ->addSelect("code.event AS code_event")
                 ->addSelect("code.code AS code_string")
                 ->leftJoin(
                     'sign_event',
@@ -184,13 +185,19 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                     'code',
                     'code.main = sign_event.main'
                 );
-
-
         }
 
         return $dbal
             ->enableCache('wildberries-package')
-            ->fetchAllAssociative();
+            ->fetchAllHydrate(OrdersByPackageResult::class);
+    }
+
+    /** @return array{int, OrdersByPackageResult}|false */
+    public function toArray(): array|false
+    {
+        $Generator = $this->findAll();
+
+        return (false === $Generator || false === $Generator->valid()) ? false : iterator_to_array($Generator);
     }
 
 }

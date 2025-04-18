@@ -180,12 +180,24 @@ final class WbPackageOrderResult
         return $this->status ? new MaterialSignStatus($this->status) : false;
     }
 
+    public function isExistCode(): bool
+    {
+        return empty($this->code) === false;
+    }
+
     /**
      * Code
      */
-    public function getCode(): ?string
+    public function getCode(): string|false
     {
-        return $this->code;
+        if($this->isExistCode())
+        {
+            $subChar = "";
+            preg_match_all('/\((\d{2})\)((?:(?!\(\d{2}\)).)*)/', $this->code, $matches, PREG_SET_ORDER);
+            return $matches[0][1].$matches[0][2].$matches[1][1].$matches[1][2].$subChar.$matches[2][1].$matches[2][2].$subChar.$matches[3][1].$matches[3][2];
+        }
+
+        return false;
     }
 
     /**

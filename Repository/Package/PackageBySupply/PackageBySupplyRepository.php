@@ -28,7 +28,6 @@ namespace BaksDev\Wildberries\Package\Repository\Package\PackageBySupply;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use Generator;
 use InvalidArgumentException;
@@ -69,6 +68,7 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
 
     /**
      * Метод возвращает все идентификаторы упаковок в поставке
+     * @return Generator{int, PackageBySupplyResult}|false
      */
     public function findAll(): Generator|false
     {
@@ -80,9 +80,10 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
         $dbal
-            ->select('supply.main AS value')
-            ->addSelect('supply.event AS attr')
-            ->addSelect('supply.supply AS option')
+            ->select('supply.main')
+            ->addSelect('supply.event')
+            ->addSelect('supply.supply')
+            ->addSelect('supply.print')
             ->from(WbPackageSupply::class, 'supply')
             ->where('supply.supply = :supply')
             ->setParameter(
@@ -98,8 +99,15 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
 
         $dbal->addOrderBy('supply.event');
 
-        return $dbal
-            // ->enableCache('wildberries-package', 3600)
-            ->fetchAllHydrate(WbPackageUid::class);
+        return $dbal->fetchAllHydrate(PackageBySupplyResult::class);
+    }
+
+    /**
+     * @return array{int, PackageBySupplyResult}|false
+     */
+    public function toArray(): array|false
+    {
+        $Generator = $this->findAll();
+        return (false === $Generator || $Generator->valid() === false) ? false : iterator_to_array($Generator);
     }
 }

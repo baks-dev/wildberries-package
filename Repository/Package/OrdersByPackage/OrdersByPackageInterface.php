@@ -25,6 +25,7 @@ namespace BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage;
 
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
+use Generator;
 
 interface OrdersByPackageInterface
 {
@@ -33,7 +34,13 @@ interface OrdersByPackageInterface
 
     /**
      * Метод получает заказы в упаковке со стикерами
+     * @return Generator{int, OrdersByPackageResult}|false
      */
-    public function findAll(): ?array;
+    public function findAll(): Generator|false;
+
+    /**
+     * @return array{int, OrdersByPackageResult}|false
+     */
+    public function toArray(): array|false;
 
 }

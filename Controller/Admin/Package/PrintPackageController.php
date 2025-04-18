@@ -38,6 +38,8 @@ use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrders
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
+use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageResult;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeProperty\WbBarcodePropertyByProductEventInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -53,9 +55,20 @@ use Symfony\Component\Routing\Attribute\Route;
 #[RoleSecurity('ROLE_WB_PACKAGE_PRINT')]
 final class PrintPackageController extends AbstractController
 {
+    private ?array $packages = null;
+
+    private ?array $orders = null;
+
     private ?array $stickers = null;
 
+    private ?array $matrix = null;
+
+    private ?array $products = null;
+
     private ?array $barcodes = null;
+
+    private ?array $settings = null;
+
 
     /**
      * Печать штрихкодов и QR заказов в упаковке
@@ -75,12 +88,15 @@ final class PrintPackageController extends AbstractController
     ): Response
     {
 
-        /* Получаем все заказы в упаковке вместе с честными занками при наличии */
+        /**
+         * Получаем все заказы в упаковке
+         *
+         */
         $orders = $orderByPackage
             ->forPackageEvent($wbPackage->getEvent())
-            ->findAll();
+            ->toArray();
 
-        if(empty($orders))
+        if(false === $orders)
         {
             $logger->critical(
                 'wildberries-package: Заказов на упаковку не найдено',
@@ -90,22 +106,36 @@ final class PrintPackageController extends AbstractController
             return new Response('Заказов на упаковку не найдено', Response::HTTP_NOT_FOUND);
         }
 
+
+        $WbPackageUid = (string) $wbPackage->getId();
+        $this->packages[] = $WbPackageUid;
+
+
+
         /**
          * Получаем стикеры заказа Wildberries
          */
 
         $isPrint = true;
 
+        $Product = false;
+
+        /** @var OrdersByPackageResult $order */
         foreach($orders as $order)
         {
-            if($isPrint === true && $order['order_status'] !== 'add')
+
+            if($isPrint === true && false === $order->getOrderStatus()->equals(WbPackageStatusAdd::class))
             {
                 $isPrint = false;
             }
 
+            $OrderUid = (string) $order->getOrderId();
+            $this->orders[$WbPackageUid][$OrderUid] = $OrderUid;
+
+
             $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
-                ->forOrderWb($order['number'])
+                ->forOrderWb($order->getOrderNumber())
                 ->getOrderSticker();
 
             /** Если стикер не найден - пробуем повторно отправить заказ в поставку */
@@ -113,44 +143,77 @@ final class PrintPackageController extends AbstractController
             {
                 $ConfirmOrderWildberriesMessage = new ConfirmOrderWildberriesMessage(
                     $this->getProfileUid(),
-                    $order['order'],
-                    $order['supply'],
-                    $order['number']
+                    $order->getOrderId(),
+                    $order->getSupply(),
+                    $order->getOrderNumber()
                 );
 
                 $messageDispatch->dispatch($ConfirmOrderWildberriesMessage);
 
-                /** Повторно открываем стикер */
+                /** Повторно прогреваем стикер */
                 $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
                     ->profile($this->getProfileUid())
-                    ->forOrderWb($order['number'])
+                    ->forOrderWb($order->getOrderNumber())
                     ->getOrderSticker();
-
             }
 
-            $this->stickers[$order['order']] = $order['order_status'] === 'add' || !empty($WildberriesOrdersSticker) ? $WildberriesOrdersSticker : null;
 
-            if($isPrint === true && !isset($this->stickers[$order['order']]))
+            if(!empty($WildberriesOrdersSticker) || $order->getOrderStatus()->equals(WbPackageStatusAdd::class))
+            {
+                $this->stickers[$OrderUid] = $WildberriesOrdersSticker;
+            }
+            else
+            {
+                $this->stickers[$OrderUid] = null;
+            }
+
+            if($isPrint === true && !isset($this->stickers[$OrderUid]))
             {
                 $isPrint = false;
             }
+
+            /**
+             * Генерируем честный знак
+             */
+            if(false === isset($this->matrix[$OrderUid]) && $order->isExistCode())
+            {
+                $datamatrix = $BarcodeWrite
+                    ->text($order->getCodeString())
+                    ->type(BarcodeType::DataMatrix)
+                    ->format(BarcodeFormat::SVG)
+                    ->generate();
+
+                if($datamatrix === false)
+                {
+                    /**
+                     * Проверить права на исполнение
+                     * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Writer/Generate
+                     * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
+                     * */
+                    throw new RuntimeException('Datamatrix write error');
+                }
+
+                $render = $BarcodeWrite->render();
+                $BarcodeWrite->remove();
+                $render = strip_tags($render, ['path']);
+                $render = trim($render);
+
+                $this->matrix[$OrderUid] = $render;
+            }
+
+            /* Получаем продукцию для штрихкода (в упаковке всегда один и тот же продукт) */
+
+            if($Product === false)
+            {
+                $Product = $productDetail
+                    ->event($order->getProductEvent())
+                    ->offer($order->getProductOffer())
+                    ->variation($order->getProductVariation())
+                    ->modification($order->getProductModification())
+                    ->find();
+            }
         }
 
-
-        /**
-         * Получаем честные знаки на заказ из материалов
-         */
-
-
-        /* Получаем продукцию для штрихкода (в упаковке всегда один и тот же продукт) */
-        $order = current($orders);
-
-        $Product = $productDetail
-            ->event($order['product_event'])
-            ->offer($order['product_offer'])
-            ->variation($order['product_variation'])
-            ->modification($order['product_modification'])
-            ->find();
 
         if(!$Product)
         {
@@ -161,6 +224,8 @@ final class PrintPackageController extends AbstractController
 
             return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
         }
+
+        $this->products[$WbPackageUid] = $Product;
 
         if(empty($Product['product_barcode']))
         {
@@ -192,38 +257,49 @@ final class PrintPackageController extends AbstractController
             throw new RuntimeException('Barcode write error');
         }
 
+        $packageKey = (string) $wbPackage->getId();
 
-        $this->barcodes[(string) $wbPackage->getId()] = $BarcodeWrite->render();
+        $this->barcodes[$packageKey] = $BarcodeWrite->render();
         $BarcodeWrite->remove();
 
         /**
          * Получаем настройки бокового стикера
          */
 
-        $BarcodeSettings = $Product['main'] ? $barcodeSettings
+        $this->settings[$WbPackageUid] = $Product['main'] ? $barcodeSettings
             ->forProduct($Product['main'])
             ->find() : false;
 
 
         /** Скрываем у все пользователей упаковку для печати */
         $CentrifugoPublish
-            ->addData(['identifier' => (string) $wbPackage->getId()]) // ID упаковки
+            ->addData(['identifier' => $packageKey]) // ID упаковки
             ->send('remove');
 
 
         $render = $this->render(
             [
-                'packages' => [(string) $wbPackage->getId()],
-                'orders' => [(string) $wbPackage->getId() => $orders],
+                //                'packages' => [$packageKey],
+                //                'orders' => [$packageKey => $orders],
+                //                'barcodes' => $this->barcodes,
+                //                'settings' => $BarcodeSettings,
+                //                'products' => $this->products,
+                //                'stickers' => $this->stickers,
+                //                'matrix' => $this->matrix,
+
+
+                'packages' => $this->packages,
+                'orders' => $this->orders,
+
+                'stickers' => $this->stickers, // стикеры Wildberries
+                'matrix' => $this->matrix,
                 'barcodes' => $this->barcodes,
-                'settings' => $BarcodeSettings,
-                'card' => $Product,
-                'stickers' => $this->stickers
+                'settings' => $this->settings,
+                'products' => $this->products,
             ],
             routingName: 'admin.package',
             file: '/print/print.html.twig'
         );
-
 
         if($isPrint)
         {

@@ -39,7 +39,7 @@ use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrders
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PackageBySupply\PackageBySupplyInterface;
-use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
+use BaksDev\Wildberries\Package\Repository\Package\PackageBySupply\PackageBySupplyResult;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -54,11 +54,19 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 #[RoleSecurity('ROLE_WB_PACKAGE_PRINT')]
 final class PrintSupplyController extends AbstractController
 {
+    private ?array $packages = null;
+
+    private ?array $orders = null;
+
     private ?array $stickers = null;
+
+    private ?array $matrix = null;
 
     private ?array $products = null;
 
     private ?array $barcodes = null;
+
+    private ?array $settings = null;
 
     /**
      * Печать всех упаковок, которые не напечатаны
@@ -83,29 +91,43 @@ final class PrintSupplyController extends AbstractController
         $packages = $PackageBySupply
             ->forSupply($WbSupplyUid)
             ->onlyPrint()
-            ->findAll();
+            ->toArray();
 
-        if(false === $packages || false === $packages->valid())
+        if(false === $packages)
         {
             return new Response('Package not found', Response::HTTP_NOT_FOUND);
         }
 
-        if($request->isMethod('GET') && is_null($request->get('print')))
-        {
-            /** @var WbPackageUid $WbPackageUid */
-            foreach($packages as $WbPackageUid)
-            {
-                /** Получаем все заказы в упаковке  */
-                $orders = $OrderByPackage
-                    ->forPackageEvent($WbPackageUid->getAttr())
-                    ->findAll();
+        $printers = null;
 
-                foreach($orders as $order)
+        foreach($packages as $PackageBySupplyResult)
+        {
+            $WbPackageUid = (string) $PackageBySupplyResult->getId();
+            $this->packages[] = $WbPackageUid;
+
+            /** Получаем все заказы в упаковке */
+            $orders = $OrderByPackage
+                ->forPackageEvent($PackageBySupplyResult->getEvent())
+                ->findAll();
+
+            // сбрасываем на каждую упаковку продукт
+            $Product = false;
+
+            foreach($orders as $order)
+            {
+                $OrderUid = (string) $order->getOrderId();
+                $this->orders[$WbPackageUid][$OrderUid] = $OrderUid;
+
+
+                /**
+                 * Получаем стикеры заказов Wildberries
+                 */
+
+                if(false === isset($this->stickers[$OrderUid]))
                 {
-                    /** Прогреваем кеш отсутствующих стикеров  */
                     $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
                         ->profile($this->getProfileUid())
-                        ->forOrderWb($order['number'])
+                        ->forOrderWb($order->getOrderNumber())
                         ->getOrderSticker();
 
                     /** Если стикер не найден - пробуем повторно отправить заказ в поставку */
@@ -113,134 +135,129 @@ final class PrintSupplyController extends AbstractController
                     {
                         $ConfirmOrderWildberriesMessage = new ConfirmOrderWildberriesMessage(
                             $this->getProfileUid(),
-                            $order['order'],
-                            $order['supply'],
-                            $order['number']
+                            $order->getOrderId(),
+                            $order->getSupply(),
+                            $order->getOrderNumber()
                         );
 
                         $messageDispatch->dispatch($ConfirmOrderWildberriesMessage);
 
                         /** Повторно прогреваем стикер */
-                        $WildberriesOrdersStickerRequest
+                        $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
                             ->profile($this->getProfileUid())
-                            ->forOrderWb($order['number'])
+                            ->forOrderWb($order->getOrderNumber())
                             ->getOrderSticker();
                     }
+
+                    $this->stickers[$OrderUid] = $WildberriesOrdersSticker;
                 }
-            }
 
-            return $this->render([
-                'action' => $this->generateUrl('wildberries-package:admin.package.print.supply',
-                    ['id' => $WbSupplyUid, 'print' => true]),
-            ]);
-        }
+                /**
+                 * Получаем стикеры честных знаков на заказ
+                 */
+
+                if(false === isset($this->matrix[$OrderUid]) && $order->isExistCode())
+                {
+                    $datamatrix = $BarcodeWrite
+                        ->text($order->getCodeString())
+                        ->type(BarcodeType::DataMatrix)
+                        ->format(BarcodeFormat::SVG)
+                        ->generate();
+
+                    if($datamatrix === false)
+                    {
+                        /**
+                         * Проверить права на исполнение
+                         * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Writer/Generate
+                         * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
+                         */
+                        throw new RuntimeException('Datamatrix write error');
+                    }
+
+                    $render = $BarcodeWrite->render();
+                    $render = strip_tags($render, ['path']);
+                    $render = trim($render);
+                    $BarcodeWrite->remove();
+
+                    $this->matrix[$OrderUid] = $render;
+                }
+
+                if(false === $Product)
+                {
+                    // на каждую упаковку всегда один продукт
+                    $Product = $productDetail
+                        ->event($order->getProductEvent())
+                        ->offer($order->getProductOffer())
+                        ->variation($order->getProductVariation())
+                        ->modification($order->getProductModification())
+                        ->find();
+
+                    if(!$Product)
+                    {
+                        throw new RouteNotFoundException('Product Not Found');
+                    }
+
+                    $this->products[$WbPackageUid] = $Product;
+                }
+
+                /**
+                 * Генерируем штрихкод продукции (один на все заказы в упаковке)
+                 */
+
+                if(false === isset($this->barcodes[$WbPackageUid]))
+                {
+                    $barcode = $BarcodeWrite
+                        ->text($Product['product_barcode'])
+                        ->type(BarcodeType::Code128)
+                        ->format(BarcodeFormat::SVG)
+                        ->generate();
 
 
-        /**
-         * Отдаем на печать все стикеры
-         */
+                    if($barcode === false)
+                    {
+                        /**
+                         * Проверить права на исполнение
+                         * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Writer/Generate
+                         * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
+                         * */
+                        throw new RuntimeException('Barcode write error');
+                    }
 
-        $Product = null;
-        $property = [];
+                    $this->barcodes[$WbPackageUid] = $BarcodeWrite->render();
+                    $BarcodeWrite->remove();
+                }
 
-        $packages = iterator_to_array($packages);
+                /**
+                 * Получаем настройки бокового стикера
+                 */
 
-        $orders = null;
-        $printers = null;
-
-        /** @var WbPackageUid $WbPackageUid */
-        foreach($packages as $WbPackageUid)
-        {
-            /** Получаем все заказы в упаковке  */
-            $orders[(string) $WbPackageUid] = $OrderByPackage
-                ->forPackageEvent($WbPackageUid->getAttr())
-                ->findAll();
-
-            if(empty($orders))
-            {
-                continue;
+                if(false === isset($this->settings[$WbPackageUid]))
+                {
+                    $this->settings[$WbPackageUid] = $barcodeSettings
+                        ->forProduct($Product['main'])
+                        ->find();
+                }
             }
 
             /** Скрываем у все пользователей упаковку для печати */
             $CentrifugoPublish
-                ->addData(['identifier' => (string) $WbPackageUid]) // ID упаковки
+                ->addData(['identifier' => $WbPackageUid]) // ID упаковки
                 ->send('remove');
 
-            foreach($orders[(string) $WbPackageUid] as $order)
-            {
-                $this->stickers[$order['order']] = $WildberriesOrdersStickerRequest
-                    ->profile($this->getProfileUid())
-                    ->forOrderWb($order['number'])
-                    ->getOrderSticker();
-            }
-
-            $order = current($orders[(string) $WbPackageUid]);
-
-            $Product = $productDetail
-                ->event($order['product_event'])
-                ->offer($order['product_offer'])
-                ->variation($order['product_variation'])
-                ->modification($order['product_modification'])
-                ->find();
-
-            if(!$Product)
-            {
-                throw new RouteNotFoundException('Product Not Found');
-            }
-
-            /**
-             * Генерируем штрихкод продукции (один на все заказы в упаковке)
-             */
-
-            if(isset($this->barcodes[(string) $WbPackageUid]))
-            {
-                continue;
-            }
-
-
-            $this->products[(string) $WbPackageUid] = $Product;
-
-            $barcode = $BarcodeWrite
-                ->text($Product['product_barcode'])
-                ->type(BarcodeType::Code128)
-                ->format(BarcodeFormat::SVG)
-                ->generate();
-
-
-            if($barcode === false)
-            {
-                /**
-                 * Проверить права на исполнение
-                 * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Writer/Generate
-                 * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
-                 * */
-                throw new RuntimeException('Barcode write error');
-            }
-
-            $this->barcodes[(string) $WbPackageUid] = $BarcodeWrite->render();
-            $BarcodeWrite->remove();
-
             $printers[] = $WbPackageUid;
-
         }
 
-        /**
-         * Получаем настройки бокового стикера
-         */
-
-        $BarcodeSettings = $Product ? $barcodeSettings
-            ->forProduct($Product['main'])
-            ->find() : false;
 
         $render = $this->render(
             [
-                'packages' => $packages,
-                'orders' => $orders,
-                'settings' => $BarcodeSettings,
-                'card' => $this->products,
-                'property' => $property,
+                'packages' => $this->packages,
+                'orders' => $this->orders,
+
+                'stickers' => $this->stickers, // стикеры Wildberries
+                'matrix' => $this->matrix,
                 'barcodes' => $this->barcodes,
-                'stickers' => $this->stickers
+                'settings' => $this->settings,
+                'products' => $this->products,
             ],
             routingName: 'admin.package',
             file: '/print/print.html.twig'

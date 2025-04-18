@@ -54,7 +54,7 @@ final class PrintOrderController extends AbstractController
     #[Route('/admin/wb/packages/print/order/{id}', name: 'admin.package.print.order', methods: ['GET', 'POST'])]
     public function printer(
         #[Target('wildberriesPackageLogger')] LoggerInterface $logger,
-        #[ParamConverter(OrderUid::class)] OrderUid $OrderUid,
+        #[ParamConverter(OrderUid::class, key: 'id')] OrderUid $OrderUid,
         WbPackageOrderInterface $WbPackageOrder,
         WbBarcodeSettingsInterface $barcodeSettings,
         ProductDetailByUidInterface $productDetail,
@@ -62,21 +62,16 @@ final class PrintOrderController extends AbstractController
         GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest
     ): Response
     {
+        /**
+         * Получаем по идентификатору заказ в упаковке
+         */
 
         $WbPackageOrderResult = $WbPackageOrder
             ->forOrder($OrderUid)
             ->find();
 
-        /** Получаем стикер Wildberries заказа */
-
-        $stickers[(string) $OrderUid] = $WildberriesOrdersStickerRequest
-            ->profile($this->getProfileUid())
-            ->forOrderWb($WbPackageOrderResult->getNumber())
-            ->getOrderSticker();
-
-
         /**
-         * Получаем продукцию для штрихкода (в упаковке всегда один и тот же продукт)
+         * Получаем информацию о продукте (в упаковке всегда один и тот же продукт)
          */
 
         $Product = $productDetail
@@ -106,7 +101,28 @@ final class PrintOrderController extends AbstractController
             return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
         }
 
+        $WbPackageUid = (string) $WbPackageOrderResult->getPackage();
+        $keyOrder = (string) $OrderUid;
 
+        /**
+         * Получаем стикер Wildberries заказа
+         */
+
+        $stickers[$keyOrder] = $WildberriesOrdersStickerRequest
+            ->profile($this->getProfileUid())
+            ->forOrderWb($WbPackageOrderResult->getNumber())
+            ->getOrderSticker();
+
+        /**
+         * Генерируем штрихкод товара
+         */
+
+        // Получаем настройки бокового стикера
+        $BarcodeSettings = $Product['main'] ? $barcodeSettings
+            ->forProduct($Product['main'])
+            ->find() : false;
+
+        // Генерируем штрихкод в формате SVG
         $barcode = $BarcodeWrite
             ->text($Product['product_barcode'])
             ->type(BarcodeType::Code128)
@@ -124,25 +140,57 @@ final class PrintOrderController extends AbstractController
             throw new RuntimeException('Barcode write error');
         }
 
-        $barcodes[(string) $WbPackageOrderResult->getPackage()] = $BarcodeWrite->render();
+        $barcodes[$WbPackageUid] = $BarcodeWrite->render();
         $BarcodeWrite->remove();
 
+
         /**
-         * Получаем настройки бокового стикера
+         * Генерируем стикер Честного знака
          */
 
-        $BarcodeSettings = $Product['main'] ? $barcodeSettings
-            ->forProduct($Product['main'])
-            ->find() : false;
+        $matrix = null;
+
+        if($WbPackageOrderResult->isExistCode())
+        {
+            $datamatrix = $BarcodeWrite
+                ->text($WbPackageOrderResult->getCode())
+                ->type(BarcodeType::DataMatrix)
+                ->format(BarcodeFormat::SVG)
+                ->generate();
+
+            if($datamatrix === false)
+            {
+                /**
+                 * Проверить права на исполнение
+                 * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Writer/Generate
+                 * chmod +x /home/bundles.baks.dev/vendor/baks-dev/barcode/Reader/Decode
+                 * */
+                throw new RuntimeException('Datamatrix write error');
+            }
+
+            // Генерируем «Честный знак» в формате SVG
+            $render = $BarcodeWrite->render();
+            $BarcodeWrite->remove();
+            $render = strip_tags($render, ['path']);
+            $render = trim($render);
+
+            $matrix[$keyOrder] = $render;
+        }
+
+
 
         return $this->render(
             [
-                'packages' => [(string) $WbPackageOrderResult->getPackage()],
-                'orders' => [(string) $WbPackageOrderResult->getPackage() => [$WbPackageOrderResult]],
+                'packages' => [$WbPackageUid],
+                'orders' => [$WbPackageUid => [$WbPackageOrderResult]],
+
+                'settings' => [$WbPackageUid => $BarcodeSettings],
+                'card' => [$WbPackageUid => $Product],
+
+                'stickers' => $stickers,
+                'matrix' => $matrix,
                 'barcodes' => $barcodes,
-                'settings' => $BarcodeSettings,
-                'card' => $Product,
-                'stickers' => $stickers
+
             ],
             routingName: 'admin.package',
             file: '/print/print.html.twig'

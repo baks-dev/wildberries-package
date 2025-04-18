@@ -21,26 +21,53 @@
  *  THE SOFTWARE.
  */
 
+declare(strict_types=1);
+
 namespace BaksDev\Wildberries\Package\Repository\Package\PackageBySupply;
 
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
+use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
-use Generator;
 
-interface PackageBySupplyInterface
+/** @see PackageBySupplyResult */
+final readonly class PackageBySupplyResult
 {
-    public function forSupply(WbSupply|WbSupplyUid|string $supply): self;
-
-    public function onlyPrint(): self;
-
-    /**
-     * Метод возвращает все идентификаторы упаковок в поставке
-     * @return Generator{int, PackageBySupplyResult}|false
-     */
-    public function findAll(): Generator|false;
+    public function __construct(
+        private string $main,
+        private string $event,
+        private string $supply,
+        private bool $print
+    ) {}
 
     /**
-     * @return array{int, PackageBySupplyResult}|false
+     * Идентификатор WbSupply
      */
-    public function toArray(): array|false;
+    public function getId(): WbPackageUid
+    {
+        return new WbPackageUid($this->main);
+    }
+
+    /**
+     * Идентификатор события
+     */
+    public function getEvent(): WbPackageEventUid
+    {
+        return new WbPackageEventUid($this->event);
+    }
+
+    /**
+     * Идентификатор Поставки
+     */
+    public function getSupply(): WbSupplyUid
+    {
+        return new WbSupplyUid($this->supply);
+    }
+
+    /**
+     * Статус печати стикеров упаковки
+     */
+    public function isPrint(): bool
+    {
+        return $this->print === true;
+    }
 }
