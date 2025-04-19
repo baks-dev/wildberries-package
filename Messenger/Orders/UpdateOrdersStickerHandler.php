@@ -100,7 +100,7 @@ final readonly class UpdateOrdersStickerHandler
         /** @var OrderUid $OrderUid */
         foreach($orders as $OrderUid)
         {
-            /** Прогреваем кеш со стикерами */
+            /** Прогреваем кеш со стикерами Wildberries */
             $this->WildberriesOrdersStickerRequest
                 ->profile($UserProfileUid)
                 ->forOrderWb($OrderUid->getAttr()) // идентификатор заказа Wildberries

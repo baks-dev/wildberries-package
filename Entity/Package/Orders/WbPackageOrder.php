@@ -28,6 +28,7 @@ use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -59,13 +60,17 @@ class WbPackageOrder extends EntityEvent
     #[ORM\JoinColumn(name: 'event', referencedColumnName: "id", nullable: false)]
     private WbPackageEvent $event;
 
-
     /**
      * Статус отправки заказа
      */
     #[Assert\NotBlank]
     #[ORM\Column(type: WbPackageStatus::TYPE)]
     private WbPackageStatus $status;
+
+
+    /** Порядок сортировки */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private int $sort;
 
 
     public function __construct(WbPackageEvent $event)

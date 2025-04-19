@@ -140,8 +140,12 @@ final class PrintOrderController extends AbstractController
             throw new RuntimeException('Barcode write error');
         }
 
-        $barcodes[$WbPackageUid] = $BarcodeWrite->render();
+        $render = $BarcodeWrite->render();
         $BarcodeWrite->remove();
+        $render = strip_tags($render, ['path']);
+        $render = trim($render);
+
+        $barcodes[$WbPackageUid] = trim($render);
 
 
         /**
@@ -177,12 +181,10 @@ final class PrintOrderController extends AbstractController
             $matrix[$keyOrder] = $render;
         }
 
-
-
         return $this->render(
             [
                 'packages' => [$WbPackageUid],
-                'orders' => [$WbPackageUid => [$WbPackageOrderResult]],
+                'orders' => [$WbPackageUid => [$WbPackageOrderResult->getNumber() => (string) $WbPackageOrderResult->getOrder()]],
 
                 'settings' => [$WbPackageUid => $BarcodeSettings],
                 'card' => [$WbPackageUid => $Product],
@@ -190,6 +192,7 @@ final class PrintOrderController extends AbstractController
                 'stickers' => $stickers,
                 'matrix' => $matrix,
                 'barcodes' => $barcodes,
+                'products' => [$WbPackageUid => $Product]
 
             ],
             routingName: 'admin.package',

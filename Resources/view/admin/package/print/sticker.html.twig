@@ -1,16 +1,22 @@
+{# @var settings \BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsResult #}
+
 {% if card %}
-    <div style="">
 
-        <div>Номер: {{ order.number|replace({ 'W-' : '' }) }}</div>
+    <div>
 
-        {# <div style="white-space: nowrap;">
-            {{ string_width(card.product_name, 32) }}
-        </div> #}
+        <div>Номер: {{ number }}</div>
 
+        {% if settings.name and card.product_name %}
+            <div style="white-space: nowrap;">
+                Название: {{ string_width(card.product_name, 32) }}
+            </div>
+        {% endif %}
 
         <div>Категория: {{ card.category_name }}</div>
 
         {% if settings %}
+
+            <div>Арт: {{ card.product_article }}</div>
 
             <div>
                 {% if settings.offer and card.product_offer_name %}
@@ -29,8 +35,6 @@
                 {% endif %}
             </div>
 
-            <div>Арт: {{ card.product_article }}</div>
-
             {% for props in settings.property %}
                 <div>{{ props.name }}: {{ props.value }}</div>
             {% endfor %}
@@ -40,7 +44,6 @@
             {% endfor %}
 
         {% endif %}
-
 
         <div>Дата производства: {{ "now"|date("d.m.Y") }}</div>
     </div>

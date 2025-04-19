@@ -46,9 +46,10 @@ final readonly class OrdersByPackageResult
         private string $supply,
         private string $number,
         private string $product_event,
-        private string $product_offer,
-        private string $product_variation,
-        private string $product_modification,
+
+        private ?string $product_offer,
+        private ?string $product_variation,
+        private ?string $product_modification,
 
         private ?string $code_event = null,
         private ?string $code_status = null,

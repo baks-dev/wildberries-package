@@ -130,7 +130,7 @@ final class PrintPackageController extends AbstractController
             }
 
             $OrderUid = (string) $order->getOrderId();
-            $this->orders[$WbPackageUid][$OrderUid] = $OrderUid;
+            $this->orders[$WbPackageUid][$order->getOrderNumber()] = $OrderUid;
 
 
             $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
@@ -259,8 +259,12 @@ final class PrintPackageController extends AbstractController
 
         $packageKey = (string) $wbPackage->getId();
 
-        $this->barcodes[$packageKey] = $BarcodeWrite->render();
+        $render = $BarcodeWrite->render();
         $BarcodeWrite->remove();
+        $render = strip_tags($render, ['path']);
+        $render = trim($render);
+
+        $this->barcodes[$packageKey] = $render;
 
         /**
          * Получаем настройки бокового стикера
@@ -300,6 +304,7 @@ final class PrintPackageController extends AbstractController
             routingName: 'admin.package',
             file: '/print/print.html.twig'
         );
+
 
         if($isPrint)
         {

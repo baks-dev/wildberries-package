@@ -1,105 +1,101 @@
 {# ПЕЧАТЬ #}
-
-{% set counter = settings ? settings.counter : 1 %}
-
 <div class="{{ app.request.headers.get('X-Requested-With') is not null ? 'd-none' }} d-print-block p-0 w-100">
+
+    {% set break = false %}
 
     {% for package in packages %}
 
-        {% set package = package|trim %}
+        {# Печатаем количество стикеров #}
+        {% set counter = 0 %}
 
-        {% for order in orders[package] %}
+        {# @var setting \BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsResult #}
+        {% set setting = settings[package] %}
 
-            {% set order_id = order.order|trim %}
-
-
-            {% if not loop.first %}
-                <div style="page-break-after: always !important;"></div>
-            {% endif %}
-
-            {# QRCode Wildberries #}
-            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
-                {# <img
-                        src='data:image/svg+xml;base64,{{ stickers[order_id] }}'
-                        alt='QRCode Wildberries'
-                        style="height: 100%;"
-                /> #}
-
-                {{ stickers[order_id]|raw }}
-            </div>
+        {% if settings[package] is defined and settings[package] != false %}
+            {% set counter = setting.counter %}
+        {% endif %}
 
 
-            {% for i in 1..counter %}
+        {% if orders[package] is defined %}
+            {% for number, order in orders[package] %}
 
-                {# QRCode Честный Знак #}
-
-                {% set sign = false %}
-
-                {% if order.code_image is defined %}
-                    {% set sign = cdn_image_path(order.code_image, order.code_ext, order.code_cdn, 'small', true) %}
-                {% endif %}
-
-                {# @var order \BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderResult #}
-
-                {% if order.sign is defined and order.sign is not empty %}
-                    {% set sign = cdn_image_path(order.codeImage, order.codeExt, order.codeCdn, 'small', true) %}
-                {% endif %}
-
-                {% if sign and sign != '/assets/img/blank.svg' %}
+                {% if break %}
+                    {# разрыв старницы #}
                     <div style="page-break-after: always !important;"></div>
+                {% endif %}
 
+                {# QRCode Wildberries #}
+                {% if stickers[order] is defined %}
                     <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
-                        <img
-                                src='{{ sign }}'
-                                alt='QRCode Честный Знак'
-                                style="height: 100%;"
-                        />
+                        {{ stickers[order]|raw }}
                     </div>
-
                 {% endif %}
 
 
-                <div style="page-break-after: always !important;"></div>
+                {% for i in 1..counter %}
+
+                    {# QRCode Честный Знак #}
+
+                    {% if matrix[order] is defined %}
+
+                        {# разрыв старницы #}
+                        <div style="page-break-after: always !important;"></div>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
+                             style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;"
+                             fill="currentColor"
+                             viewBox="8 8 40 40">
+                            {{ matrix[order]|raw }}
+                        </svg>
 
 
-                <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
+                    {% endif %}
 
                     {# Штрикхкод #}
-                    <div style="text-align: center;">
-                        <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                                style="width: 180px;"
-                                viewBox="5 0 125 25"
-                        >
-                            {{ (barcodes[package] ? barcodes[package] : barcodes) |striptags('<path>')|raw }}
-                        </svg>
-                    </div>
 
-                    {# Идентификатор штрихкода #}
+                    {% if barcodes[package] is defined %}
 
-                    <div style="width: 100%; text-align: center; margin-bottom: 5px;">
+                        {# разрыв старницы #}
+                        <div style="page-break-after: always !important;"></div>
 
-                        {{ card[package] is defined ? card[package].product_barcode : card.product_barcode }}
+                        <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
 
-                    </div>
+                            <div style="text-align: center;">
+                                <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="currentColor"
+                                        style="width: 180px;"
+                                        viewBox="5 0 125 25"
+                                >
+                                    {{ barcodes[package]|raw }}
+                                </svg>
+                            </div>
 
-                    <div style="
-                     width: 100%;
-                     display: flex;
-                     justify-content: space-between;
-                     align-items: flex-end;
-                     font-size: 8px;"
-                    >
-                        {{ include(_self|replace({ "print.html.twig" : "sticker.html.twig" }), { card : card[package] is defined ? card[package] : card }) }}
-                    </div>
-                </div>
+                            {# Идентификатор штрихкода #}
+
+                            {% if products[package].product_barcode %}
+                                <div style="width: 100%; text-align: center; margin-bottom: 5px;">
+                                    {{ products[package].product_barcode }}
+                                </div>
+                            {% endif %}
+
+                            <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; font-size: 8px;">
+                                {{ include(_self|replace({ "print.html.twig" : "sticker.html.twig" }), {
+                                    card : products[package],
+                                    settings: settings[package]
+                                }) }}
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+                {% set break = true %}
 
             {% endfor %}
-
-        {% endfor %}
+        {% endif %}
 
     {% endfor %}
-
-
 </div>

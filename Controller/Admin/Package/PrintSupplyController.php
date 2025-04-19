@@ -39,7 +39,6 @@ use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrders
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PackageBySupply\PackageBySupplyInterface;
-use BaksDev\Wildberries\Package\Repository\Package\PackageBySupply\PackageBySupplyResult;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -116,7 +115,7 @@ final class PrintSupplyController extends AbstractController
             foreach($orders as $order)
             {
                 $OrderUid = (string) $order->getOrderId();
-                $this->orders[$WbPackageUid][$OrderUid] = $OrderUid;
+                $this->orders[$WbPackageUid][$order->getOrderNumber()] = $OrderUid;
 
 
                 /**
@@ -233,9 +232,9 @@ final class PrintSupplyController extends AbstractController
 
                 if(false === isset($this->settings[$WbPackageUid]))
                 {
-                    $this->settings[$WbPackageUid] = $barcodeSettings
+                    $this->settings[$WbPackageUid] = $Product['main'] ? $barcodeSettings
                         ->forProduct($Product['main'])
-                        ->find();
+                        ->find() : false;
                 }
             }
 

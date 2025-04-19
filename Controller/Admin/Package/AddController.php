@@ -240,7 +240,10 @@ final class AddController extends AbstractController
                 }
 
                 /** Добавляем в упаковку поставки заказ */
-                $WbPackageOrderDTO = new WbPackageOrderDTO()->setId($OrderEvent->getMain());
+                $WbPackageOrderDTO = new WbPackageOrderDTO()
+                    ->setId($OrderEvent->getMain())
+                    ->setSort(time());
+
                 $WbPackageDTO->addOrd($WbPackageOrderDTO);
 
             }
