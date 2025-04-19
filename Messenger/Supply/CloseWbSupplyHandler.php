@@ -79,7 +79,7 @@ final readonly class CloseWbSupplyHandler
             return;
         }
 
-        // только если статус поставки закрото
+        // только если статус поставки закрыто
         if(false === $WbSupplyEvent->getStatus()->equals(WbSupplyStatusClose::class))
         {
             return;
