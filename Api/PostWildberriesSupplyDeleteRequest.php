@@ -49,7 +49,7 @@ final class PostWildberriesSupplyDeleteRequest extends Wildberries
     /**
      * Удаляет поставку, если она активна и за ней не закреплено ни одно сборочное задание.
      *
-     * @see https://openapi.wildberries.ru/marketplace/api/ru/#tag/Postavki/paths/~1api~1v3~1supplies~1{supplyId}/delete
+     * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies~1{supplyId}/delete
      *
      */
     public function delete(): bool
@@ -67,10 +67,14 @@ final class PostWildberriesSupplyDeleteRequest extends Wildberries
             );
         }
 
-        $response = $this->TokenHttpClient()->request(
+        $response = $this
+            ->marketplace()
+            ->TokenHttpClient()
+            ->request(
             'DELETE',
             '/api/v3/supplies/'.$this->supply,
         );
+
 
         if($response->getStatusCode() !== 204)
         {

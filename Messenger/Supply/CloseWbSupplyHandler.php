@@ -85,6 +85,12 @@ final readonly class CloseWbSupplyHandler
             return;
         }
 
+        /** Нельзя закрыть пустую поставку */
+        if($WbSupplyEvent->getTotal() === 0)
+        {
+            return;
+        }
+
         /** Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
         $UserProfileUid = $this->openWbSupply
             ->forSupply($message->getId())
