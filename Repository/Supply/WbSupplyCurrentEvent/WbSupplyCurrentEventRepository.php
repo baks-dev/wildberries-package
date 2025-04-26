@@ -66,20 +66,24 @@ final class WbSupplyCurrentEventRepository implements WbSupplyCurrentEventInterf
 
         $orm = $this->ORMQueryBuilder->createQueryBuilder(self::class);
 
-        $orm->select('event');
-
         $orm
             ->from(WbSupply::class, 'supply')
             ->where('supply.id = :supply')
-            ->setParameter('supply', $this->supply, WbSupplyUid::TYPE);
+            ->setParameter(
+                'supply',
+                $this->supply,
+                WbSupplyUid::TYPE
+            );
 
-        $orm->join(
-            WbSupplyEvent::class,
-            'event',
-            'WITH',
-            'event.id = supply.event'
-        );
+        $orm
+            ->select('event')
+            ->join(
+                WbSupplyEvent::class,
+                'event',
+                'WITH',
+                'event.id = supply.event'
+            );
 
-        return $orm->getQuery()->getOneOrNullResult() ?: false;
+        return $orm->getOneOrNullResult() ?: false;
     }
 }

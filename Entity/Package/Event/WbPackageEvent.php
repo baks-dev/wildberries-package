@@ -65,13 +65,13 @@ class WbPackageEvent extends EntityEvent
     /**
      * Модификатор
      */
-    #[ORM\OneToOne(targetEntity: WbPackageModify::class, mappedBy: 'event', cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: WbPackageModify::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private WbPackageModify $modify;
 
     /**
      * Заказы, добавленные в поставку
      */
-    #[ORM\OneToMany(targetEntity: WbPackageOrder::class, mappedBy: 'event', cascade: ['all'])]
+    #[ORM\OneToMany(targetEntity: WbPackageOrder::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private Collection $ord;
 
     /**
@@ -84,7 +84,7 @@ class WbPackageEvent extends EntityEvent
      * Поставка
      */
     #[Assert\Valid]
-    #[ORM\OneToOne(targetEntity: WbPackageSupply::class, mappedBy: 'event', cascade: ['all'])]
+    #[ORM\OneToOne(targetEntity: WbPackageSupply::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private WbPackageSupply $supply;
 
 

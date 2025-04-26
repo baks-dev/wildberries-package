@@ -52,7 +52,7 @@ class WbSupplyModify extends EntityEvent
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[ORM\Id]
-    #[ORM\OneToOne(inversedBy: 'modify', targetEntity: WbSupplyEvent::class)]
+    #[ORM\OneToOne(targetEntity: WbSupplyEvent::class, inversedBy: 'modify')]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: 'id')]
     private WbSupplyEvent $event;
 
