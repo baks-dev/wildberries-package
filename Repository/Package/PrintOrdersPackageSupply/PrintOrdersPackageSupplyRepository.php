@@ -332,12 +332,15 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'package_event.id = package_supply.event'
             );
 
-        $dbal->leftOneJoin(
+        $dbal
+            ->leftOneJoin(
             'package_supply',
             WbPackageOrder::class,
             'package_orders',
             'package_orders.event = package_supply.event'
         );
+
+        $dbal->addOrderBy('package_orders.sort');
 
         /** Стикеры Wildberries */
 
