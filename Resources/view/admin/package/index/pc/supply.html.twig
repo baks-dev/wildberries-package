@@ -103,14 +103,11 @@
                          data-bs-delay='{"show":600,"hide":100}'
                          title="Печать всех стикеров поставки"
                     >
-
                         <button
-                                class="btn btn-light disabled {# prnt #}"
-                                {# data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id, print: true }) }}" #}
-                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id }) }}"
+                                class="btn btn-light disabled prnt"
+                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id, print: true }) }}"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modal"
-                                {# {{ isSticker ?: 'disabled="disabled"' }} #}
                         >
 
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -120,7 +117,6 @@
                             </svg>
 
                             Все
-
                         </button>
 
                     </div>
