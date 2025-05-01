@@ -39,6 +39,7 @@ use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrders
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PackageBySupply\PackageBySupplyInterface;
+use BaksDev\Wildberries\Package\Type\Package\Id\WbPackageUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -211,7 +212,6 @@ final class PrintSupplyController extends AbstractController
                         ->format(BarcodeFormat::SVG)
                         ->generate();
 
-
                     if($barcode === false)
                     {
                         /**
@@ -222,8 +222,13 @@ final class PrintSupplyController extends AbstractController
                         throw new RuntimeException('Barcode write error');
                     }
 
-                    $this->barcodes[$WbPackageUid] = $BarcodeWrite->render();
+                    $render = $BarcodeWrite->render();
+                    $render = strip_tags($render, ['path']);
+                    $render = trim($render);
                     $BarcodeWrite->remove();
+
+                    $this->barcodes[$WbPackageUid] = $render;
+
                 }
 
                 /**
@@ -269,7 +274,7 @@ final class PrintSupplyController extends AbstractController
             foreach($printers as $printer)
             {
                 $messageDispatch->dispatch(
-                    message: new PrintWbPackageMessage($printer),
+                    message: new PrintWbPackageMessage(new WbPackageUid($printer)),
                     transport: 'wildberries-package',
                 );
             }
