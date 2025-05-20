@@ -189,6 +189,8 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         /**
          * Отправляем Честные знаки на указанные в упаковке заказы Wildberries
+         * отправляем через 10 сек на случай обработки заказов и поиску кизов
+         * расчетно на обработку 10 заказов в секунду
          */
 
         $OrderWildberriesSignMessage = new OrderWildberriesSignMessage(
@@ -199,7 +201,8 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         $this->MessageDispatch->dispatch(
             message: $OrderWildberriesSignMessage,
-            transport: (string) $message->getProfile()
+            stamps: [new MessageDelay('10 seconds')],
+            transport: (string) $message->getProfile(),
         );
 
 
