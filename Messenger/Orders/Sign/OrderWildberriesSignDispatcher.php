@@ -26,7 +26,10 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Orders\Sign;
 
 
+use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Core\Messenger\MessageDelay;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Materials\Sign\BaksDevMaterialsSignBundle;
 use BaksDev\Materials\Sign\Repository\MaterialSignByOrder\MaterialSignByOrderRepository;
 use BaksDev\Products\Sign\BaksDevProductsSignBundle;
@@ -45,7 +48,9 @@ final readonly class OrderWildberriesSignDispatcher
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private DBALQueryBuilder $DBALQueryBuilder,
-        private PostWildberriesSgtinRequest $PostWildberriesSgtinRequest
+        private PostWildberriesSgtinRequest $PostWildberriesSgtinRequest,
+        private MessageDispatchInterface $MessageDispatch,
+        private DeduplicatorInterface $Deduplicator
     ) {}
 
 
@@ -76,7 +81,6 @@ final readonly class OrderWildberriesSignDispatcher
                         [$message, self::class.':'.__LINE__]
                     );
                 }
-
             }
         }
 
@@ -107,9 +111,37 @@ final readonly class OrderWildberriesSignDispatcher
 
         if(false === $isUpdate)
         {
+            $Deduplicator = $this->Deduplicator
+                ->namespace('wildberries-package')
+                ->expiresAfter('5 minutes')
+                ->deduplication([$message, self::class]);
+
+            if($Deduplicator->isExecuted())
+            {
+                /** Если повтор через минуту не сработал - следовательно честного знака не нашлось */
+                $this->logger->critical(
+                    sprintf('wildberries-package: Ошибка при отправке честных знаков заказа %s', $message->getOrder()),
+                    [$message, self::class.':'.__LINE__],
+                );
+
+                return;
+            }
+
+            $Deduplicator->save();
+
+            /**
+             * Пробуем повторно отправить сообщение через минуту
+             */
+
             $this->logger->critical(
-                sprintf('wildberries-package: Ошибка при отправке честных знаков заказа %s', $message->getOrder()),
-                [$message, self::class.':'.__LINE__]
+                sprintf('wildberries-package: Пробуем повторно через минуту отправить честный знак по заказу %s', $message->getOrder()),
+                [$message, self::class.':'.__LINE__],
+            );
+
+            $this->MessageDispatch->dispatch(
+                message: $message,
+                stamps: [new MessageDelay('1 minute')],
+                transport: (string) $message->getProfile(),
             );
         }
     }
