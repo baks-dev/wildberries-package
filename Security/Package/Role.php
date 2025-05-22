@@ -36,7 +36,9 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class Role implements RoleInterface, MenuAdminInterface
 {
 
-    public const ROLE = 'ROLE_WB_PACKAGE';
+    public const string ROLE = 'ROLE_WB_PACKAGE';
+
+    public const string KEY = 'aWmTaWjA';
 
     public function getRole(): string
     {
@@ -53,6 +55,14 @@ final class Role implements RoleInterface, MenuAdminInterface
     public function getPath(): string
     {
         return 'wildberries-package:admin.package.index';
+    }
+
+    /**
+     * Метод возвращает ключ раздела (для меню телеграм)
+     */
+    public function getPathKey(): string
+    {
+        return self::KEY;
     }
 
     /**
