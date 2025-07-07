@@ -103,6 +103,12 @@ final class PrintPackageController extends AbstractController
                 [$wbPackage->getEvent(), self::class.':'.__LINE__]
             );
 
+            /** Отправляем сообщение в шину и отмечаем принт упаковки */
+            $messageDispatch->dispatch(
+                message: new PrintWbPackageMessage($wbPackage->getId()),
+                transport: 'wildberries-package',
+            );
+
             return new Response('Заказов на упаковку не найдено', Response::HTTP_NOT_FOUND);
         }
 
