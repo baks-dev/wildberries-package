@@ -68,7 +68,8 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
 
     /**
      * Метод возвращает все идентификаторы упаковок в поставке
-     * @return Generator{int, PackageBySupplyResult}|false
+     *
+     * @return Generator<int, PackageBySupplyResult>|false
      */
     public function findAll(): Generator|false
     {

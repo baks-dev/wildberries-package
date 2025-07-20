@@ -67,7 +67,8 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
 
     /**
      * Метод получает все заказы в упаковке со стикерами
-     * @return Generator{int, OrdersByPackageResult}|false
+     *
+     * @return Generator<int, OrdersByPackageResult>|false
      */
     public function findAll(): Generator|false
     {

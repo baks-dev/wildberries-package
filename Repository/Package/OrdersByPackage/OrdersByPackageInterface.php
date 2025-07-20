@@ -34,12 +34,13 @@ interface OrdersByPackageInterface
 
     /**
      * Метод получает заказы в упаковке со стикерами
-     * @return Generator{int, OrdersByPackageResult}|false
+     *
+     * @return Generator<int, OrdersByPackageResult>|false
      */
     public function findAll(): Generator|false;
 
     /**
-     * @return array{int, OrdersByPackageResult}|false
+     * @return array<int, OrdersByPackageResult>|false
      */
     public function toArray(): array|false;
 
