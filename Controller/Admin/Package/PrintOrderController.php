@@ -195,7 +195,7 @@ final class PrintOrderController extends AbstractController
                 'products' => [$WbPackageUid => $Product]
 
             ],
-            routingName: 'admin.package',
+            dir: 'admin.package',
             file: '/print/print.html.twig'
         );
     }
