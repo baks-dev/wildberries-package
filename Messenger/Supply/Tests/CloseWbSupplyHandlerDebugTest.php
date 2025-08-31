@@ -29,6 +29,7 @@ use BaksDev\Wildberries\Package\Messenger\Supply\CloseWbSupplyHandler;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -37,10 +38,7 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-
-/**
- * @group wildberries-package
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 class CloseWbSupplyHandlerDebugTest extends KernelTestCase
 {

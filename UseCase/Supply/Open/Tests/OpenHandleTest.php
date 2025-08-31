@@ -34,21 +34,16 @@ use BaksDev\Wildberries\Package\UseCase\Supply\New\Tests\NewHandleTest;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenHandler;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\Wildberries\WbSupplyWildberriesDTO;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group wildberries-package
- * @group wildberries-package-supply
- *
- * @depends BaksDev\Wildberries\Package\UseCase\Supply\New\Tests\NewHandleTest::class
- *
- * @see     NewHandleTest
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 final class OpenHandleTest extends KernelTestCase
 {
-
+    #[DependsOnClass(NewHandleTest::class)]
     public function testUseCase(): void
     {
         /**
@@ -82,6 +77,4 @@ final class OpenHandleTest extends KernelTestCase
         self::assertTrue(($handle instanceof WbSupply), $handle.': Ошибка WbSupply');
 
     }
-
-
 }

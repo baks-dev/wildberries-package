@@ -32,14 +32,12 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbS
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatusType;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 use function PHPUnit\Framework\assertTrue;
 
-/**
- * @group wildberries-package
- * @group wildberries-package-supply
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 final class WbSupplyStatusTest extends KernelTestCase
 {

@@ -38,13 +38,11 @@ use BaksDev\Wildberries\Package\UseCase\Package\Pack\Supply\WbPackageSupplyDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageHandler;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group wildberries-package
- * @group wildberries-package-package
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 final class NewPackageHandleTest extends KernelTestCase
 {

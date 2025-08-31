@@ -33,20 +33,16 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\Collection\WbS
 use BaksDev\Wildberries\Package\UseCase\Supply\Close\WbSupplyCloseDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Close\WbSupplyCloseHandler;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\Tests\OpenHandleTest;
+use PHPUnit\Framework\Attributes\DependsOnClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group wildberries-package
- * @group wildberries-package-supply
- *
- * @depends BaksDev\Wildberries\Package\UseCase\Supply\Open\Tests\OpenHandleTest::class
- *
- * @see     OpenHandleTest
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 final class CloseHandleTest extends KernelTestCase
 {
+    #[DependsOnClass(OpenHandleTest::class)]
     public function testUseCase(): void
     {
         /**

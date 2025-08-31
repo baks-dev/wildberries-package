@@ -35,13 +35,11 @@ use BaksDev\Wildberries\Package\UseCase\Supply\New\Invariable\WbSupplyInvariable
 use BaksDev\Wildberries\Package\UseCase\Supply\New\WbSupplyNewDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\New\WbSupplyNewHandler;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group wildberries-package
- * @group wildberries-package-supply
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 final class NewHandleTest extends KernelTestCase
 {

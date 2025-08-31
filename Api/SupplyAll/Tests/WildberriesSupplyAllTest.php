@@ -29,13 +29,11 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Api\SupplyAll\FindAllWildberriesSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyDTO;
 use BaksDev\Wildberries\Type\Authorization\WbAuthorizationToken;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
-/**
- * @group wildberries
- * @group wildberries-supply-all
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 final class WildberriesSupplyAllTest extends KernelTestCase
 {

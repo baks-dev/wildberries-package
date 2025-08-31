@@ -30,6 +30,7 @@ use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -38,10 +39,7 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-
-/**
- * @group wildberries-package
- */
+#[Group('wildberries-package')]
 #[When(env: 'test')]
 class WbSupplyRepositoryTest extends KernelTestCase
 {
