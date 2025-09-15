@@ -33,6 +33,7 @@ if(filter)
         packs.forEach(pack =>
         {
             const name = pack.dataset.name.toLowerCase();
+
             if(name.includes(filterText))
             {
                 pack.classList.remove('d-none');
@@ -40,6 +41,7 @@ if(filter)
             {
                 pack.classList.add('d-none');
             }
+
         });
     });
 
