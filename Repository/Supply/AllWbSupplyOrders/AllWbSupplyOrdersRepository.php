@@ -52,6 +52,7 @@ use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Forms\Supply\SupplyOrdersFilter\SupplyOrdersFilterDTO;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 
 
@@ -60,6 +61,8 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
     private ?SearchDTO $search = null;
 
     private ?ProductFilterDTO $filter = null;
+
+    private ?SupplyOrdersFilterDTO $supplyOrdersFilter = null;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
@@ -76,6 +79,12 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
     public function filter(ProductFilterDTO $filter): self
     {
         $this->filter = $filter;
+        return $this;
+    }
+
+    public function supplyOrderFilter(SupplyOrdersFilterDTO $supplyOrdersFilter): self
+    {
+        $this->supplyOrdersFilter = $supplyOrdersFilter;
         return $this;
     }
 
@@ -425,6 +434,17 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 //->addSearchEqual('wb_order.ord')
             ;
 
+        }
+
+        /* Фильтр по флагу Printed */
+        if(true === $this->supplyOrdersFilter->getPrint())
+        {
+            $dbal->andWhere('supply_package.print IS TRUE');
+        }
+
+        if(false === $this->supplyOrdersFilter->getPrint())
+        {
+            $dbal->andWhere('supply_package.print IS NOT TRUE');
         }
 
         $dbal->orderBy('supply_package.print', 'ASC');

@@ -98,13 +98,13 @@ final class WbPackageOrderResult
         $this->variation = $data['product_variation'];
         $this->modification = $data['product_modification'];
 
-        $this->status = $data['status'];
-        $this->sign = $data['code_event'];
-        $this->code = $data['code_string'];
+        $this->status = $data['status'] ?? null;
+        $this->sign = $data['code_event'] ?? null;
+        $this->code = $data['code_string'] ?? null;
 
-        $this->code_image = $data['code_image'];
-        $this->code_ext = $data['code_ext'];
-        $this->code_cdn = $data['code_cdn'] === true;
+        $this->code_image = $data['code_image'] ?? null;
+        $this->code_ext = $data['code_ext'] ?? null;
+        $this->code_cdn = isset($data['code_cdn']) ?  $data['code_cdn'] === true : false;
 
     }
 

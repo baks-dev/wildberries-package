@@ -57,4 +57,78 @@ document.addEventListener("DOMContentLoaded", (event) => {
 </script>
 #}
 
+
+<script nonce="{{ csp_nonce() }}">
+    /** Обработчик выбора "Печать выполнена" */
+    document.addEventListener("DOMContentLoaded", (event) => {
+        const supplyOrdersFilterForm = document.forms.supply_orders_filter_form;
+        supplyOrdersFilterForm.addEventListener("change", () => { setTimeout(() => { supplyOrdersFilterForm.submit(); }, 300); });
+    });
+</script>
+<script nonce="{{ csp_nonce() }}">
+
+/** Обработчики кнопок выбора заказов */
+let select_all_to_print = document.querySelector("#select-all-to-print");
+let add_all_to_print = document.querySelector("#add-all-to-print");
+
+
+/** Выбор из списка  */
+select_all_to_print?.addEventListener("click", function() {
+
+	/* Выбрать все */
+	select_all_to_print.classList.toggle("selected");
+
+	if(select_all_to_print.classList.contains("selected"))
+	{
+		select_all_to_print.innerText = "Снять выбор";
+		select_all_to_print.classList.remove("btn-outline-primary");
+		select_all_to_print.classList.add("btn-primary");
+	}
+	else
+   {
+	   select_all_to_print.innerText = "Выбрать все";
+	   select_all_to_print.classList.add("btn-outline-primary");
+	   select_all_to_print.classList.remove("btn-primary");
+   }
+
+
+    // TODO
+    const orders = document.querySelectorAll(".add-all-to-print");
+
+    /* Выбрать все НЕ disabled */
+    orders.forEach(checkbox => {if (!checkbox.disabled) { checkbox.checked = select_all_to_print.classList.contains("selected");} } );
+
+    const checkboxes = document.querySelectorAll(".add-all-to-print");
+    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+    if (atLeastOneChecked) {
+        add_all_to_print.classList.remove("d-none");
+    }
+    else {
+        add_all_to_print.classList.add("d-none");
+    }
+});
+
+var checkboxs_all_to_print = document.querySelectorAll(".add-all-to-print");
+
+/** Скрыть или показать кнопку "Добавить выбранные" */
+for (checkbox_all_to_print of checkboxs_all_to_print) {
+
+    checkbox_all_to_print?.addEventListener("click", function() {
+
+        const checkboxes = document.querySelectorAll(".add-all-to-print");
+        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+
+        if (atLeastOneChecked) {
+           add_all_to_print.classList.remove("d-none");
+        }
+        else {
+            add_all_to_print.classList.add("d-none");
+        }
+
+    });
+}
+
+</script>
+
 {% endblock %}
