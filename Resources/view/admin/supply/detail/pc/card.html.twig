@@ -27,6 +27,20 @@
 
                 <div class="d-flex justify-content-between">
 
+                    {# Чекбокс для множественного добавления заказов в печать #}
+                    <div class="h5">
+                        <input
+                                title="{{ 'Выбрать данный заказ' }}"
+
+                                id="check-{{ item.order_id }}"
+                                type="checkbox"
+                                class="form-check-input add-all-to-print add-all-to-package m-0 btn-outline-danger"
+                                {# Данные, отправляемые POST #}
+                                data-formname="{{ add_selected_form_name }}"
+                                data-id="{{ item.order_id }}"
+                                data-order="{{ item.order_id }}"
+                        >
+                    </div>
 
                     <div class="d-flex align-items-center gap-1 text-primary pointer copy small"
                          data-copy="{{ item.order_number|replace({'W-':''}) }}">
@@ -158,18 +172,26 @@
                                 data-bs-placement="bottom"
                                 title='{{ item.print == false ? 'Печать стикеров заказа' : 'Печать уже выполнена' }}'
                         >
-                                <button
-                                        data-href="{{ path('wildberries-package:admin.package.print.order', { id: item.order_id, print: true }) }}"
-                                        class="btn btn-sm disabled prnt {{ item.print == false ? 'btn-primary' : 'btn-light text-dark' }}"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modal"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                         class="bi bi-printer-fill" viewBox="0 0 16 16">
+
+                             <button
+                                     data-href="{{ path('wildberries-package:admin.package.print.selected.order', { print: true }) }}"
+                                     class="btn btn-sm disabled {{ item.print == false ? 'btn-primary' : 'btn-light text-dark' }}"
+                                     data-bs-toggle="modal"
+                                     data-bs-target="#modal"
+
+                                     data-method="post"
+                                     data-formname="{{ add_selected_form_name }}"
+                                     data-order="{{ item.order_id }}"
+                                     data-collection-form="collection"
+                                     data-post-class="add-one-to-collection"
+                             >
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-printer-fill" viewBox="0 0 16 16">
                                       <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
                                       <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
                                     </svg>
-                                </button>
+                            </button>
+
                         </span>
                     </div>
 

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2023.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,26 @@
  *  THE SOFTWARE.
  */
 
-namespace BaksDev\Wildberries\Package\Repository\Supply\AllWbSupplyOrders;
+declare(strict_types=1);
 
-use BaksDev\Core\Services\Paginator\PaginatorInterface;
-use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Forms\Supply\SupplyOrdersFilter\SupplyOrdersFilterDTO;
-use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+namespace BaksDev\Wildberries\Package\Forms\Supply\SupplyOrdersFilter;
 
-interface AllWbSupplyOrdersInterface
+/** @see SupplyOrdersFilterForm */
+final class SupplyOrdersFilterDTO
 {
-    /** Метод возвращает пагинатор WbSupply */
-    public function fetchAllWbSupplyOrdersAssociative(WbSupply|WbSupplyUid $supply): PaginatorInterface;
 
-    public function supplyOrderFilter(SupplyOrdersFilterDTO $supplyOrdersFilter): self;
+    /** Флаг распечатки по заказам на странице Детали поставки */
+    private bool|null $print = null;
+
+    public function getPrint(): bool
+    {
+        return $this->print === true;
+    }
+
+    public function setPrint(?bool $print): self
+    {
+        $this->print = $print;
+        return $this;
+    }
+
 }
