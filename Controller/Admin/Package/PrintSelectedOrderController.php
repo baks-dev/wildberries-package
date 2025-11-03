@@ -34,19 +34,19 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
-use BaksDev\Wildberries\Package\Forms\Package\Print\PrintOrderPackageDTO;
-use BaksDev\Wildberries\Package\Forms\Package\Print\PrintOrdersPackageDTO;
-use BaksDev\Wildberries\Package\Forms\Package\Print\PrintOrdersPackageForm;
+use BaksDev\Wildberries\Package\Forms\Package\Print\Collection\PrintOrderPackageDTO;
+use BaksDev\Wildberries\Package\Forms\Package\Print\PrintMultipleOrdersPackageDTO;
+use BaksDev\Wildberries\Package\Forms\Package\Print\PrintMultipleOrdersPackageForm;
 use BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderInterface;
+use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Target;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
-use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 
 
 #[AsController]
@@ -72,11 +72,11 @@ final class PrintSelectedOrderController extends AbstractController
          * Получаем данные по выбранным идентификаторам заказов в упаковке коллекции
          */
 
-        $PrintOrdersPackageDTO = new PrintOrdersPackageDTO();
+        $PrintOrdersPackageDTO = new PrintMultipleOrdersPackageDTO();
 
         $this
             ->createForm(
-                type: PrintOrdersPackageForm::class,
+                type: PrintMultipleOrdersPackageForm::class,
                 data: $PrintOrdersPackageDTO,
                 options: ['action' => $this->generateUrl('wildberries-package:admin.package.print.selected.order')],
             )
@@ -238,21 +238,13 @@ final class PrintSelectedOrderController extends AbstractController
         return $this->render(
             [
                 'packages' => $packages,
-
                 'orders' => $orders,
-
                 'settings' => $settings,
-
                 'card' => $card,
-
                 'stickers' => $stickers,
-
                 'matrix' => $matrix,
-
                 'barcodes' => $barcodes,
-
                 'products' => $products
-
             ],
             dir: 'admin.package',
             file: '/print/print.html.twig'

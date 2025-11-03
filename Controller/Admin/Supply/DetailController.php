@@ -32,11 +32,8 @@ use BaksDev\Core\Form\Search\SearchForm;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
-use BaksDev\Products\Stocks\Forms\MoveFilter\Admin\ProductStockMoveFilterForm;
-use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterDTO;
-use BaksDev\Wildberries\Orders\Forms\WbOrdersProductFilter\WbOrdersProductFilterForm;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
-use BaksDev\Wildberries\Package\Forms\Package\Print\PrintOrdersPackageForm;
+use BaksDev\Wildberries\Package\Forms\Package\Print\PrintMultipleOrdersPackageForm;
 use BaksDev\Wildberries\Package\Forms\Supply\SupplyOrdersFilter\SupplyOrdersFilterDTO;
 use BaksDev\Wildberries\Package\Forms\Supply\SupplyOrdersFilter\SupplyOrdersFilterForm;
 use BaksDev\Wildberries\Package\Repository\Supply\AllWbSupplyOrders\AllWbSupplyOrdersInterface;
@@ -120,7 +117,7 @@ final class DetailController extends AbstractController
                 'search' => $searchForm->createView(),
                 'filter' => $filterForm->createView(),
                 'supplyOrdersFilter' => $supplyOrdersFilterForm->createView(),
-                'add_selected_form_name' => $this->createForm(type: PrintOrdersPackageForm::class)->getName(),
+                'add_selected_form_name' => $this->createForm(type: PrintMultipleOrdersPackageForm::class)->getName(),
             ]
         );
     }
