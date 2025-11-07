@@ -81,7 +81,8 @@ final class DetailController extends AbstractController
         /**
          * Фильтр продукции
          */
-        $filter = new ProductFilterDTO();
+        $filter = new ProductFilterDTO()
+            ->hiddenMaterials();
 
         $filterForm = $this
             ->createForm(
