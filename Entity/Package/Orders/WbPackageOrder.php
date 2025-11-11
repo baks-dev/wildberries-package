@@ -27,6 +27,7 @@ namespace BaksDev\Wildberries\Package\Entity\Package\Orders;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
+use BaksDev\Wildberries\Package\Type\Package\Event\WbPackageEventUid;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -50,6 +51,7 @@ class WbPackageOrder extends EntityEvent
     #[ORM\Column(type: OrderUid::TYPE)]
     private OrderUid $id;
 
+
     /**
      * Связь на событие
      */
@@ -59,6 +61,7 @@ class WbPackageOrder extends EntityEvent
     #[ORM\ManyToOne(targetEntity: WbPackageEvent::class, inversedBy: "ord")]
     #[ORM\JoinColumn(name: 'event', referencedColumnName: "id", nullable: false)]
     private WbPackageEvent $event;
+
 
     /**
      * Статус отправки заказа
@@ -104,6 +107,16 @@ class WbPackageOrder extends EntityEvent
         }
 
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
+    }
+
+    public function getId(): OrderUid
+    {
+        return $this->id;
+    }
+
+    public function getEventId(): WbPackageEventUid
+    {
+        return $this->event->getId();
     }
 
 }
