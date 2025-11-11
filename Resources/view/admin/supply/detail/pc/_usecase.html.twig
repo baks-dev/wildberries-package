@@ -38,9 +38,12 @@ value="{{ identifier }}">
             </a>
         </li> #}
 
-        <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5 disabled">
-            <a href="#"
-               class="text-decoration-none text-dark w-100"
+        <li class="list-group-item d-flex justify-content-between bg-transparent border-0 text-truncate rounded-5">
+            <a href="{{ path('wildberries-package:admin.package.delete.order', { id: item.order_id, event: item.order_event }) }}"
+
+               class="text-decoration-none text-dark w-100 modal-link disabled"
+               data-bs-toggle="modal"
+               data-bs-target="#modal"
                title="Удалить заказ из поставки"
             >
                 Удалить заказ из поставки
