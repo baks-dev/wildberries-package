@@ -4,7 +4,8 @@ page:
   close: 'Закрыть поставку Wildberries'
   delete: 'Удалить поставку Wildberries'
   add: 'Добавить в поставку Wildberries'
-
+  order:
+    delete: 'Удалить заказ из поставки Wildberries'
 
 breadcrumb:
   index: 'Упаковка заказов Wildberries'
@@ -19,6 +20,8 @@ success:
   delete: 'Поставка успешно удалена'
   restore: 'Поставка успешно успешно восстановлена'
   add: 'Заказы успешно добавлены'
+  order:
+    delete: 'Заказ удален из поставки Wildberries'
 
 
 danger:
