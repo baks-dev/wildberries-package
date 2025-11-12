@@ -33,6 +33,7 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCompleted;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusMarketplace;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
@@ -130,7 +131,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
             }
 
             $OrderStatusDTO = new OrderStatusDTO(
-                OrderStatusMarketplace::class,
+                OrderStatusCompleted::class,
                 $OrderEvent->getId(),
             );
 
