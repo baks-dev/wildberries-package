@@ -133,7 +133,7 @@ final readonly class OrderWildberriesSignDispatcher
              * Пробуем повторно отправить сообщение через минуту
              */
 
-            $this->logger->critical(
+            $this->logger->warning(
                 sprintf('wildberries-package: Пробуем повторно через минуту отправить честный знак по заказу %s', $message->getOrder()),
                 [$message, self::class.':'.__LINE__],
             );

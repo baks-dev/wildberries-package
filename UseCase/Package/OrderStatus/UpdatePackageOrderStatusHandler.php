@@ -53,10 +53,11 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
     public function handle(UpdatePackageOrderStatusDTO $command): string|WbPackageOrder
     {
 
-        $this->validatorCollection->add($command);
+        $this->setCommand($command);
 
         /**
          * Только заказ в упаковке со статусом «NEW» можно изменить на «ADD» или «ERROR»
+         *
          * @var WbPackageOrder $WbPackageOrder
          */
 
@@ -66,6 +67,11 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
             ->getRepository(WbPackageOrder::class)
             ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);
 
+
+        if(false === ($WbPackageOrder instanceof WbPackageOrder))
+        {
+            return $this->validatorCollection->getErrorUniqid();
+        }
 
         /**
          * Если объект не найден - ошибка валидации
