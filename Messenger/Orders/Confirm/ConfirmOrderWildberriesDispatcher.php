@@ -141,14 +141,14 @@ final readonly class ConfirmOrderWildberriesDispatcher
             {
                 $this->logger->critical(
                     sprintf('wildberries-package: Ошибка при добавлении заказа %s в поставку %s', $message->getOrder(), $message->getSupply()).
-                    'Пробуем повторить попытку через 3 сек',
+                    'Пробуем повторить попытку через 5 сек',
                     [$message, self::class.':'.__LINE__]
                 );
 
                 /** Пробуем повторить попытку через 3 сек */
                 $this->MessageDispatch->dispatch(
                     message: $message,
-                    stamps: [new MessageDelay('3 seconds')],
+                    stamps: [new MessageDelay('5 seconds')],
                     transport: 'wildberries-package-low'
                 );
 

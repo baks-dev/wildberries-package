@@ -1,0 +1,160 @@
+{# @var card \BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidResult #}
+{# @var setting \BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsResult #}
+
+{# ПЕЧАТЬ #}
+<div class="{{ app.request.headers.get('X-Requested-With') is not null ? 'd-none' }} d-print-block p-0 w-100">
+
+    {% set break = false %}
+
+    {% for order in orders %}
+
+        {# Печатаем количество стикеров #}
+        {% set counter = 0 %}
+
+        {% set settings = order.settings %}
+
+        {% if order.settings is defined and order.settings != false %}
+            {% set counter = settings.counter %}
+        {% endif %}
+
+        {% if break %}
+            {# разрыв старницы #}
+            <div style="page-break-after: always !important;"></div>
+        {% endif %}
+
+        {# QRCode Wildberries #}
+        {% if order.sticker is defined %}
+            <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;">
+                {{ order.sticker|raw }}
+            </div>
+        {% endif %}
+
+
+        {% for i in 1..counter %}
+
+            {% if order.matrix is defined %}
+
+                {# разрыв старницы #}
+                <div style="page-break-after: always !important;"></div>
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"
+                     style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px;"
+                     fill="currentColor"
+                     viewBox="8 8 40 40">
+                    {{ order.matrix|raw }}
+                </svg>
+
+            {% endif %}
+
+
+            {# Штрикхкод #}
+
+            {% if order.barcode is defined %}
+
+                {# разрыв старницы #}
+                <div style="page-break-after: always !important;"></div>
+
+                <div style="height: 140px; max-height: 140px; max-width: 200px; margin-left: 20px; margin-top: 2px;">
+
+                    <div style="text-align: center;">
+                        <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor"
+                                style="width: 180px;"
+                                viewBox="5 0 125 25"
+                        >
+                            {{ order.barcode|raw }}
+                        </svg>
+                    </div>
+
+                    {# Идентификатор штрихкода #}
+
+                    {% if order.card.productBarcode %}
+                        <div style="width: 100%; text-align: center; margin-bottom: 5px;">
+                            {{ order.card.productBarcode }}
+                        </div>
+                    {% endif %}
+
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: flex-end; font-size: 8px;">
+
+
+                        {% if order.card %}
+
+
+
+                            {% set card = order.card %}
+
+                            <div>
+
+                                <div>Номер: {{ order.number }}</div>
+
+                                {% if settings and settings.name and card.productName %}
+                                    <div style="white-space: nowrap;">
+                                        Название: {{ string_width(card.productName, 32) }}
+                                    </div>
+                                {% endif %}
+
+                                <div>Категория: {{ card.categoryName }}</div>
+
+                                {% if settings %}
+
+                                    <div>Арт: {{ card.productArticle }}</div>
+
+                                    <div>
+                                        {% if settings.offer and card.productOfferName %}
+                                            {# Значение торгового предложения #}
+                                            {{ card.productOfferName }}: {{ card.productOfferValue|call_twig_func(card.productOfferReference) }} &nbsp;
+                                        {% endif %}
+
+                                        {% if settings.variation and card.productVariationName %}
+                                            {# Значение множественного варианта ТП #}
+                                            {{ card.productVariationName }}: {{ card.productVariationValue|call_twig_func(card.productVariationReference) }}
+                                        {% endif %}
+
+                                        {% if settings.modification and card.productModificationName %}
+                                            {# Значение множественного варианта ТП #}
+                                            {{ card.productModificationName }}: {{ card.productModificationValue|call_twig_func(card.productModificationReference) }}
+                                        {% endif %}
+                                    </div>
+
+                                    {% for props in settings.property %}
+                                        <div>{{ props.name }}: {{ props.value }}</div>
+                                    {% endfor %}
+
+                                    {% for props in settings.custom %}
+                                        <div>{{ props.name }}: {{ props.value }}</div>
+                                    {% endfor %}
+
+                                {% endif %}
+
+                                <div>Дата производства: {{ "now"|date("d.m.Y") }}</div>
+                            </div>
+
+                            <div class="text-end" style="float: right;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 200 200">
+                                    <path fill="#fff" d="M-1.179-.59h201.084v186.145H-1.179z"/>
+                                    <path d="M50 13H10v155h40v-20H30V98h20V83H30V33h20z"/>
+                                    <path d="M90 98v70H70V13h60v155h-20V98z" stroke="#000"/>
+                                    <path d="M90 83h20V28H90z" fill="#fff" stroke="#000"/>
+                                    <path d="M190 13h-40v155h40v-20h-20V33h20z" stroke="#000"/>
+                                </svg>
+                            </div>
+
+                        {% endif %}
+
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        {% endfor %}
+
+        {% set break = true %}
+
+    {% endfor %}
+
+
+</div>

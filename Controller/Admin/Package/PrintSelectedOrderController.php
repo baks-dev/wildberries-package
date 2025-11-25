@@ -33,6 +33,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidResult;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Forms\Package\Print\Collection\PrintOrderPackageDTO;
 use BaksDev\Wildberries\Package\Forms\Package\Print\PrintMultipleOrdersPackageDTO;
@@ -40,6 +41,7 @@ use BaksDev\Wildberries\Package\Forms\Package\Print\PrintMultipleOrdersPackageFo
 use BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderInterface;
 use BaksDev\Wildberries\Package\UseCase\Package\Print\PrintWbPackageMessage;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -82,39 +84,27 @@ final class PrintSelectedOrderController extends AbstractController
             )
             ->handleRequest($request);
 
-
-        $packages = [];
-        $orders = [];
-        $settings = [];
-        $card = [];
-        $stickers = [];
-        $barcodes = [];
-        $products = [];
-
         /**
          * @var PrintOrderPackageDTO $printOrderPackageDTO
          */
         foreach($PrintOrdersPackageDTO->getCollection() as $printOrderPackageDTO)
         {
-            $OrderUid = $printOrderPackageDTO->getOrder();
-
             $WbPackageOrderResult = $WbPackageOrder
-                ->forOrder($OrderUid)
+                ->forOrder($printOrderPackageDTO->getOrder())
                 ->find();
 
             /**
-             * Получаем информацию о продукте (в упаковке всегда один и тот же продукт)
+             * Получаем информацию о продукте
              */
 
-            $Product = $productDetail
+            $ProductDetailByUidResult = $productDetail
                 ->event($WbPackageOrderResult->getProduct())
                 ->offer($WbPackageOrderResult->getOffer())
                 ->variation($WbPackageOrderResult->getVariation())
                 ->modification($WbPackageOrderResult->getModification())
-                ->find();
+                ->findResult();
 
-
-            if(!$Product)
+            if(false === ($ProductDetailByUidResult instanceof ProductDetailByUidResult))
             {
                 $logger->critical(
                     'wildberries-package: Продукция в упаковке не найдена',
@@ -124,52 +114,50 @@ final class PrintSelectedOrderController extends AbstractController
                 return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
             }
 
-            if(empty($Product['product_barcode']))
+            if(empty($ProductDetailByUidResult->getProductBarcode()))
             {
                 $logger->critical(
                     'wildberries-package: В продукции не указан артикул либо штрихкод',
-                    [$Product, self::class.':'.__LINE__]
+                    [$ProductDetailByUidResult, self::class.':'.__LINE__],
                 );
 
                 return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
             }
 
-            $WbPackageUid = (string) $WbPackageOrderResult->getPackage();
-            $packages[] = $WbPackageUid;
 
-            $card[$WbPackageUid] = $Product;
+            $keyOrder = (string) $printOrderPackageDTO->getOrder();
 
-            $products[$WbPackageUid] = $Product;
-
-            $keyOrder = (string) $OrderUid;
-
-            $orders[$WbPackageUid] = [
-                $WbPackageOrderResult->getNumber() => (string) $WbPackageOrderResult->getOrder()
-            ];
+            $print[$keyOrder]['card'] = $ProductDetailByUidResult;
+            $print[$keyOrder]['number'] = $WbPackageOrderResult->getNumber();
 
             /**
              * Получаем стикер Wildberries заказа
              */
 
-            $stickers[$keyOrder] = $WildberriesOrdersStickerRequest
+            $print[$keyOrder]['sticker'] = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
                 ->forOrderWb($WbPackageOrderResult->getNumber())
                 ->getOrderSticker();
+
+
+            /**
+             * Получаем настройки бокового стикера
+             */
+
+            $BarcodeSettings = $ProductDetailByUidResult->getProductMain() ? $barcodeSettings
+                ->forProduct($ProductDetailByUidResult->getProductMain())
+                ->find() : false;
+
+            $print[$keyOrder]['settings'] = $BarcodeSettings;
+
 
             /**
              * Генерируем штрихкод товара
              */
 
-            // Получаем настройки бокового стикера
-            $BarcodeSettings = $Product['main'] ? $barcodeSettings
-                ->forProduct($Product['main'])
-                ->find() : false;
-
-            $settings[$WbPackageUid] = $BarcodeSettings;
-
             /* Генерируем штрихкод в формате SVG */
             $barcode = $BarcodeWrite
-                ->text($Product['product_barcode'])
+                ->text($ProductDetailByUidResult->getProductBarcode())
                 ->type(BarcodeType::Code128)
                 ->format(BarcodeFormat::SVG)
                 ->generate();
@@ -190,14 +178,12 @@ final class PrintSelectedOrderController extends AbstractController
             $render = strip_tags($render, ['path']);
             $render = trim($render);
 
-            $barcodes[$WbPackageUid] = trim($render);
+            $print[$keyOrder]['barcode'] = trim($render);
 
 
             /**
              * Генерируем стикер Честного знака
              */
-
-            $matrix = null;
 
             if($WbPackageOrderResult->isExistCode())
             {
@@ -223,8 +209,9 @@ final class PrintSelectedOrderController extends AbstractController
                 $render = strip_tags($render, ['path']);
                 $render = trim($render);
 
-                $matrix[$keyOrder] = $render;
+                $print[$keyOrder]['matrix'] = $render;
             }
+
 
             /* Отправляем сообщение в шину и отмечаем print WbPackageSupply */
             $messageDispatch->dispatch(
@@ -234,20 +221,14 @@ final class PrintSelectedOrderController extends AbstractController
 
         }
 
+        if(empty($print))
+        {
+            throw new InvalidArgumentException('Page Not Found', 404);
+        }
 
-        return $this->render(
-            [
-                'packages' => $packages,
-                'orders' => $orders,
-                'settings' => $settings,
-                'card' => $card,
-                'stickers' => $stickers,
-                'matrix' => $matrix,
-                'barcodes' => $barcodes,
-                'products' => $products
-            ],
+        return $this->render(['orders' => $print],
             dir: 'admin.package',
-            file: '/print/print.html.twig'
+            file: '/print/orders.html.twig',
         );
 
     }
