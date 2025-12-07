@@ -33,7 +33,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Type\UidType\ParamConverter;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -57,7 +57,7 @@ final class PrintOrderController extends AbstractController
         #[ParamConverter(OrderUid::class, key: 'id')] OrderUid $OrderUid,
         WbPackageOrderInterface $WbPackageOrder,
         WbBarcodeSettingsInterface $barcodeSettings,
-        ProductDetailByUidInterface $productDetail,
+        ProductDetailByEventInterface $productDetail,
         BarcodeWrite $BarcodeWrite,
         GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest
     ): Response

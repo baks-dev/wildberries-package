@@ -31,7 +31,7 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Type\UidType\ParamConverter;
 use BaksDev\Orders\Order\Repository\RelevantNewOrderByProduct\RelevantNewOrderByProductInterface;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
@@ -65,7 +65,7 @@ final class AddController extends AbstractController
     #[Route('/admin/wb/supply/add/{total}', name: 'admin.package.add', methods: ['GET', 'POST'])]
     public function news(
         Request $request,
-        ProductDetailByUidInterface $productDetail,
+        ProductDetailByEventInterface $productDetail,
         ExistOrderPackageInterface $ExistOrderPackage,
         WbPackageHandler $WbPackageHandler,
         CentrifugoPublishInterface $CentrifugoPublish,

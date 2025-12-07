@@ -33,7 +33,7 @@ use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
@@ -81,7 +81,7 @@ final class PrintPackageController extends AbstractController
         OrdersByPackageInterface $orderByPackage,
         WbBarcodeSettingsInterface $barcodeSettings,
         WbBarcodePropertyByProductEventInterface $wbBarcodeProperty,
-        ProductDetailByUidInterface $productDetail,
+        ProductDetailByEventInterface $productDetail,
         MessageDispatchInterface $messageDispatch,
         BarcodeWrite $BarcodeWrite,
         GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest

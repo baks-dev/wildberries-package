@@ -34,7 +34,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Type\UidType\ParamConverter;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
@@ -77,7 +77,7 @@ final class PrintSupplyController extends AbstractController
         Request $request,
         PackageBySupplyInterface $PackageBySupply,
         OrdersByPackageInterface $OrderByPackage,
-        ProductDetailByUidInterface $productDetail,
+        ProductDetailByEventInterface $productDetail,
         WbBarcodeSettingsInterface $barcodeSettings,
         GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest,
         CentrifugoPublishInterface $CentrifugoPublish,

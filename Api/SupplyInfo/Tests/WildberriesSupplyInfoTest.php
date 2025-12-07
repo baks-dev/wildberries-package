@@ -42,7 +42,7 @@ final class WildberriesSupplyInfoTest extends KernelTestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$tocken = $_SERVER['TEST_WB_TOCKEN'];
+        self::$tocken = $_SERVER['TEST_WILDBERRIES_TOKEN'];
     }
 
     public function testUseCase(): void

@@ -32,8 +32,8 @@ use BaksDev\Barcode\Writer\BarcodeWrite;
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidInterface;
-use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByUidResult;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventResult;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Forms\Package\Print\Collection\PrintOrderPackageDTO;
 use BaksDev\Wildberries\Package\Forms\Package\Print\PrintMultipleOrdersPackageDTO;
@@ -64,7 +64,7 @@ final class PrintSelectedOrderController extends AbstractController
         Request $request,
         WbPackageOrderInterface $WbPackageOrder,
         WbBarcodeSettingsInterface $barcodeSettings,
-        ProductDetailByUidInterface $productDetail,
+        ProductDetailByEventInterface $productDetail,
         BarcodeWrite $BarcodeWrite,
         GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest,
         MessageDispatchInterface $messageDispatch
@@ -104,7 +104,7 @@ final class PrintSelectedOrderController extends AbstractController
                 ->modification($WbPackageOrderResult->getModification())
                 ->findResult();
 
-            if(false === ($ProductDetailByUidResult instanceof ProductDetailByUidResult))
+            if(false === ($ProductDetailByUidResult instanceof ProductDetailByEventResult))
             {
                 $logger->critical(
                     'wildberries-package: Продукция в упаковке не найдена',
