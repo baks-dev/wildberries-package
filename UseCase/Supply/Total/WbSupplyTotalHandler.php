@@ -34,11 +34,10 @@ final class WbSupplyTotalHandler extends AbstractHandler
     {
         $this->setCommand($command);
 
-        /** Валидация WbSupplyOpenDTO  */
-        $this->validatorCollection->add($command);
-
         /** @var WbSupplyInvariable $WbSupplyInvariable */
-        $WbSupplyInvariable = $this->getRepository(WbSupplyInvariable::class)->find($command->getMain());
+        $WbSupplyInvariable = $this
+            ->getRepository(WbSupplyInvariable::class)
+            ->find($command->getMain());
 
         if(false === $this->validatorCollection->add($WbSupplyInvariable, context: [self::class.':'.__LINE__]))
         {

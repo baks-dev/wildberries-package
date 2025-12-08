@@ -37,13 +37,13 @@ final class PrintWbPackageHandler extends AbstractHandler
     {
         $this->clear();
 
+        $this->setCommand($command);
+
         /** @var WbPackageSupply $WbPackageSupply */
         $WbPackageSupply = $this->getRepository(WbPackageSupply::class)->find($command->getMain());
 
         if($this->validatorCollection->add($WbPackageSupply, context: [self::class.':'.__LINE__]))
         {
-            $this->setCommand($command);
-
             $WbPackageSupply->setEntity($command);
 
             /* Валидация всех объектов */
