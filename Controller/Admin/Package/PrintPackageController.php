@@ -116,7 +116,10 @@ final class PrintPackageController extends AbstractController
         $WbPackageUid = (string) $wbPackage->getId();
         $this->packages[] = $WbPackageUid;
 
-
+        /** Скрываем у все пользователей упаковку для печати */
+        $CentrifugoPublish
+            ->addData(['identifier' => $WbPackageUid]) // ID упаковки
+            ->send('remove');
 
         /**
          * Получаем стикеры заказа Wildberries
@@ -279,12 +282,6 @@ final class PrintPackageController extends AbstractController
         $this->settings[$WbPackageUid] = $Product['main'] ? $barcodeSettings
             ->forProduct($Product['main'])
             ->find() : false;
-
-
-        /** Скрываем у все пользователей упаковку для печати */
-        $CentrifugoPublish
-            ->addData(['identifier' => $packageKey]) // ID упаковки
-            ->send('remove');
 
 
         $render = $this->render(
