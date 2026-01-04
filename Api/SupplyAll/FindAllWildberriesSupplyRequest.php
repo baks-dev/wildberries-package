@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,8 @@ final class FindAllWildberriesSupplyRequest extends Wildberries
      * Получить список поставок (LIMIT 100)
      *
      * @see https://dev.wildberries.ru/openapi/orders-fbs/#tag/Postavki-FBS/paths/~1api~1v3~1supplies/get
+     *
+     * @return Generator<WildberriesSupplyDTO>
      *
      */
     public function all(int $next = 0): Generator

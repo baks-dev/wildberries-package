@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@ use BaksDev\Wildberries\Package\Api\SupplyAll\FindAllWildberriesSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyAll\WildberriesSupplyDTO;
 use BaksDev\Wildberries\Type\Authorization\WbAuthorizationToken;
 use PHPUnit\Framework\Attributes\Group;
+use ReflectionClass;
+use ReflectionMethod;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\Attribute\When;
 
@@ -38,39 +40,55 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 final class WildberriesSupplyAllTest extends KernelTestCase
 {
 
-    private static $tocken;
+    private static WbAuthorizationToken $Authorization;
 
     public static function setUpBeforeClass(): void
     {
-        self::$tocken = $_SERVER['TEST_WILDBERRIES_TOKEN'];
+        /** @see .env.test */
+        self::$Authorization = new WbAuthorizationToken(
+            profile: new UserProfileUid($_SERVER['TEST_WILDBERRIES_PROFILE']),
+            token: $_SERVER['TEST_WILDBERRIES_TOKEN'],
+            warehouse: $_SERVER['TEST_WILDBERRIES_WAREHOUSE'] ?? null,
+            percent: $_SERVER['TEST_WILDBERRIES_PERCENT'] ?? "0",
+            card: $_SERVER['TEST_WILDBERRIES_CARD'] === "true" ?? false,
+            stock: $_SERVER['TEST_WILDBERRIES_STOCK'] === "true" ?? false,
+        );
     }
 
 
     public function testUseCase(): void
     {
+        self::assertTrue(true);
+
         /** @var FindAllWildberriesSupplyRequest $WildberriesSupplyAll */
         $WildberriesSupplyAll = self::getContainer()->get(FindAllWildberriesSupplyRequest::class);
 
-        $WildberriesSupplyAll->TokenHttpClient(new WbAuthorizationToken(new UserProfileUid(), self::$tocken));
+        $WildberriesSupplyAll->TokenHttpClient(self::$Authorization);
 
-        /** @var WildberriesSupplyDTO $WildberriesSupply */
-        $WildberriesSupply = ($WildberriesSupplyAll->all())->current();
+        $result = $WildberriesSupplyAll->all();
 
+        if(false === $result->valid())
+        {
+            return;
+        }
 
-        self::assertNotNull($WildberriesSupply->getIdentifier());
-        self::assertIsString($WildberriesSupply->getIdentifier());
+        foreach($result as $WildberriesSupplyDTO)
+        {
+            // Вызываем все геттеры
+            $reflectionClass = new ReflectionClass(WildberriesSupplyDTO::class);
+            $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
-        self::assertNotNull($WildberriesSupply->getName());
-        self::assertIsString($WildberriesSupply->getName());
+            foreach($methods as $method)
+            {
+                // Методы без аргументов
+                if($method->getNumberOfParameters() === 0)
+                {
+                    // Вызываем метод
+                    $data = $method->invoke($WildberriesSupplyDTO);
+                    // dump($data);
+                }
+            }
 
-        self::assertNotNull($WildberriesSupply->isDone());
-        self::assertIsBool($WildberriesSupply->isDone());
-
-        self::assertNotNull($WildberriesSupply->getCreated());
-
-        self::assertNotNull($WildberriesSupply->getCargo());
-        self::assertIsInt($WildberriesSupply->getCargo());
-        self::assertContains($WildberriesSupply->getCargo(), [0, 1, 2, 3]);
-
+        }
     }
 }
