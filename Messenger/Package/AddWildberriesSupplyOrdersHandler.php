@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
             ->namespace('wildberries-package')
             ->deduplication([
                 $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -135,12 +135,12 @@ final readonly class AddWildberriesSupplyOrdersHandler
                 $UserProfileUid,
                 $OrderUid, // идентификатор системного заказа
                 $UserProfileUid->getAttr(), // идентификатор поставки
-                $OrderUid->getAttr() // идентификатор заказа Wildberries
+                $OrderUid->getAttr(), // идентификатор заказа Wildberries
             );
 
             $this->MessageDispatch->dispatch(
                 $ConfirmOrderWildberriesMessage,
-                transport: (string) $UserProfileUid
+                transport: (string) $UserProfileUid,
             );
         }
 

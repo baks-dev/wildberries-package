@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -85,13 +85,13 @@ final readonly class ConfirmOrderWildberriesDispatcher
             {
                 $this->logger->critical(
                     sprintf('wildberries-package: Ошибка при получении информации о поставке %s', $message->getSupply()),
-                    [$message, self::class.':'.__LINE__]
+                    [$message, self::class.':'.__LINE__],
                 );
 
                 $this->MessageDispatch->dispatch(
                     message: $message,
                     stamps: [new MessageDelay('3 seconds')],
-                    transport: 'wildberries-package-low'
+                    transport: 'wildberries-package-low',
                 );
             }
 
@@ -142,14 +142,14 @@ final readonly class ConfirmOrderWildberriesDispatcher
                 $this->logger->critical(
                     sprintf('wildberries-package: Ошибка при добавлении заказа %s в поставку %s', $message->getOrder(), $message->getSupply()).
                     'Пробуем повторить попытку через 5 сек',
-                    [$message, self::class.':'.__LINE__]
+                    [$message, self::class.':'.__LINE__],
                 );
 
                 /** Пробуем повторить попытку через 3 сек */
                 $this->MessageDispatch->dispatch(
                     message: $message,
                     stamps: [new MessageDelay('5 seconds')],
-                    transport: 'wildberries-package-low'
+                    transport: 'wildberries-package-low',
                 );
 
                 /** Помечаем статус заказа как с ошибкой */
@@ -167,7 +167,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
             $this->logger->warning(
                 sprintf('wildberries-package: Удалили отмененный заказ %s из упаковки поставки %s', $message->getOrder(), $message->getSupply()),
-                [$message, self::class.':'.__LINE__]
+                [$message, self::class.':'.__LINE__],
             );
 
             return;
@@ -179,12 +179,12 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         $WildberriesOrdersStickerMessage = new WildberriesOrdersStickerMessage(
             $message->getProfile(),
-            $message->getOrder()
+            $message->getOrder(),
         );
 
         $this->MessageDispatch->dispatch(
             message: $WildberriesOrdersStickerMessage,
-            transport: (string) $message->getProfile()
+            transport: (string) $message->getProfile(),
         );
 
         /**
@@ -196,7 +196,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         $OrderWildberriesSignMessage = new OrderWildberriesSignMessage(
             $message->getProfile(),
             $message->getIdentifier(), // идентификатор системного заказа
-            $message->getOrder() // идентификатор заказа Wildberries
+            $message->getOrder(), // идентификатор заказа Wildberries
         );
 
 
@@ -217,7 +217,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         {
             $this->logger->critical(
                 sprintf('wildberries-package: Ошибка %s при обновлении заказа в упаковке', $WbPackageOrder),
-                [$message, self::class.':'.__LINE__]
+                [self::class.':'.__LINE__, var_export($message, true)],
             );
         }
     }
