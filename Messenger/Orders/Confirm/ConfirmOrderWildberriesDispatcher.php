@@ -28,7 +28,7 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\Confirm;
 
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusRequest;
+use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusFbsRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
@@ -59,7 +59,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         private FindWildberriesSupplyInfoRequest $WildberriesSupplyInfoRequest,
         private MessageDispatchInterface $MessageDispatch,
         private ExistOrdersByPackageInterface $ExistOrdersByPackage,
-        private FindAllWildberriesOrdersStatusRequest $FindAllWildberriesOrdersStatusRequest,
+        private FindAllWildberriesOrdersStatusFbsRequest $FindAllWildberriesOrdersStatusFbsRequest,
         private DeleteOrderPackageInterface $DeleteOrderPackage,
         private ExistOpenSupplyProfileInterface $ExistOpenSupplyProfile,
     ) {}
@@ -130,9 +130,11 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         if(false === $isAdd)
         {
-            /** Проверяем статус добавленного заказа */
+            /**
+             * Проверяем статус добавленного заказа
+             */
 
-            $isCancel = $this->FindAllWildberriesOrdersStatusRequest
+            $isCancel = $this->FindAllWildberriesOrdersStatusFbsRequest
                 ->profile($message->getProfile())
                 ->addOrder($message->getOrder())
                 ->findOrderCancel();
