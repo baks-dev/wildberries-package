@@ -142,7 +142,10 @@ final readonly class ConfirmOrderWildberriesDispatcher
             if(false === $isCancel)
             {
                 $this->logger->critical(
-                    sprintf('wildberries-package: Ошибка при добавлении заказа %s в поставку %s', $message->getOrder(), $message->getSupply()).
+                    sprintf(
+                        'wildberries-package: Ошибка при добавлении заказа %s в поставку %s',
+                        $message->getOrder(), $message->getSupply(),
+                    ).
                     'Пробуем повторить попытку через 5 сек',
                     [$message, self::class.':'.__LINE__],
                 );
