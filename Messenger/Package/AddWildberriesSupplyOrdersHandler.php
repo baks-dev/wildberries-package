@@ -119,7 +119,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
         }
 
         /**
-         * Добавляем в очереди заказы в открытую поставку
+         * Добавляем в очереди заказы в открытую поставку селлере
          *
          * @var OrderUid $OrderUid
          */
@@ -142,6 +142,9 @@ final readonly class AddWildberriesSupplyOrdersHandler
                 $ConfirmOrderWildberriesMessage,
                 transport: (string) $UserProfileUid,
             );
+
+            /** Добавляем задержку времени между отправкой сообщений */
+            usleep(100000);
         }
 
         $DeduplicatorExecuted->save();

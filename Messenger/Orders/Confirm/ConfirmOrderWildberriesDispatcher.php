@@ -47,7 +47,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Добавляет заказ Wildberries в открытую поставки и прогревает кеш стикера
+ * Добавляет заказ Wildberries в открытую поставку в селлере и прогревает кеш стикера
  */
 #[AsMessageHandler(priority: 0)]
 final readonly class ConfirmOrderWildberriesDispatcher
@@ -117,7 +117,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         }
 
         /**
-         * Добавляем заказ в открытую поставку
+         * Добавляем заказ в открытую поставку в селлере
          */
 
         $UpdateOrderStatusDTO = new UpdatePackageOrderStatusDTO($message->getIdentifier());
