@@ -221,7 +221,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         if(false === ($WbPackageOrder instanceof WbPackageOrder))
         {
             $this->logger->critical(
-                sprintf('wildberries-package: Ошибка %s при обновлении заказа в упаковке', $WbPackageOrder),
+                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
                 [self::class.':'.__LINE__, var_export($message, true)],
             );
         }

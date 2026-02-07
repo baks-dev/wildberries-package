@@ -71,7 +71,7 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
         if(false === ($WbPackageOrder instanceof WbPackageOrder))
         {
             return sprintf(
-                'Упаковка %s не найдена либо заказ уже добавлен на упаковку',
+                'Заказ %s не найден в упаковке, либо заказ уже был добавлен ранее',
                 $command->getId(),
             );
         }
