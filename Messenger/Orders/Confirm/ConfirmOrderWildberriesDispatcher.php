@@ -150,7 +150,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
                     [$message, self::class.':'.__LINE__],
                 );
 
-                /** Пробуем повторить попытку через 3 сек */
+                /** Пробуем повторить попытку через время */
                 $this->MessageDispatch->dispatch(
                     message: $message,
                     stamps: [new MessageDelay('5 seconds')],
