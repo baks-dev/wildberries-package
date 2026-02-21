@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,13 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Orders;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockDTO;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\CompletedProductStockHandler;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Delivery\DeliveryProductStockDTO;
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCompleted;
-use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusMarketplace;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
-use BaksDev\Products\Stocks\Entity\Stock\Event\ProductStockEvent;
-use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
-use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
@@ -141,7 +134,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
             {
                 $this->logger->critical(
                     sprintf('wildberries-package: Ошибка %s при изменении статуса заказа на «Передан в службу маркетплейса»', $Order),
-                    [$message, self::class.':'.__LINE__]
+                    [$message, self::class.':'.__LINE__],
                 );
             }
         }
