@@ -125,7 +125,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         $isAdd = $this->PostWildberriesAddOrderToSupplyRequest
             ->profile($message->getProfile())
             ->withSupply($message->getSupply())
-            ->withOrder($message->getOrder())
+            ->withOrder($message->getOrderPosting())
             ->add();
 
         if(false === $isAdd)
@@ -136,7 +136,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
             $isCancel = $this->FindAllWildberriesOrdersStatusFbsRequest
                 ->profile($message->getProfile())
-                ->addOrder($message->getOrder())
+                ->addOrder($message->getOrderPosting())
                 ->findOrderCancel();
 
             if(false === $isCancel)
@@ -144,7 +144,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
                 $this->logger->critical(
                     sprintf(
                         'wildberries-package: Ошибка при добавлении заказа %s в поставку %s',
-                        $message->getOrder(), $message->getSupply(),
+                        $message->getOrderPosting(), $message->getSupply(),
                     ).
                     'Пробуем повторить попытку через 5 сек',
                     [$message, self::class.':'.__LINE__],
@@ -171,7 +171,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
                 ->delete();
 
             $this->logger->warning(
-                sprintf('wildberries-package: Удалили отмененный заказ %s из упаковки поставки %s', $message->getOrder(), $message->getSupply()),
+                sprintf('wildberries-package: Удалили отмененный заказ %s из упаковки поставки %s', $message->getOrderPosting(), $message->getSupply()),
                 [$message, self::class.':'.__LINE__],
             );
 
@@ -184,7 +184,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         $WildberriesOrdersStickerMessage = new WildberriesOrdersStickerMessage(
             $message->getProfile(),
-            $message->getOrder(),
+            $message->getOrderPosting(),
         );
 
         $this->MessageDispatch->dispatch(
@@ -201,7 +201,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         $OrderWildberriesSignMessage = new OrderWildberriesSignMessage(
             $message->getProfile(),
             $message->getIdentifier(), // идентификатор системного заказа
-            $message->getOrder(), // идентификатор заказа Wildberries
+            $message->getOrderPosting(), // идентификатор заказа Wildberries
         );
 
 

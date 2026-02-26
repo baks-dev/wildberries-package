@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Materials\Sign\BaksDevMaterialsSignBundle;
 use BaksDev\Materials\Sign\Entity\Code\MaterialSignCode;
 use BaksDev\Materials\Sign\Entity\Event\MaterialSignEvent;
+use BaksDev\Orders\Order\Entity\Event\Posting\OrderPosting;
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\Products\OrderProduct;
@@ -131,13 +132,23 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'ord.id = package_order.id'
             );
 
+        //        $dbal
+        //            ->addSelect('invariable.number')
+        //            ->leftJoin(
+        //                'package_order',
+        //                OrderInvariable::class,
+        //                'invariable',
+        //                'invariable.main = ord.id'
+        //            );
+
+
         $dbal
-            ->addSelect('invariable.number')
+            ->addSelect('orders_posting.value AS number')
             ->leftJoin(
                 'package_order',
-                OrderInvariable::class,
-                'invariable',
-                'invariable.main = ord.id'
+                OrderPosting::class,
+                'orders_posting',
+                'orders_posting.main = ord.id',
             );
 
 

@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ namespace BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByWbSup
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Delivery\Type\Id\DeliveryUid;
+use BaksDev\Orders\Order\Entity\Event\Posting\OrderPosting;
 use BaksDev\Orders\Order\Entity\Invariable\OrderInvariable;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Entity\User\Delivery\OrderDelivery;
@@ -146,13 +147,23 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 'orders.id = package_order.id',
             );
 
-        $dbal
+        /*$dbal
             ->addSelect('invariable.number AS attr')
             ->leftJoin(
                 'package_order',
                 OrderInvariable::class,
                 'invariable',
                 'invariable.main = package_order.id',
+            );*/
+
+
+        $dbal
+            ->addSelect('orders_posting.value AS attr')
+            ->leftJoin(
+                'package_order',
+                OrderPosting::class,
+                'orders_posting',
+                'orders_posting.main = package_order.id',
             );
 
         $dbal
