@@ -41,6 +41,7 @@ use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInter
 use BaksDev\Wildberries\Package\Repository\Supply\WbSupplyCurrentEvent\WbSupplyCurrentEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -48,6 +49,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Метод меняет статус системного заказа на "Передан в службу Маркетплейса"
  */
+#[Autoconfigure(public: true)]
 #[AsMessageHandler(priority: 0)]
 final readonly class OrdersCompleteByCloseWbSupplyHandler
 {

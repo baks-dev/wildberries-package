@@ -35,7 +35,9 @@ use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHan
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
+#[Autoconfigure(public: true)]
 final class UpdatePackageOrderStatusHandler extends AbstractHandler
 {
     public function __construct(

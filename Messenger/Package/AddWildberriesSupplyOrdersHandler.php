@@ -38,12 +38,14 @@ use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPacka
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Добавляет заказы в указанную поставку Wildberries (Api) и обновляет статусы в системной упаковке
  */
+#[Autoconfigure(public: true)]
 #[AsMessageHandler(priority: 0)]
 final readonly class AddWildberriesSupplyOrdersHandler
 {

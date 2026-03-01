@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Messenger\Supply;
 
-use App\Kernel;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDelay;
@@ -39,10 +38,12 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatus
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\Open\WbSupplyOpenHandler;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
+#[Autoconfigure(public: true)]
+#[AsMessageHandler(priority: 0)]
 final readonly class OpenWbSupplyHandler
 {
     public function __construct(

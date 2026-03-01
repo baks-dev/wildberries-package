@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,8 @@ return static function(ContainerConfigurator $configurator) {
     $services = $configurator->services()
         ->defaults()
         ->autowire()
-        ->autoconfigure();
+        ->autoconfigure()
+        ->public();
 
     $NAMESPACE = BaksDevWildberriesPackageBundle::NAMESPACE;
     $PATH = BaksDevWildberriesPackageBundle::PATH;
@@ -38,18 +39,20 @@ return static function(ContainerConfigurator $configurator) {
     $services->load($NAMESPACE, $PATH)
         ->exclude([
             $PATH.'{Entity,Resources,Type}',
-            $PATH.'**/*Message.php',
-            $PATH.'**/*DTO.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*Message.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*Result.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*DTO.php',
+            $PATH.'**'.DIRECTORY_SEPARATOR.'*Test.php',
         ]);
 
     $services->load(
         $NAMESPACE.'Type\Package\Status\WbPackageStatus\\',
-        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Package', 'Status', 'WbPackageStatus'])
+        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Package', 'Status', 'WbPackageStatus']),
     );
 
     $services->load(
         $NAMESPACE.'Type\Supply\Status\WbSupplyStatus\\',
-        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Supply', 'Status', 'WbSupplyStatus'])
+        $PATH.implode(DIRECTORY_SEPARATOR, ['Type', 'Supply', 'Status', 'WbSupplyStatus']),
     );
 
 };
