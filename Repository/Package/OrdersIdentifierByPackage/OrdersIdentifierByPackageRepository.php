@@ -137,10 +137,10 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
             );
 
         $dbal->leftJoin(
-            'invariable',
+            'orders_posting',
             OrderUser::class,
             'usr',
-            'usr.event = invariable.event',
+            'usr.event = orders_posting.event',
         );
 
         $dbal->join(
