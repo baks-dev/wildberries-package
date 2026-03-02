@@ -37,17 +37,17 @@ use BaksDev\Products\Category\Entity\Offers\Variation\Trans\CategoryProductVaria
 use BaksDev\Products\Product\Entity\Category\ProductCategory;
 use BaksDev\Products\Product\Entity\Event\ProductEvent;
 use BaksDev\Products\Product\Entity\Info\ProductInfo;
+use BaksDev\Products\Product\Entity\Offers\Barcode\ProductOfferBarcode;
 use BaksDev\Products\Product\Entity\Offers\Image\ProductOfferImage;
 use BaksDev\Products\Product\Entity\Offers\ProductOffer;
+use BaksDev\Products\Product\Entity\Offers\Variation\Barcode\ProductVariationBarcode;
 use BaksDev\Products\Product\Entity\Offers\Variation\Image\ProductVariationImage;
+use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Barcode\ProductModificationBarcode;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductModificationImage;
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
-use BaksDev\Wildberries\Orders\Entity\Event\WbOrdersEvent;
-use BaksDev\Wildberries\Orders\Entity\Sticker\WbOrdersSticker;
-use BaksDev\Wildberries\Orders\Entity\WbOrders;
 use BaksDev\Wildberries\Package\Entity\Package\Event\WbPackageEvent;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
@@ -67,6 +67,8 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
     }
 
     /**
+     * @note нигде не используется
+     *
      * Метод получает все заказы добавленной в поставку необходимые для печати, со стикерами
      */
     public function getPrinterOrdersPackageSupply(WbSupplyUid $supply): ?array
@@ -179,6 +181,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'barcode.id = product_category.category AND barcode.profile = product_info.profile'
         );
 
+        // @TODO
         $dbal->addSelect('barcode_event.offer AS barcode_offer');
         $dbal->addSelect('barcode_event.variation AS barcode_variation');
         $dbal->addSelect('barcode_event.counter AS barcode_counter');
@@ -294,9 +297,9 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
 
         $dbal->addSelect('
             COALESCE(
-                product_modification.barcode, 
-                product_variation.barcode, 
-                product_offer.barcode, 
+                product_modification.barcode_old, 
+                product_variation.barcode_old, 
+                product_offer.barcode_old, 
                 product_info.barcode
             ) AS product_barcode
 		');
@@ -334,11 +337,11 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
 
         $dbal
             ->leftOneJoin(
-            'package_supply',
-            WbPackageOrder::class,
-            'package_orders',
-            'package_orders.event = package_supply.event'
-        );
+                'package_supply',
+                WbPackageOrder::class,
+                'package_orders',
+                'package_orders.event = package_supply.event'
+            );
 
         $dbal->addOrderBy('package_orders.sort');
 
@@ -394,13 +397,23 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             ->addSelect('product_offer.id as product_offer_uid')
             ->addSelect('product_offer.value as product_offer_value')
             ->addSelect('product_offer.postfix as product_offer_postfix')
-            ->addSelect('product_offer.barcode as product_offer_barcode')
+            ->addSelect('product_offer.barcode_old as product_offer_barcode')
             ->addSelect('product_offer.name as product_offer_detail_name')
             ->leftJoin(
                 'ord_product',
                 ProductOffer::class,
                 'product_offer',
                 'product_offer.id = ord_product.offer OR product_offer.id IS NULL'
+            );
+
+        /** Offer Barcode */
+
+        $dbal
+            ->leftJoin(
+                'product_offer',
+                ProductOfferBarcode::class,
+                'product_offer_barcode',
+                'product_offer_barcode.offer = product_offer.id'
             );
 
         /* Получаем тип торгового предложения */
@@ -431,12 +444,22 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             ->addSelect('product_variation.id as product_variation_uid')
             ->addSelect('product_variation.value as product_variation_value')
             ->addSelect('product_variation.postfix as product_variation_postfix')
-            ->addSelect('product_variation.postfix as product_variation_barcode')
+            ->addSelect('product_variation.barcode_old as product_variation_barcode')
             ->leftJoin(
                 'ord_product',
                 ProductVariation::class,
                 'product_variation',
                 'product_variation.id = ord_product.variation OR product_variation.id IS NULL '
+            );
+
+        /** Variation Barcode */
+
+        $dbal
+            ->leftJoin(
+                'product_variation',
+                ProductVariationBarcode::class,
+                'product_variation_barcode',
+                'product_variation_barcode.variation = product_variation.id'
             );
 
 
@@ -467,7 +490,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             ->addSelect('product_modification.id as product_modification_uid')
             ->addSelect('product_modification.value as product_modification_value')
             ->addSelect('product_modification.postfix as product_modification_postfix')
-            ->addSelect('product_modification.barcode as product_modification_barcode')
+            ->addSelect('product_modification.barcode_old as product_modification_barcode')
             ->leftJoin(
                 'ord_product',
                 ProductModification::class,
@@ -475,6 +498,15 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_modification.id = ord_product.modification OR product_modification.id IS NULL '
             );
 
+        /** Modification Barcode */
+
+        $dbal
+            ->leftJoin(
+                'product_modification',
+                ProductModificationBarcode::class,
+                'product_modification_barcode',
+                'product_modification_barcode.modification = product_modification.id'
+            );
 
         /* Получаем тип модификации множественного варианта */
         $dbal
@@ -497,12 +529,37 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
             );
 
+        /** Штрихкоды продукта */
+
+        $dbal->addSelect(
+            "
+            JSON_AGG
+                    (DISTINCT
+         			CASE
+         			    WHEN product_modification_barcode.value IS NOT NULL
+                        THEN product_modification_barcode.value
+                        
+                        WHEN product_variation_barcode.value IS NOT NULL
+                        THEN product_variation_barcode.value
+                        
+                        WHEN product_offer_barcode.value IS NOT NULL
+                        THEN product_offer_barcode.value
+                        
+                        WHEN product_info.barcode IS NOT NULL
+                        THEN product_info.barcode
+                        
+                        ELSE NULL
+                    END
+                    )
+                    AS barcodes"
+        );
 
         $dbal->addSelect('
             COALESCE(
-                product_modification.barcode, 
-                product_variation.barcode, 
-                product_offer.barcode
+                product_modification.barcode_old, 
+                product_variation.barcode_old, 
+                product_offer.barcode_old,
+                product_info.barcode
             ) AS barcode
 		');
 
@@ -593,6 +650,9 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 product_info.article
             ) AS product_article
 		');
+
+        $dbal->addGroupBy("package_orders.sort");
+        $dbal->allGroupByExclude();
 
         return $dbal
             //->enableCache('wildberries-package', 3600)
