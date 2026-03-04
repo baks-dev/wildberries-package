@@ -1,6 +1,6 @@
 # BaksDev Package Wildberries
 
-[![Version](https://img.shields.io/badge/version-7.4.5-blue)](https://github.com/baks-dev/wildberries-package/releases)
+[![Version](https://img.shields.io/badge/version-7.4.6-blue)](https://github.com/baks-dev/wildberries-package/releases)
 ![php 8.4+](https://img.shields.io/badge/php-min%208.4-red.svg)
 [![packagist](https://img.shields.io/badge/packagist-green)](https://packagist.org/packages/baks-dev/wildberries-package)
 
@@ -8,7 +8,7 @@
 
 ## Установка
 
-``` bash
+```bash
 $ composer require baks-dev/wildberries-package
 ```
 
@@ -16,20 +16,20 @@ $ composer require baks-dev/wildberries-package
 
 Установка конфигурации и файловых ресурсов:
 
-``` bash
+```bash
 $ php bin/console baks:assets:install
 ```
 
 Изменения в схеме базы данных с помощью миграции
 
-``` bash
+```bash
 $ php bin/console doctrine:migrations:diff
 $ php bin/console doctrine:migrations:migrate
 ```
 
 ## Тестирование
 
-``` bash
+```bash
 $ php bin/phpunit --group=wildberries-package
 ```
 
