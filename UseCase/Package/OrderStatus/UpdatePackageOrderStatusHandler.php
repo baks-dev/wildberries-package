@@ -33,6 +33,8 @@ use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -58,7 +60,7 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
         $this->setCommand($command);
 
         /**
-         * Только заказ в упаковке со статусом «NEW» можно изменить на «ADD» или «ERROR»
+         * Только заказ в упаковке со статусом «NEW» либо «ERROR» можно изменить на «ADD» или «ERROR»
          *
          * @var WbPackageOrder $WbPackageOrder
          */
@@ -69,6 +71,16 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
             ->getRepository(WbPackageOrder::class)
             ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);
 
+        if(
+            false === ($WbPackageOrder instanceof WbPackageOrder)
+            && $command->getStatus()->equals(WbPackageStatusAdd::class)
+        )
+        {
+            /** Пробуем определить со статусом ERROR */
+            $WbPackageOrder = $this
+                ->getRepository(WbPackageOrder::class)
+                ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusError::STATUS]);
+        }
 
         if(false === ($WbPackageOrder instanceof WbPackageOrder))
         {
@@ -77,6 +89,7 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
                 $command->getId(),
             );
         }
+
 
         /**
          * Если объект не найден - ошибка валидации

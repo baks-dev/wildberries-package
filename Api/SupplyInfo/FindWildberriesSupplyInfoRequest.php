@@ -65,7 +65,7 @@ final class FindWildberriesSupplyInfoRequest extends Wildberries
         }
 
         $cache = $this->getCacheInit('wildberries-package');
-        $key = md5($this->getProfile().$this->supply.self::class);
+        $key = md5($this->getTokenIdentifier().$this->supply.self::class);
         // $cache->deleteItem($key);
 
         $content = $cache->get($key, function(ItemInterface $item): array|false {

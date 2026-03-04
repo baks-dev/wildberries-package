@@ -207,7 +207,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         $this->MessageDispatch->dispatch(
             message: $OrderWildberriesSignMessage,
-            stamps: [new MessageDelay('30 seconds')],
+            stamps: [new MessageDelay('1 minutes')],
             transport: (string) $message->getProfile(),
         );
 

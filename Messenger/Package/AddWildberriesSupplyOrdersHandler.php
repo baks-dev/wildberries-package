@@ -27,6 +27,7 @@ namespace BaksDev\Wildberries\Package\Messenger\Package;
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
@@ -83,10 +84,19 @@ final readonly class AddWildberriesSupplyOrdersHandler
             return;
         }
 
-        /* Получаем профиль пользователя и идентификатор поставки в качестве аттрибута */
+
+        /**
+         * Получаем
+         * - профиль пользователя
+         *
+         * @todo
+         * - идентификатор токена профиля с флагом supply = TRUE
+         * - идентификатор поставки в качестве аттрибута
+         */
         $UserProfileUid = $this->OpenWbSupply
             ->forSupply($WbSupplyUid)
             ->find();
+
 
         if(false === ($UserProfileUid instanceof UserProfileUid) || empty($UserProfileUid->getAttr()))
         {
@@ -126,7 +136,7 @@ final readonly class AddWildberriesSupplyOrdersHandler
          * @var OrderUid $OrderUid
          */
 
-        foreach($orders as $OrderUid)
+        foreach($orders as $key => $OrderUid)
         {
             /** Отправляем сокет с идентификатором заказа */
             $this->CentrifugoPublish
@@ -140,13 +150,14 @@ final readonly class AddWildberriesSupplyOrdersHandler
                 $OrderUid->getAttr(), // идентификатор заказа Wildberries
             );
 
+            /** Добавляем задержку времени между отправкой сообщений */
+
             $this->MessageDispatch->dispatch(
                 $ConfirmOrderWildberriesMessage,
+                stamps: [new MessageDelay(sprintf('%s seconds', $key + 1))],
                 transport: (string) $UserProfileUid,
             );
 
-            /** Добавляем задержку времени между отправкой сообщений */
-            usleep(100000);
         }
 
         $DeduplicatorExecuted->save();
