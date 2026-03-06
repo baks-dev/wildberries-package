@@ -26,9 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\Messenger\Orders;
 
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDelay;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
+use BaksDev\Wildberries\Package\Messenger\Orders\OrderSticker\WildberriesOrdersStickerMessage;
 use BaksDev\Wildberries\Package\Messenger\Package\WbPackageMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage\OrdersIdentifierByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
@@ -37,6 +40,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * При обновлении статуса заказа Confirm (Добавлен к поставке, на сборке) получаем и обновляет стикер
+ */
 #[AsMessageHandler(priority: 0)]
 final readonly class UpdateOrdersStickerHandler
 {
@@ -45,20 +51,18 @@ final readonly class UpdateOrdersStickerHandler
         private OrdersIdentifierByPackageInterface $OrdersIdentifierByPackage,
         private SupplyByPackageInterface $SupplyByPackage,
         private OpenWbSupplyInterface $OpenWbSupply,
-        private GetWildberriesOrdersStickerRequest $WildberriesOrdersStickerRequest,
-        private DeduplicatorInterface $Deduplicator
+        private DeduplicatorInterface $Deduplicator,
+        private MessageDispatchInterface $MessageDispatch
     ) {}
 
-    /**
-     * При обновлении статуса заказа Confirm (Добавлен к поставке, на сборке) получаем и обновляет стикер
-     */
+
     public function __invoke(WbPackageMessage $message): void
     {
         $DeduplicatorExecuted = $this->Deduplicator
             ->namespace('wildberries-package')
             ->deduplication([
                 $message->getId(),
-                self::class
+                self::class,
             ]);
 
         if($DeduplicatorExecuted->isExecuted())
@@ -98,13 +102,27 @@ final readonly class UpdateOrdersStickerHandler
         }
 
         /** @var OrderUid $OrderUid */
-        foreach($orders as $OrderUid)
+        foreach($orders as $key => $OrderUid)
         {
-            /** Прогреваем кеш со стикерами Wildberries */
-            $this->WildberriesOrdersStickerRequest
-                ->profile($UserProfileUid)
-                ->forOrderWb($OrderUid->getAttr()) // идентификатор заказа Wildberries
-                ->getOrderSticker();
+            /**
+             * Прогреваем кеш со стикерами Wildberries
+             */
+
+            $WildberriesOrdersStickerMessage = new WildberriesOrdersStickerMessage(
+                $UserProfileUid,
+                $OrderUid->getAttr(), // идентификатор заказа Wildberries
+            );
+
+            $this->MessageDispatch->dispatch(
+                message: $WildberriesOrdersStickerMessage,
+                stamps: [new MessageDelay(sprintf('%s seconds', $key + 1))],
+                transport: (string) $UserProfileUid,
+            );
+
+            //            $this->WildberriesOrdersStickerRequest
+            //                ->profile($UserProfileUid)
+            //                ->forOrderWb($OrderUid->getAttr()) // идентификатор заказа Wildberries
+            //                ->getOrderSticker();
         }
 
         $DeduplicatorExecuted->save();
