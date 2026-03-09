@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -238,6 +238,14 @@ final class PrintPackageController extends AbstractController
 
         if(empty($Product['product_barcode']))
         {
+            /* TODO: временно массивы */
+            $barcodes = $Product['product_barcodes'];
+            $barcodes = json_decode($barcodes, true, 512, JSON_THROW_ON_ERROR);
+            $Product['product_barcode'] = current($barcodes);
+        }
+
+        if(empty($Product['product_barcode']))
+        {
             $logger->critical(
                 'wildberries-package: В продукции не указан артикул либо штрихкод',
                 [$Product, self::class.':'.__LINE__]
@@ -245,6 +253,7 @@ final class PrintPackageController extends AbstractController
 
             return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
         }
+
 
         /**
          * Генерируем штрихкод продукции (один на все заказы)

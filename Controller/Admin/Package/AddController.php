@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,9 @@ use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Type\UidType\ParamConverter;
 use BaksDev\Orders\Order\Repository\RelevantNewOrderByProduct\RelevantNewOrderByProductInterface;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
+use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
+use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
 use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
@@ -47,6 +50,7 @@ use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageD
 use BaksDev\Wildberries\Package\Forms\Package\AddOrdersPackage\AddOrdersPackageForm;
 use BaksDev\Wildberries\Package\Repository\Package\ExistOrderPackage\ExistOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupplyIdentifier\OpenWbSupplyIdentifierInterface;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\Orders\WbPackageOrderDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\Pack\WbPackageHandler;
@@ -73,6 +77,7 @@ final class AddController extends AbstractController
         RelevantNewOrderByProductInterface $RelevantNewOrderByProduct,
         ProductStocksByOrderInterface $ProductStocksByOrder,
         ExtraditionProductStockHandler $ExtraditionProductStockHandler,
+        OrderStatusHandler $OrderStatusHandler,
         DeduplicatorInterface $deduplicator,
         #[ParamConverter(ProductEventUid::class)] $product = null,
         #[ParamConverter(ProductOfferUid::class)] $offer = null,
@@ -98,7 +103,7 @@ final class AddController extends AbstractController
         $form = $this->createForm(
             type: AddOrdersPackageForm::class,
             data: $PackageOrdersDTO,
-            options: ['action' => $this->generateUrl('wildberries-package:admin.package.add'),]
+            options: ['action' => $this->generateUrl('wildberries-package:admin.package.add'),],
         );
 
         $form->handleRequest($request);
@@ -123,7 +128,7 @@ final class AddController extends AbstractController
 
             $WbSupplyUid = $OpenWbSupplyIdentifier->find();
 
-            if(!$WbSupplyUid)
+            if(false === ($WbSupplyUid instanceof WbSupplyUid))
             {
                 return $this->errorController('Supply');
             }
@@ -159,7 +164,7 @@ final class AddController extends AbstractController
 
                 if(false === $OrderEvent)
                 {
-                    break;
+                    continue;
                 }
 
                 /**
@@ -177,9 +182,9 @@ final class AddController extends AbstractController
                     {
                         $this->addFlash(
                             'page.add',
-                            '%s: Нет возможности добавить заказа в поставку',
+                            '%s: Нет возможности добавить заказа в поставку. Возможно заказ уже в поставке',
                             'wildberries-package.package',
-                            $OrderEvent->getOrderNumber()
+                            $OrderEvent->getPostingNumber(),
                         );
 
                         break;
@@ -187,6 +192,7 @@ final class AddController extends AbstractController
 
                     $total++;
                     usleep(100000);
+
                     continue;
                 }
 
@@ -202,32 +208,43 @@ final class AddController extends AbstractController
                         'page.add',
                         '%s: Не найдено ни одной складской заявки на заказ',
                         'wildberries-package.package',
-                        $OrderEvent->getOrderNumber()
+                        $OrderEvent->getOrderNumber(),
                     );
 
-                    return $this->redirectToReferer();
+
+                    /**
+                     * Обновляем заказ без упаковки
+                     */
+
+                    $OrderStatusDTO = new OrderStatusDTO(
+                        OrderStatusExtradition::class,
+                        $OrderEvent->getId(),
+                    );
+
+                    $OrderStatusHandler->handle($OrderStatusDTO);
+
                 }
-
-                /**
-                 * @var ProductStockEvent $ProductStockEvent
-                 * Изменяем статус складской заявки «Готов к выдаче»
-                 */
-                foreach($invoices as $ProductStockEvent)
+                else
                 {
-                    $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
-                    $ProductStockEvent->getDto($ExtraditionProductStockDTO);
-                    $ProductStock = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
-
-                    if(false === ($ProductStock instanceof ProductStock))
+                    /**
+                     * @var ProductStockEvent $ProductStockEvent
+                     * Изменяем статус складской заявки «Готов к выдаче»
+                     */
+                    foreach($invoices as $ProductStockEvent)
                     {
-                        $this->addFlash(
-                            'page.add',
-                            'danger.add',
-                            'wildberries-package.package',
-                            $ProductStock
-                        );
+                        $ExtraditionProductStockDTO = new ExtraditionProductStockDTO();
+                        $ProductStockEvent->getDto($ExtraditionProductStockDTO);
+                        $ProductStock = $ExtraditionProductStockHandler->handle($ExtraditionProductStockDTO);
 
-                        return $this->redirectToReferer();
+                        if(false === ($ProductStock instanceof ProductStock))
+                        {
+                            $this->addFlash(
+                                'page.add',
+                                'danger.add',
+                                'wildberries-package.package',
+                                $ProductStock,
+                            );
+                        }
                     }
                 }
 
@@ -236,6 +253,14 @@ final class AddController extends AbstractController
                 /** Не добавляем, если заказ уже имеется в упаковке */
                 if($ExistOrderPackage->forOrder($OrderEvent->getMain())->isExist())
                 {
+                    $this->addFlash(
+                        'page.add',
+                        '%s: Нет возможности добавить заказа в поставку. Возможно заказ уже в упаковке',
+                        'wildberries-package.package',
+                        $OrderEvent->getPostingNumber(),
+                    );
+
+
                     continue;
                 }
 
@@ -263,7 +288,7 @@ final class AddController extends AbstractController
                 type: 'page.new',
                 message: $WbPackage instanceof WbPackage ? 'success.new' : 'danger.new',
                 domain: 'wildberries-package.package',
-                arguments: $WbPackage
+                arguments: $WbPackage,
             );
 
             return $this->redirectToReferer();
@@ -272,7 +297,7 @@ final class AddController extends AbstractController
 
         return $this->render([
             'form' => $form->createView(),
-            'card' => $details
+            'card' => $details,
         ]);
     }
 
@@ -283,7 +308,7 @@ final class AddController extends AbstractController
             'page.add',
             'danger.add',
             'wildberries-package.package',
-            $code
+            $code,
         );
 
         return $this->redirectToRoute('wildberries-package:admin.package.index');

@@ -147,7 +147,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
                         $message->getOrderPosting(), $message->getSupply(),
                     ).
                     'Пробуем повторить попытку через 5 сек',
-                    [$message, self::class.':'.__LINE__],
+                    [var_export($message, true), self::class.':'.__LINE__],
                 );
 
                 /** Пробуем повторить попытку через время */
