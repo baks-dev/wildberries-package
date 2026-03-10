@@ -105,7 +105,7 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
 
         $orders = $this->OrdersIdentifierByWbSupply
             ->forSupply($WbSupplyEvent->getMain())
-            ->onlyAdOrders()
+            //->onlyAdOrders()
             ->findAll();
 
         if(false === $orders || false === $orders->valid())

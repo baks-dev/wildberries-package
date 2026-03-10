@@ -32,6 +32,12 @@ use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Materials\Sign\BaksDevMaterialsSignBundle;
 use BaksDev\Materials\Sign\Repository\MaterialSignByOrder\MaterialSignByOrderRepository;
+use BaksDev\Orders\Order\Entity\Event\OrderEvent;
+use BaksDev\Orders\Order\Entity\Order;
+use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
+use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
+use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Sign\BaksDevProductsSignBundle;
 use BaksDev\Products\Sign\Repository\ProductSignByOrder\ProductSignByOrderRepository;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesSgtinRequest;
@@ -50,7 +56,9 @@ final readonly class OrderWildberriesSignDispatcher
         private DBALQueryBuilder $DBALQueryBuilder,
         private PostWildberriesSgtinRequest $PostWildberriesSgtinRequest,
         private MessageDispatchInterface $MessageDispatch,
-        private DeduplicatorInterface $Deduplicator
+        private DeduplicatorInterface $Deduplicator,
+        private CurrentOrderEventInterface $CurrentOrderEventRepository,
+        private OrderStatusHandler $OrderStatusHandler,
     ) {}
 
 
@@ -60,7 +68,7 @@ final readonly class OrderWildberriesSignDispatcher
 
         $this->PostWildberriesSgtinRequest
             ->profile($message->getProfile())
-            ->forOrder($message->getOrder());
+            ->forOrder($message->getPostingNumber());
 
         /** Получаем честные знаки по заказу в сырье */
 
@@ -77,8 +85,8 @@ final readonly class OrderWildberriesSignDispatcher
                     $this->PostWildberriesSgtinRequest->sgtin($sign['code_string']);
 
                     $this->logger->info(
-                        sprintf('%s: отправляем сырьевой честный знак %s', $message->getOrder(), $sign['code_string']),
-                        [$message, self::class.':'.__LINE__]
+                        sprintf('%s: отправляем сырьевой честный знак %s', $message->getPostingNumber(), $sign['code_string']),
+                        [$message, self::class.':'.__LINE__],
                     );
                 }
             }
@@ -100,14 +108,45 @@ final readonly class OrderWildberriesSignDispatcher
                     $this->PostWildberriesSgtinRequest->sgtin($sign['code_string']);
 
                     $this->logger->info(
-                        sprintf('%s: отправляем продуктовый честный знак %s', $message->getOrder(), $sign['code_string']),
-                        [$message, self::class.':'.__LINE__]
+                        sprintf('%s: отправляем продуктовый честный знак %s', $message->getPostingNumber(), $sign['code_string']),
+                        [$message, self::class.':'.__LINE__],
                     );
                 }
             }
         }
 
         $isUpdate = $this->PostWildberriesSgtinRequest->update();
+
+        if($isUpdate)
+        {
+            /**
+             * Обновляем статус заказа на Extradition «Готов к выдаче»
+             */
+
+            $OrderEvent = $this->CurrentOrderEventRepository
+                ->forOrder($message->getIdentifier())
+                ->find();
+
+            if($OrderEvent instanceof OrderEvent)
+            {
+                $OrderStatusDTO = new OrderStatusDTO(
+                    status: OrderStatusExtradition::class,
+                    id: $OrderEvent->getId(),
+                );
+
+                $Order = $this->OrderStatusHandler->handle($OrderStatusDTO);
+
+                if(false === ($Order instanceof Order))
+                {
+                    /** Если повтор не сработал - следовательно честного знака не нашлось */
+                    $this->logger->critical(
+                        sprintf('wildberries-package: Ошибка %s при обновлении заказа на статус «Готов к выдаче» после передачи честного знака маркетплейсу', $Order),
+                        [self::class.':'.__LINE__],
+                    );
+                }
+            }
+        }
+
 
         if(false === $isUpdate)
         {
@@ -120,7 +159,10 @@ final readonly class OrderWildberriesSignDispatcher
             {
                 /** Если повтор не сработал - следовательно честного знака не нашлось */
                 $this->logger->critical(
-                    sprintf('wildberries-package: Ошибка при отправке честных знаков заказа %s. Пробуем отправить позже', $message->getOrder()),
+                    sprintf(
+                        'wildberries-package: Ошибка при отправке честных знаков заказа %s. Пробуем отправить позже',
+                        $message->getPostingNumber(),
+                    ),
                     [$message, self::class.':'.__LINE__],
                 );
 
@@ -134,7 +176,10 @@ final readonly class OrderWildberriesSignDispatcher
              */
 
             $this->logger->warning(
-                sprintf('wildberries-package: Пробуем повторно через минуту отправить честный знак по заказу %s', $message->getOrder()),
+                sprintf(
+                    'wildberries-package: Пробуем повторно через минуту отправить честный знак по заказу %s',
+                    $message->getPostingNumber(),
+                ),
                 [$message, self::class.':'.__LINE__],
             );
 

@@ -26,35 +26,12 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\UseCase\Package\OrderStatus;
 
 use BaksDev\Core\Entity\AbstractHandler;
-use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Core\Validator\ValidatorCollectionInterface;
-use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
-use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
-use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
-use BaksDev\Products\Stocks\UseCase\Admin\Extradition\ExtraditionProductStockHandler;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
-use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
-use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusNew;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-#[Autoconfigure(public: true)]
 final class UpdatePackageOrderStatusHandler extends AbstractHandler
 {
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        MessageDispatchInterface $messageDispatch,
-        ValidatorCollectionInterface $validatorCollection,
-        ImageUploadInterface $imageUpload,
-        FileUploadInterface $fileUpload,
-    )
-    {
-        parent::__construct($entityManager, $messageDispatch, $validatorCollection, $imageUpload, $fileUpload);
-    }
-
-
-    public function handle(UpdatePackageOrderStatusDTO $command): string|WbPackageOrder
+    public function handle(UpdatePackageOrderStatusDTO $command): bool|WbPackageOrder
     {
 
         $this->setCommand($command);
@@ -69,49 +46,26 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
 
         $WbPackageOrder = $this
             ->getRepository(WbPackageOrder::class)
-            ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusNew::STATUS]);
-
-        if(
-            false === ($WbPackageOrder instanceof WbPackageOrder)
-            && $command->getStatus()->equals(WbPackageStatusAdd::class)
-        )
-        {
-            /** Пробуем определить со статусом ERROR */
-            $WbPackageOrder = $this
-                ->getRepository(WbPackageOrder::class)
-                ->findOneBy(['id' => $command->getId(), 'status' => WbPackageStatusError::STATUS]);
-        }
-
-        if(false === ($WbPackageOrder instanceof WbPackageOrder))
-        {
-            return sprintf(
-                'Заказ %s не найден в упаковке, либо заказ уже был добавлен ранее',
-                $command->getId(),
-            );
-        }
-
+            ->find($command->getId());
 
         /**
-         * Если объект не найден - ошибка валидации
+         * Заказ %s не найден в упаковке
          */
-        if(false === $this->validatorCollection->add($WbPackageOrder, context: [self::class.':'.__LINE__]))
+        if(false === ($WbPackageOrder instanceof WbPackageOrder))
         {
-            return $this->validatorCollection->getErrorUniqid();
+            return false;
+        }
+
+        /** Заказ уже добавлен в упаковку */
+        if($WbPackageOrder->isPackageStatusEquals(WbPackageStatusAdd::class))
+        {
+            return $WbPackageOrder;
         }
 
         $WbPackageOrder->setEntity($command);
-
-        /** Валидация всех объектов */
-        if($this->validatorCollection->isInvalid())
-        {
-            return $this->validatorCollection->getErrorUniqid();
-        }
-
         $this->flush();
 
-
         return $WbPackageOrder;
-
 
     }
 }

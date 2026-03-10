@@ -28,6 +28,7 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\Confirm;
 
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
 use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusFbsRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
@@ -178,6 +179,22 @@ final readonly class ConfirmOrderWildberriesDispatcher
             return;
         }
 
+
+        /**
+         * Обновляем статус заказа Wildberries в упаковке
+         */
+
+        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
+        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
+
+        if(false === ($WbPackageOrder instanceof WbPackageOrder))
+        {
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+        }
+
         /**
          * Прогреваем кеш со стикерами
          */
@@ -204,26 +221,10 @@ final readonly class ConfirmOrderWildberriesDispatcher
             $message->getOrderPosting(), // идентификатор заказа Wildberries
         );
 
-
         $this->MessageDispatch->dispatch(
             message: $OrderWildberriesSignMessage,
             stamps: [new MessageDelay('1 minutes')],
             transport: (string) $message->getProfile(),
         );
-
-        /**
-         * Обновляем статус заказа Wildberries в упаковке
-         */
-
-        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
-        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
-
-        if(false === ($WbPackageOrder instanceof WbPackageOrder))
-        {
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-        }
     }
 }
