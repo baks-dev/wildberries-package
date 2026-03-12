@@ -31,7 +31,7 @@ use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
-#[Autoconfigure(public: true)]
+// #[Autoconfigure(public: true)]
 final class WbSupplyOpenHandler extends AbstractHandler
 {
     public function handle(WbSupplyOpenDTO $command): string|WbSupply

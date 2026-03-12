@@ -46,7 +46,7 @@ final class UpdatePackageOrderStatusHandler extends AbstractHandler
 
         $WbPackageOrder = $this
             ->getRepository(WbPackageOrder::class)
-            ->find($command->getId());
+            ->findOneBy(['id' => $command->getId()]);
 
         /**
          * Заказ %s не найден в упаковке

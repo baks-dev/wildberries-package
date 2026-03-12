@@ -46,7 +46,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Добавляет заказы в указанную поставку Wildberries (Api) и обновляет статусы в системной упаковке
  */
-#[Autoconfigure(public: true)]
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class AddWildberriesSupplyOrdersHandler
 {
@@ -154,10 +154,11 @@ final readonly class AddWildberriesSupplyOrdersHandler
 
             $this->MessageDispatch->dispatch(
                 $ConfirmOrderWildberriesMessage,
-                stamps: [new MessageDelay(sprintf('%s seconds', $key + 1))],
                 transport: (string) $UserProfileUid,
             );
 
+            /** Добавляем задержку времени между отправкой сообщений */
+            usleep(200000);
         }
 
         $DeduplicatorExecuted->save();

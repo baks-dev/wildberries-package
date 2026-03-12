@@ -33,23 +33,23 @@ use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusFbsRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
-use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Messenger\Orders\OrderSticker\WildberriesOrdersStickerMessage;
 use BaksDev\Wildberries\Package\Messenger\Orders\Sign\OrderWildberriesSignMessage;
 use BaksDev\Wildberries\Package\Repository\Package\DeleteOrderPackage\DeleteOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\ExistOrdersByPackage\ExistOrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile\ExistOpenSupplyProfileInterface;
-use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Добавляет заказ Wildberries в открытую поставку в селлере и прогревает кеш стикера
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class ConfirmOrderWildberriesDispatcher
 {
@@ -91,7 +91,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
                 $this->MessageDispatch->dispatch(
                     message: $message,
-                    stamps: [new MessageDelay('3 seconds')],
+                    stamps: [new MessageDelay('5 seconds')],
                     transport: 'wildberries-package-low',
                 );
             }
@@ -114,6 +114,14 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         if(false === $isOrderExist)
         {
+            $this->logger->critical(
+                sprintf(
+                    'wildberries-package: Не добавляем заказ %s в поставку %s т.к. заказ уже был добавлен ранее',
+                    $message->getOrderPosting(), $message->getSupply(),
+                ),
+                [var_export($message, true), self::class.':'.__LINE__],
+            );
+
             return;
         }
 
@@ -180,20 +188,20 @@ final readonly class ConfirmOrderWildberriesDispatcher
         }
 
 
-        /**
-         * Обновляем статус заказа Wildberries в упаковке
-         */
-
-        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
-        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
-
-        if(false === ($WbPackageOrder instanceof WbPackageOrder))
-        {
-            $this->logger->critical(
-                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
-                [self::class.':'.__LINE__, var_export($message, true)],
-            );
-        }
+        //        /**
+        //         * Обновляем статус заказа Wildberries в упаковке
+        //         */
+        //
+        //        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
+        //        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
+        //
+        //        if(false === ($WbPackageOrder instanceof WbPackageOrder))
+        //        {
+        //            $this->logger->critical(
+        //                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
+        //                [self::class.':'.__LINE__, var_export($message, true)],
+        //            );
+        //        }
 
         /**
          * Прогреваем кеш со стикерами

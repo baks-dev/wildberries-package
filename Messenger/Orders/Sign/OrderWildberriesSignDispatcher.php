@@ -42,12 +42,14 @@ use BaksDev\Products\Sign\BaksDevProductsSignBundle;
 use BaksDev\Products\Sign\Repository\ProductSignByOrder\ProductSignByOrderRepository;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesSgtinRequest;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * Отправляет Честные знаки на указанные в упаковке заказы Wildberries (Api)
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class OrderWildberriesSignDispatcher
 {

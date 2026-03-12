@@ -30,6 +30,7 @@ use BaksDev\Wildberries\Package\Entity\Package\Supply\WbPackageSupply;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final class PrintWbPackageHandler extends AbstractHandler
 {

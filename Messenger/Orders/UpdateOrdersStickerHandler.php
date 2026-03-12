@@ -37,12 +37,14 @@ use BaksDev\Wildberries\Package\Repository\Package\OrdersIdentifierByPackage\Ord
 use BaksDev\Wildberries\Package\Repository\Package\SupplyByPackage\SupplyByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupply\OpenWbSupplyInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * При обновлении статуса заказа Confirm (Добавлен к поставке, на сборке) получаем и обновляет стикер
  */
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class UpdateOrdersStickerHandler
 {

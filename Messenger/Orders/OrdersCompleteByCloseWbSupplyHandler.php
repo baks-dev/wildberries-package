@@ -49,7 +49,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 /**
  * Метод меняет статус системного заказа на "Передан в службу Маркетплейса"
  */
-#[Autoconfigure(public: true)]
+#[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class OrdersCompleteByCloseWbSupplyHandler
 {
