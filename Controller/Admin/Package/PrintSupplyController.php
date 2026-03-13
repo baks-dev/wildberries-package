@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2025.  Baks.dev <admin@baks.dev>
+ *  Copyright 2026.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Core\Type\UidType\ParamConverter;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventResult;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
 use BaksDev\Wildberries\Package\Repository\Package\OrdersByPackage\OrdersByPackageInterface;
@@ -190,9 +191,9 @@ final class PrintSupplyController extends AbstractController
                         ->offer($order->getProductOffer())
                         ->variation($order->getProductVariation())
                         ->modification($order->getProductModification())
-                        ->find();
+                        ->findResult();
 
-                    if(!$Product)
+                    if(false === ($Product instanceof ProductDetailByEventResult))
                     {
                         throw new RouteNotFoundException('Product Not Found');
                     }
@@ -207,7 +208,7 @@ final class PrintSupplyController extends AbstractController
                 if(false === isset($this->barcodes[$WbPackageUid]))
                 {
                     $barcode = $BarcodeWrite
-                        ->text($Product['product_barcode'])
+                        ->text($Product->getProductBarcode())
                         ->type(BarcodeType::Code128)
                         ->format(BarcodeFormat::SVG)
                         ->generate();
@@ -237,8 +238,8 @@ final class PrintSupplyController extends AbstractController
 
                 if(false === isset($this->settings[$WbPackageUid]))
                 {
-                    $this->settings[$WbPackageUid] = $Product['main'] ? $barcodeSettings
-                        ->forProduct($Product['main'])
+                    $this->settings[$WbPackageUid] = $Product->getProductMain() ? $barcodeSettings
+                        ->forProduct($Product->getProductMain())
                         ->find() : false;
                 }
             }

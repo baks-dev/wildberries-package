@@ -142,8 +142,9 @@ final readonly class OrderWildberriesSignDispatcher
                 {
                     /** Если повтор не сработал - следовательно честного знака не нашлось */
                     $this->logger->critical(
-                        sprintf('wildberries-package: Ошибка %s при обновлении заказа на статус «Готов к выдаче» после передачи честного знака маркетплейсу', $Order),
-                        [self::class.':'.__LINE__],
+                        sprintf('wildberries-package: Ошибка "%s" при обновлении заказа %s на статус «Готов к выдаче» после передачи честного знака маркетплейсу.',
+                            $Order, $message->getPostingNumber()),
+                        [self::class.':'.__LINE__, var_export($message->getIdentifier(), true)],
                     );
                 }
             }

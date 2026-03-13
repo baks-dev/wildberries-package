@@ -34,6 +34,7 @@ use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventResult;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Entity\Package\WbPackage;
 use BaksDev\Wildberries\Package\Messenger\Orders\Confirm\ConfirmOrderWildberriesMessage;
@@ -219,12 +220,12 @@ final class PrintPackageController extends AbstractController
                     ->offer($order->getProductOffer())
                     ->variation($order->getProductVariation())
                     ->modification($order->getProductModification())
-                    ->find();
+                    ->findResult();
             }
         }
 
 
-        if(!$Product)
+        if(false === ($Product instanceof ProductDetailByEventResult))
         {
             $logger->critical(
                 'wildberries-package: Продукция в упаковке не найдена',
@@ -236,15 +237,7 @@ final class PrintPackageController extends AbstractController
 
         $this->products[$WbPackageUid] = $Product;
 
-        if(empty($Product['product_barcode']))
-        {
-            /* TODO: временно массивы */
-            $barcodes = $Product['product_barcodes'];
-            $barcodes = json_decode($barcodes, true, 512, JSON_THROW_ON_ERROR);
-            $Product['product_barcode'] = current($barcodes);
-        }
-
-        if(empty($Product['product_barcode']))
+        if(empty($Product->getProductBarcode()))
         {
             $logger->critical(
                 'wildberries-package: В продукции не указан артикул либо штрихкод',
@@ -260,7 +253,7 @@ final class PrintPackageController extends AbstractController
          */
 
         $barcode = $BarcodeWrite
-            ->text($Product['product_barcode'])
+            ->text($Product->getProductBarcode())
             ->type(BarcodeType::Code128)
             ->format(BarcodeFormat::SVG)
             ->generate();
@@ -288,8 +281,8 @@ final class PrintPackageController extends AbstractController
          * Получаем настройки бокового стикера
          */
 
-        $this->settings[$WbPackageUid] = $Product['main'] ? $barcodeSettings
-            ->forProduct($Product['main'])
+        $this->settings[$WbPackageUid] = $Product->getProductMain() ? $barcodeSettings
+            ->forProduct($Product->getProductMain())
             ->find() : false;
 
 

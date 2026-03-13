@@ -34,6 +34,7 @@ use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Core\Type\UidType\ParamConverter;
 use BaksDev\Orders\Order\Type\Id\OrderUid;
 use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventInterface;
+use BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventResult;
 use BaksDev\Wildberries\Orders\Api\WildberriesOrdersSticker\GetWildberriesOrdersStickerRequest;
 use BaksDev\Wildberries\Package\Repository\Package\OrderPackage\WbPackageOrderInterface;
 use BaksDev\Wildberries\Products\Repository\Barcode\WbBarcodeSettings\WbBarcodeSettingsInterface;
@@ -79,9 +80,9 @@ final class PrintOrderController extends AbstractController
             ->offer($WbPackageOrderResult->getOffer())
             ->variation($WbPackageOrderResult->getVariation())
             ->modification($WbPackageOrderResult->getModification())
-            ->find();
+            ->findResult();
 
-        if(!$Product)
+        if(false === ($Product instanceof ProductDetailByEventResult))
         {
             $logger->critical(
                 'wildberries-package: Продукция в упаковке не найдена',
@@ -91,16 +92,7 @@ final class PrintOrderController extends AbstractController
             return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
         }
 
-        if(empty($Product['product_barcode']))
-        {
-            /* TODO: временно массивы */
-            $barcodes = $Product['product_barcodes'];
-            $barcodes = json_decode($barcodes, true, 512, JSON_THROW_ON_ERROR);
-            $Product['product_barcode'] = current($barcodes);
-        }
-
-
-        if(empty($Product['product_barcode']))
+        if(empty($Product->getProductBarcode()))
         {
             $logger->critical(
                 'wildberries-package: В продукции не указан артикул либо штрихкод',
@@ -128,8 +120,8 @@ final class PrintOrderController extends AbstractController
          */
 
         // Получаем настройки бокового стикера
-        $BarcodeSettings = $Product['main'] ? $barcodeSettings
-            ->forProduct($Product['main'])
+        $BarcodeSettings = $Product->getProductMain() ? $barcodeSettings
+            ->forProduct($Product->getProductMain())
             ->find() : false;
 
         // Генерируем штрихкод в формате SVG
