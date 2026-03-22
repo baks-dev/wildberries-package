@@ -70,7 +70,7 @@ final class DeleteOrderPackageRepository implements DeleteOrderPackageInterface
             ->setParameter(
                 key: 'order',
                 value: $this->order,
-                type: OrderUid::TYPE
+                type: OrderUid::TYPE,
             );
 
         return (int) $dbal->executeStatement();

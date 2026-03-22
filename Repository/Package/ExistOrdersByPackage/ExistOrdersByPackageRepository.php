@@ -75,7 +75,7 @@ final class ExistOrdersByPackageRepository implements ExistOrdersByPackageInterf
             ->setParameter(
                 key: 'order',
                 value: $this->order,
-                type: OrderUid::TYPE
+                type: OrderUid::TYPE,
             );
 
         return $dbal->fetchExist();

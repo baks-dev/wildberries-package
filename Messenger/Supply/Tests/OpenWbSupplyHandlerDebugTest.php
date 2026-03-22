@@ -56,7 +56,7 @@ class OpenWbSupplyHandlerDebugTest extends KernelTestCase
 
         $ManufacturePartMessage = new WbSupplyMessage(
             new WbSupplyUid(),
-            new WbSupplyEventUid()
+            new WbSupplyEventUid(),
         );
 
         $OpenWbSupplyHandler($ManufacturePartMessage);

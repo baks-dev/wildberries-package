@@ -52,9 +52,9 @@ final class WbSupplyOpenHandler extends AbstractHandler
         $this->messageDispatch
             ->addClearCacheOther('wildberries-package')
             ->dispatch(
-            message: new WbSupplyMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: (string) $command->getProfile(),
-        );
+                message: new WbSupplyMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+                transport: (string) $command->getProfile(),
+            );
 
         return $this->main;
     }

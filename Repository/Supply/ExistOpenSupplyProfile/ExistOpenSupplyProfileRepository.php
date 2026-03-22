@@ -69,56 +69,6 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         return $this;
     }
 
-    private function builder(): DBALQueryBuilder
-    {
-        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
-
-        $dbal
-            ->from(WbSupplyInvariable::class, 'invariable')
-            ->where('invariable.profile = :profile')
-            ->setParameter(
-                key: 'profile',
-                value: $this->profile,
-                type: UserProfileUid::TYPE
-            );
-
-
-        $dbal->join(
-            'invariable',
-            WbSupply::class, 'supply',
-            'supply.id = invariable.main AND supply.event = invariable.event'
-        );
-
-
-        $dbal
-            ->join(
-                'invariable',
-                WbSupplyEvent::class, 'supply_event',
-                'supply_event.id = invariable.event AND supply_event.status IN (:status)'
-            );
-
-
-        if($this->identifier)
-        {
-            $dbal
-                ->join(
-                    'invariable',
-                    WbSupplyWildberries::class, 'supply_wildberries',
-                    '
-                    supply_wildberries.main = invariable.main AND 
-                    supply_wildberries.event = invariable.event AND
-                    supply_wildberries.identifier = :identifier
-                    '
-                )
-                ->setParameter(
-                    key: 'identifier',
-                    value: $this->identifier,
-                );
-        }
-
-        return $dbal;
-    }
-
     /**
      * Метод проверяет, имеется ли поставка со статусом «New»
      */
@@ -134,12 +84,61 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         $dbal->setParameter(
             key: 'status',
             value: [WbSupplyStatusNew::STATUS],
-            type: ArrayParameterType::STRING
+            type: ArrayParameterType::STRING,
         );
 
         return $dbal->fetchExist();
     }
 
+    private function builder(): DBALQueryBuilder
+    {
+        $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
+
+        $dbal
+            ->from(WbSupplyInvariable::class, 'invariable')
+            ->where('invariable.profile = :profile')
+            ->setParameter(
+                key: 'profile',
+                value: $this->profile,
+                type: UserProfileUid::TYPE,
+            );
+
+
+        $dbal->join(
+            'invariable',
+            WbSupply::class, 'supply',
+            'supply.id = invariable.main AND supply.event = invariable.event',
+        );
+
+
+        $dbal
+            ->join(
+                'invariable',
+                WbSupplyEvent::class, 'supply_event',
+                'supply_event.id = invariable.event AND supply_event.status IN (:status)',
+            );
+
+
+        if($this->identifier)
+        {
+            $dbal
+                ->join(
+                    'invariable',
+                    WbSupplyWildberries::class, 'supply_wildberries',
+                    '
+                    supply_wildberries.main = invariable.main AND 
+                    supply_wildberries.event = invariable.event AND
+                    supply_wildberries.identifier = :identifier
+                    ',
+                )
+                ->setParameter(
+                    key: 'identifier',
+                    value: $this->identifier,
+                );
+        }
+
+        return $dbal;
+    }
 
     /**
      * Метод проверяет, имеется ли поставка со статусом «Open»
@@ -156,7 +155,7 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         $dbal->setParameter(
             key: 'status',
             value: [WbSupplyStatusOpen::STATUS],
-            type: ArrayParameterType::STRING
+            type: ArrayParameterType::STRING,
         );
 
         return $dbal->fetchExist();
@@ -177,7 +176,7 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
         $dbal->setParameter(
             key: 'status',
             value: [WbSupplyStatusNew::STATUS, WbSupplyStatusOpen::STATUS],
-            type: ArrayParameterType::STRING
+            type: ArrayParameterType::STRING,
         );
 
         return $dbal->fetchExist();

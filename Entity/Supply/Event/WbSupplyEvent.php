@@ -129,9 +129,9 @@ class WbSupplyEvent extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function getId(): WbSupplyEventUid
+    public function getMain(): ?WbSupplyUid
     {
-        return $this->id;
+        return $this->main;
     }
 
     /**
@@ -142,10 +142,9 @@ class WbSupplyEvent extends EntityEvent
         $this->main = $main instanceof WbSupply ? $main->getId() : $main;
     }
 
-
-    public function getMain(): ?WbSupplyUid
+    public function getId(): WbSupplyEventUid
     {
-        return $this->main;
+        return $this->id;
     }
 
     /**

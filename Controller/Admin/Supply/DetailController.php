@@ -73,7 +73,7 @@ final class DetailController extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()])]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()])],
             )
             ->handleRequest($request);
 
@@ -88,7 +88,7 @@ final class DetailController extends AbstractController
             ->createForm(
                 type: ProductFilterForm::class,
                 data: $filter,
-                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()])]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.detail', ['id' => $wbSupply->getId()])],
             )
             ->handleRequest($request);
 
@@ -119,7 +119,7 @@ final class DetailController extends AbstractController
                 'filter' => $filterForm->createView(),
                 'supplyOrdersFilter' => $supplyOrdersFilterForm->createView(),
                 'add_selected_form_name' => $this->createForm(type: PrintMultipleOrdersPackageForm::class)->getName(),
-            ]
+            ],
         );
     }
 }

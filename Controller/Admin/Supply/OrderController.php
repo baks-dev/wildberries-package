@@ -51,8 +51,8 @@ final class OrderController extends AbstractController
     {
         return $this->render(
             [
-                'supply' => $WbSupplyWildberries
-            ]
+                'supply' => $WbSupplyWildberries,
+            ],
         );
     }
 }

@@ -76,6 +76,7 @@ final readonly class OrdersByPackageResult
 
     /**
      * Идентификатор поставки
+     *
      * @example WB-GI-1234567
      */
     public function getSupply(): string
@@ -85,6 +86,7 @@ final readonly class OrdersByPackageResult
 
     /**
      * Идентификатор заказа Wildberries
+     *
      * @example 3242965305
      */
     public function getOrderNumber(): string
@@ -141,11 +143,6 @@ final readonly class OrdersByPackageResult
         return $this->code_cdn === true;
     }
 
-    public function isExistCode(): bool
-    {
-        return empty($this->code_string) === false;
-    }
-
     public function getCodeString(): string|false
     {
         if($this->isExistCode())
@@ -156,6 +153,11 @@ final readonly class OrdersByPackageResult
         }
 
         return false;
+    }
+
+    public function isExistCode(): bool
+    {
+        return empty($this->code_string) === false;
     }
 
 }

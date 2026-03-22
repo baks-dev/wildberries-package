@@ -127,7 +127,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
             ->setParameter(
                 key: 'profile',
                 value: $this->profile ?: $this->UserProfileTokenStorage->getProfile(),
-                type: UserProfileUid::TYPE
+                type: UserProfileUid::TYPE,
             );
 
         $dbal
@@ -135,7 +135,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'invariable',
                 Order::class,
                 'orders',
-                'orders.id = invariable.main'
+                'orders.id = invariable.main',
             );
 
         $dbal
@@ -143,12 +143,12 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'orders',
                 OrderEvent::class,
                 'event',
-                'event.id = orders.event AND event.status = :status'
+                'event.id = orders.event AND event.status = :status',
             )
             ->setParameter(
                 key: 'status',
                 value: OrderStatusPackage::class, // Только заказа со статусом «На упаковке»
-                type: OrderStatus::TYPE
+                type: OrderStatus::TYPE,
             );
 
         $dbal
@@ -156,7 +156,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'orders',
                 OrderUser::class,
                 'order_user',
-                'order_user.event = orders.event'
+                'order_user.event = orders.event',
             );
 
         $dbal
@@ -167,11 +167,11 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'order_delivery',
                 'order_delivery.usr = order_user.id AND 
                     order_delivery.delivery IN (:delivery)
-                '
+                ',
             )->setParameter(
                 'delivery',
                 [TypeDeliveryDbsWildberries::TYPE, TypeDeliveryFbsWildberries::TYPE],
-                ArrayParameterType::STRING
+                ArrayParameterType::STRING,
             );
 
         $dbal
@@ -179,7 +179,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'orders',
                 OrderProduct::class,
                 'order_product',
-                'order_product.event = orders.event'
+                'order_product.event = orders.event',
             );
 
 
@@ -193,7 +193,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'order_product',
                 OrderPrice::class,
                 'order_product_price',
-                'order_product_price.product = order_product.id'
+                'order_product_price.product = order_product.id',
             );
 
 
@@ -202,7 +202,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'order_product',
                 ProductEvent::class,
                 'product_event',
-                'product_event.id = order_product.product'
+                'product_event.id = order_product.product',
             );
 
 
@@ -212,7 +212,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'order_product',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product_event.main '
+                'product_info.product = product_event.main ',
             );
 
 
@@ -221,13 +221,13 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
             $dbal->join('order_product',
                 ProductCategory::class,
                 'product_category',
-                'product_category.event = product_info.event AND product_category.category = :category AND product_category.root = true'
+                'product_category.event = product_info.event AND product_category.category = :category AND product_category.root = true',
             );
 
             $dbal->setParameter(
                 'category',
                 $this->filter->getCategory(),
-                CategoryProductUid::TYPE
+                CategoryProductUid::TYPE,
             );
 
 
@@ -240,7 +240,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
 
@@ -256,7 +256,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_event',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.id = order_product.offer AND product_offer.event = product_event.id'
+                'product_offer.id = order_product.offer AND product_offer.event = product_event.id',
             );
 
         if($this->filter?->getOffer())
@@ -273,7 +273,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
 
@@ -289,7 +289,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_offer',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.id = order_product.variation AND product_variation.offer = product_offer.id'
+                'product_variation.id = order_product.variation AND product_variation.offer = product_offer.id',
             );
 
 
@@ -300,7 +300,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 ->andWhere('product_variation.value = :variation')
                 ->setParameter(
                     'variation',
-                    $this->filter->getVariation()
+                    $this->filter->getVariation(),
                 );
         }
 
@@ -313,7 +313,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_variation',
                 CategoryProductVariation::class,
                 'category_variation',
-                'category_variation.id = product_variation.category_variation'
+                'category_variation.id = product_variation.category_variation',
             );
 
 
@@ -328,7 +328,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.id = order_product.modification AND product_modification.variation = product_variation.id'
+                'product_modification.id = order_product.modification AND product_modification.variation = product_variation.id',
             );
 
         /** ФИЛЬТР по модификациям множественного варианта */
@@ -338,7 +338,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 ->andWhere('product_modification.value = :modification')
                 ->setParameter(
                     'modification',
-                    $this->filter->getModification()
+                    $this->filter->getModification(),
                 );
         }
 
@@ -348,7 +348,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_modification',
                 CategoryProductModification::class,
                 'category_modification',
-                'category_modification.id = product_modification.category_modification'
+                'category_modification.id = product_modification.category_modification',
             );
 
 
@@ -358,28 +358,28 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
             'product_event',
             ProductPhoto::class,
             'product_photo',
-            'product_photo.event = product_event.id AND product_photo.root = true'
+            'product_photo.event = product_event.id AND product_photo.root = true',
         );
 
         $dbal->leftJoin(
             'product_offer',
             ProductOfferImage::class,
             'product_offer_image',
-            'product_offer_image.offer = product_offer.id AND product_offer_image.root = true'
+            'product_offer_image.offer = product_offer.id AND product_offer_image.root = true',
         );
 
         $dbal->leftJoin(
             'product_variation',
             ProductVariationImage::class,
             'product_variation_image',
-            'product_variation_image.variation = product_variation.id AND product_variation_image.root = true'
+            'product_variation_image.variation = product_variation.id AND product_variation_image.root = true',
         );
 
         $dbal->leftJoin(
             'product_modification',
             ProductModificationImage::class,
             'product_modification_image',
-            'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
+            'product_modification_image.modification = product_modification.id AND product_modification_image.root = true',
         );
 
 
@@ -400,7 +400,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
 					
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         /* Флаг загрузки файла CDN */
@@ -504,7 +504,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'exist_part',
                 '
                 exist_part.event = exist_product.event
-            '
+            ',
             );
 
 
@@ -524,9 +524,9 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                     'status_part',
                     [
                         ManufacturePartStatusClosed::STATUS,
-                        ManufacturePartStatusCompleted::STATUS
+                        ManufacturePartStatusCompleted::STATUS,
                     ],
-                    ArrayParameterType::STRING
+                    ArrayParameterType::STRING,
                 );
 
             /** Только продукция на указанный завершающий этап */
@@ -563,7 +563,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
         $dbal->andWhereNotExists(
             WbPackageOrder::class,
             'exist_package',
-            'exist_package.id = orders.id'
+            'exist_package.id = orders.id',
         );
 
         $dbal->orderBy('order_data');

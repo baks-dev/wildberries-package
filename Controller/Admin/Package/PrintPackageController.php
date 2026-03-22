@@ -101,7 +101,7 @@ final class PrintPackageController extends AbstractController
         {
             $logger->critical(
                 'wildberries-package: Заказов на упаковку не найдено',
-                [$wbPackage->getEvent(), self::class.':'.__LINE__]
+                [$wbPackage->getEvent(), self::class.':'.__LINE__],
             );
 
             /** Отправляем сообщение в шину и отмечаем принт упаковки */
@@ -155,7 +155,7 @@ final class PrintPackageController extends AbstractController
                     $this->getProfileUid(),
                     $order->getOrderId(),
                     $order->getSupply(),
-                    $order->getOrderNumber()
+                    $order->getOrderNumber(),
                 );
 
                 $messageDispatch->dispatch($ConfirmOrderWildberriesMessage);
@@ -229,7 +229,7 @@ final class PrintPackageController extends AbstractController
         {
             $logger->critical(
                 'wildberries-package: Продукция в упаковке не найдена',
-                [$order, self::class.':'.__LINE__]
+                [$order, self::class.':'.__LINE__],
             );
 
             return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
@@ -241,7 +241,7 @@ final class PrintPackageController extends AbstractController
         {
             $logger->critical(
                 'wildberries-package: В продукции не указан артикул либо штрихкод',
-                [$Product, self::class.':'.__LINE__]
+                [$Product, self::class.':'.__LINE__],
             );
 
             return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
@@ -307,7 +307,7 @@ final class PrintPackageController extends AbstractController
                 'products' => $this->products,
             ],
             dir: 'admin.package',
-            file: '/print/print.html.twig'
+            file: '/print/print.html.twig',
         );
 
 

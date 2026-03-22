@@ -109,14 +109,14 @@ class WbPackageOrder extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function getId(): OrderUid
-    {
-        return $this->id;
-    }
-
     public function getEventId(): WbPackageEventUid
     {
         return $this->event->getId();
+    }
+
+    public function getId(): OrderUid
+    {
+        return $this->id;
     }
 
     public function isPackageStatusEquals(mixed $status): bool

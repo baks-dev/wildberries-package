@@ -75,7 +75,7 @@ final class SupplyByPackageRepository implements SupplyByPackageInterface
             ->setParameter(
                 key: 'event',
                 value: $this->event,
-                type: WbPackageEventUid::TYPE
+                type: WbPackageEventUid::TYPE,
             );
 
         $supply = $dbal->fetchOne();

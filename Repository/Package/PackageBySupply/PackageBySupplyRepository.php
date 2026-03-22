@@ -67,6 +67,15 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
     }
 
     /**
+     * @return array{int, PackageBySupplyResult}|false
+     */
+    public function toArray(): array|false
+    {
+        $Generator = $this->findAll();
+        return (false === $Generator || $Generator->valid() === false) ? false : iterator_to_array($Generator);
+    }
+
+    /**
      * Метод возвращает все идентификаторы упаковок в поставке
      *
      * @return Generator<int, PackageBySupplyResult>|false
@@ -90,7 +99,7 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
             ->setParameter(
                 'supply',
                 $this->supply,
-                WbSupplyUid::TYPE
+                WbSupplyUid::TYPE,
             );
 
         if($this->print)
@@ -101,14 +110,5 @@ final class PackageBySupplyRepository implements PackageBySupplyInterface
         $dbal->addOrderBy('supply.event');
 
         return $dbal->fetchAllHydrate(PackageBySupplyResult::class);
-    }
-
-    /**
-     * @return array{int, PackageBySupplyResult}|false
-     */
-    public function toArray(): array|false
-    {
-        $Generator = $this->findAll();
-        return (false === $Generator || $Generator->valid() === false) ? false : iterator_to_array($Generator);
     }
 }

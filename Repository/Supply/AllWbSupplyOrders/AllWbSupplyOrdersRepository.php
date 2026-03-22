@@ -110,7 +110,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 'supply',
                 WbPackageSupply::class,
                 'supply_package',
-                'supply_package.supply = supply.id'
+                'supply_package.supply = supply.id',
             );
 
         $dbal
@@ -121,7 +121,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 'supply',
                 WbPackageOrder::class,
                 'supply_order',
-                'supply_order.event = supply_package.event'
+                'supply_order.event = supply_package.event',
             );
 
 
@@ -133,7 +133,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'supply_order',
             Order::class,
             'orders',
-            'orders.id = supply_order.id'
+            'orders.id = supply_order.id',
         );
 
         //        $dbal
@@ -161,7 +161,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 'orders',
                 OrderEvent::class,
                 'event',
-                'event.id = orders.event'
+                'event.id = orders.event',
             );
 
 
@@ -173,7 +173,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         $dbal->leftJoin('orders',
             OrderProduct::class,
             'order_product',
-            'order_product.event = orders.event'
+            'order_product.event = orders.event',
         );
 
         //        $dbal->addSelect('order_price.price AS order_price');
@@ -191,16 +191,16 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         $dbal->leftJoin('order_product',
             ProductEvent::class,
             'product_event',
-            'product_event.id = order_product.product'
+            'product_event.id = order_product.product',
         );
 
         $dbal
             ->addSelect('product_info.article AS card_article')
             ->leftJoin('order_product',
-            ProductInfo::class,
-            'product_info',
-            'product_info.product = product_event.main'
-        );
+                ProductInfo::class,
+                'product_info',
+                'product_info.product = product_event.main',
+            );
 
         if($this->filter?->getCategory())
         {
@@ -210,23 +210,22 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 '
                 product_category.event = product_info.event AND 
                 product_category.category = :category AND 
-                product_category.root = true'
+                product_category.root = true',
             )
                 ->setParameter(
                     key: 'category',
                     value: $this->filter->getCategory(),
-                    type: CategoryProductUid::TYPE
+                    type: CategoryProductUid::TYPE,
                 );
 
         }
-
 
 
         $dbal->addSelect('product_trans.name AS product_name');
         $dbal->leftJoin('order_product',
             ProductTrans::class,
             'product_trans',
-            'product_trans.event = order_product.product AND product_trans.local = :local'
+            'product_trans.event = order_product.product AND product_trans.local = :local',
         );
 
         /*
@@ -239,7 +238,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         $dbal->leftJoin('order_product',
             ProductOffer::class,
             'product_offer',
-            'product_offer.id = order_product.offer'
+            'product_offer.id = order_product.offer',
         );
 
 
@@ -248,7 +247,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'product_offer',
             CategoryProductOffers::class,
             'category_offer',
-            'category_offer.id = product_offer.category_offer'
+            'category_offer.id = product_offer.category_offer',
         );
 
         if(!$this->search?->getQuery() && $this->filter?->getOffer())
@@ -269,7 +268,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
         $dbal->leftJoin('order_product',
             ProductVariation::class,
             'product_variation',
-            'product_variation.id = order_product.variation'
+            'product_variation.id = order_product.variation',
         );
 
         if(!$this->search?->getQuery() && $this->filter?->getVariation())
@@ -285,7 +284,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'product_variation',
             CategoryProductVariation::class,
             'category_variation',
-            'category_variation.id = product_variation.category_variation'
+            'category_variation.id = product_variation.category_variation',
         );
 
         /**
@@ -299,7 +298,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 'product_variation',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.id = order_product.modification AND product_modification.variation = product_variation.id'
+                'product_modification.id = order_product.modification AND product_modification.variation = product_variation.id',
             );
 
         $dbal
@@ -308,7 +307,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
                 'product_modification',
                 CategoryProductModification::class,
                 'category_modification',
-                'category_modification.id = product_modification.category_modification'
+                'category_modification.id = product_modification.category_modification',
             );
 
         /** Артикул продукта */
@@ -329,28 +328,28 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
             'order_product',
             ProductPhoto::class,
             'product_photo',
-            'product_photo.event = order_product.product AND product_photo.root = true'
+            'product_photo.event = order_product.product AND product_photo.root = true',
         );
 
         $dbal->leftJoin(
             'order_product',
             ProductOfferImage::class,
             'product_offer_images',
-            'product_offer_images.offer = order_product.offer AND product_offer_images.root = true'
+            'product_offer_images.offer = order_product.offer AND product_offer_images.root = true',
         );
 
         $dbal->leftJoin(
             'order_product',
             ProductVariationImage::class,
             'product_variation_image',
-            'product_variation_image.variation = order_product.variation AND product_variation_image.root = true'
+            'product_variation_image.variation = order_product.variation AND product_variation_image.root = true',
         );
 
         $dbal->leftJoin(
             'order_product',
             ProductModificationImage::class,
             'product_modification_image',
-            'product_modification_image.modification = order_product.variation AND product_modification_image.root = true'
+            'product_modification_image.modification = order_product.variation AND product_modification_image.root = true',
         );
 
 
@@ -370,7 +369,7 @@ final class AllWbSupplyOrdersRepository implements AllWbSupplyOrdersInterface
 			   
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         /** Флаг загрузки файла CDN */

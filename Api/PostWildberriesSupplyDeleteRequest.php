@@ -63,7 +63,7 @@ final class PostWildberriesSupplyDeleteRequest extends Wildberries
         if($this->supply === null)
         {
             throw new InvalidArgumentException(
-                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")'
+                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")',
             );
         }
 
@@ -71,16 +71,16 @@ final class PostWildberriesSupplyDeleteRequest extends Wildberries
             ->marketplace()
             ->TokenHttpClient()
             ->request(
-            'DELETE',
-            '/api/v3/supplies/'.$this->supply,
-        );
+                'DELETE',
+                '/api/v3/supplies/'.$this->supply,
+            );
 
 
         if($response->getStatusCode() !== 204)
         {
             $this->logger->critical(
                 sprintf('wildberries-package: Ошибка при удалении поставки %s', $this->supply),
-                [$response->toArray(false), self::class.':'.__LINE__]
+                [$response->toArray(false), self::class.':'.__LINE__],
             );
 
             return false;

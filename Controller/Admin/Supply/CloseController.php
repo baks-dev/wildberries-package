@@ -72,7 +72,7 @@ final class CloseController extends AbstractController
             ->createForm(
                 type: WbSupplyCloseForm::class,
                 data: $WbSupplyCloseDTO,
-                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.close', ['id' => $WbSupply->getId()]),]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.supply.close', ['id' => $WbSupply->getId()]),],
             )
             ->handleRequest($request);
 
@@ -87,7 +87,7 @@ final class CloseController extends AbstractController
                 'page.close',
                 $handle instanceof WbSupply ? 'success.close' : 'danger.close',
                 'wildberries-package.supply',
-                $handle
+                $handle,
             );
 
             return $this->redirectToReferer();
@@ -96,7 +96,7 @@ final class CloseController extends AbstractController
 
         return $this->render([
             'form' => $form->createView(),
-            'identifier' => $WbSupplyEvent->getIdentifier()
+            'identifier' => $WbSupplyEvent->getIdentifier(),
         ]);
     }
 }

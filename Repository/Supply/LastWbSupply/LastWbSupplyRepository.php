@@ -77,7 +77,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
             ->setParameter(
                 'profile',
                 $this->UserProfileTokenStorage->getProfile(),
-                UserProfileUid::TYPE
+                UserProfileUid::TYPE,
             );
 
         $dbal
@@ -87,7 +87,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
                 'invariable',
                 WbSupply::class,
                 'supply',
-                'supply.id = invariable.main'
+                'supply.id = invariable.main',
             );
 
 
@@ -97,7 +97,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
                 'supply',
                 WbSupplyEvent::class,
                 'event',
-                'event.id = supply.event'
+                'event.id = supply.event',
             );
 
         $dbal
@@ -106,7 +106,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
                 'supply',
                 WbSupplyModify::class,
                 'modify',
-                'modify.event = supply.event'
+                'modify.event = supply.event',
             );
 
 
@@ -116,7 +116,7 @@ final class LastWbSupplyRepository implements LastWbSupplyInterface
                 'supply',
                 WbSupplyWildberries::class,
                 'wb',
-                'wb.main = supply.id'
+                'wb.main = supply.id',
             );
 
 

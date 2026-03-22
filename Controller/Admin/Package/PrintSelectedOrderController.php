@@ -108,7 +108,7 @@ final class PrintSelectedOrderController extends AbstractController
             {
                 $logger->critical(
                     'wildberries-package: Продукция в упаковке не найдена',
-                    [$WbPackageOrderResult, self::class.':'.__LINE__]
+                    [$WbPackageOrderResult, self::class.':'.__LINE__],
                 );
 
                 return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);

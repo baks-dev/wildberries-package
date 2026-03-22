@@ -138,7 +138,7 @@ final class PrintSupplyController extends AbstractController
                             $this->getProfileUid(),
                             $order->getOrderId(),
                             $order->getSupply(),
-                            $order->getOrderNumber()
+                            $order->getOrderNumber(),
                         );
 
                         $messageDispatch->dispatch($ConfirmOrderWildberriesMessage);
@@ -265,7 +265,7 @@ final class PrintSupplyController extends AbstractController
                 'products' => $this->products,
             ],
             dir: 'admin.package',
-            file: '/print/print.html.twig'
+            file: '/print/print.html.twig',
         );
 
 

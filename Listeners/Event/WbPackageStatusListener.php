@@ -34,6 +34,7 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 /**
  * Слушатель инициирует WbPackageStatusCollection для определения в типе доктрины.
+ *
  * @see WbPackageStatusCollection
  */
 #[AsEventListener(event: ControllerEvent::class)]

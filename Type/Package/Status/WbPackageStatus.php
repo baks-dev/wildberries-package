@@ -73,21 +73,9 @@ final class WbPackageStatus
 
     }
 
-    public function __toString(): string
-    {
-        return $this->status->getValue();
-    }
-
-
     public function getWbPackageStatus(): WbPackageStatusInterface
     {
         return $this->status;
-    }
-
-
-    public function getWbPackageStatusValue(): string
-    {
-        return $this->status->getValue();
     }
 
     public static function getDeclared(): array
@@ -96,7 +84,7 @@ final class WbPackageStatus
             get_declared_classes(),
             static function($className) {
                 return in_array(WbPackageStatusInterface::class, class_implements($className), true);
-            }
+            },
         );
     }
 
@@ -105,6 +93,16 @@ final class WbPackageStatus
         $status = new self($status);
 
         return $this->getWbPackageStatusValue() === $status->getWbPackageStatusValue();
+    }
+
+    public function getWbPackageStatusValue(): string
+    {
+        return $this->status->getValue();
+    }
+
+    public function __toString(): string
+    {
+        return $this->status->getValue();
     }
 
 }

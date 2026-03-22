@@ -55,7 +55,7 @@ class OrdersCompleteByCloseWbSupplyHandlerDebugTest extends KernelTestCase
 
         $ManufacturePartMessage = new WbSupplyMessage(
             new WbSupplyUid(),
-            new WbSupplyEventUid()
+            new WbSupplyEventUid(),
         );
 
         $OrdersCompleteByCloseWbSupplyHandler($ManufacturePartMessage);

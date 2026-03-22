@@ -67,7 +67,7 @@ final class GetWildberriesSupplyStickerRequest extends Wildberries
         if($this->supply === null)
         {
             throw new InvalidArgumentException(
-                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")'
+                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")',
             );
         }
 
@@ -93,7 +93,7 @@ final class GetWildberriesSupplyStickerRequest extends Wildberries
             {
                 $this->logger->critical(
                     sprintf('wildberries-package: Ошибка при получении QR поставки %s', $this->supply),
-                    [$content, self::class.':'.__LINE__]
+                    [$content, self::class.':'.__LINE__],
                 );
 
                 return false;

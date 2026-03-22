@@ -89,7 +89,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'package_supply',
                 WbPackageEvent::class,
                 'package_event',
-                'package_event.id = package_supply.event'
+                'package_event.id = package_supply.event',
             );
 
         $dbal
@@ -97,7 +97,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'package_supply',
                 WbPackageOrder::class,
                 'package_orders',
-                'package_orders.event = package_supply.event'
+                'package_orders.event = package_supply.event',
             );
 
         $dbal->addOrderBy('package_orders.sort');
@@ -109,7 +109,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'package_orders',
             Order::class,
             'ord',
-            'ord.id = package_orders.id'
+            'ord.id = package_orders.id',
         );
 
 
@@ -117,7 +117,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'ord',
             OrderProduct::class,
             'ord_product',
-            'ord_product.event = ord.event'
+            'ord_product.event = ord.event',
         );
 
 
@@ -127,7 +127,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'ord_product',
                 ProductEvent::class,
                 'product_event',
-                'product_event.id = ord_product.product'
+                'product_event.id = ord_product.product',
             );
 
         $dbal
@@ -136,7 +136,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'ord_product',
                 ProductInfo::class,
                 'product_info',
-                'product_info.product = product_event.main'
+                'product_info.product = product_event.main',
             );
 
         $dbal
@@ -145,7 +145,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_event',
                 ProductTrans::class,
                 'product_trans',
-                'product_trans.event = product_event.id AND product_trans.local = :local'
+                'product_trans.event = product_event.id AND product_trans.local = :local',
             );
 
         /* Торговое предложение */
@@ -160,7 +160,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'ord_product',
                 ProductOffer::class,
                 'product_offer',
-                'product_offer.id = ord_product.offer OR product_offer.id IS NULL'
+                'product_offer.id = ord_product.offer OR product_offer.id IS NULL',
             );
 
         /** Offer Barcode */
@@ -170,7 +170,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_offer',
                 ProductOfferBarcode::class,
                 'product_offer_barcode',
-                'product_offer_barcode.offer = product_offer.id'
+                'product_offer_barcode.offer = product_offer.id',
             );
 
         /* Получаем тип торгового предложения */
@@ -180,7 +180,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_offer',
                 CategoryProductOffers::class,
                 'category_offer',
-                'category_offer.id = product_offer.category_offer'
+                'category_offer.id = product_offer.category_offer',
             );
 
         /* Получаем название торгового предложения */
@@ -191,7 +191,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'category_offer',
                 CategoryProductOffersTrans::class,
                 'category_offer_trans',
-                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local'
+                'category_offer_trans.offer = category_offer.id AND category_offer_trans.local = :local',
             );
 
 
@@ -206,7 +206,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'ord_product',
                 ProductVariation::class,
                 'product_variation',
-                'product_variation.id = ord_product.variation OR product_variation.id IS NULL '
+                'product_variation.id = ord_product.variation OR product_variation.id IS NULL ',
             );
 
         /** Variation Barcode */
@@ -216,7 +216,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_variation',
                 ProductVariationBarcode::class,
                 'product_variation_barcode',
-                'product_variation_barcode.variation = product_variation.id'
+                'product_variation_barcode.variation = product_variation.id',
             );
 
 
@@ -226,7 +226,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'product_variation',
             CategoryProductVariation::class,
             'category_variation',
-            'category_variation.id = product_variation.category_variation'
+            'category_variation.id = product_variation.category_variation',
         );
 
         /* Получаем название множественного варианта */
@@ -237,7 +237,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'category_variation',
                 CategoryProductVariationTrans::class,
                 'category_variation_trans',
-                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local'
+                'category_variation_trans.variation = category_variation.id AND category_variation_trans.local = :local',
             );
 
 
@@ -252,7 +252,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'ord_product',
                 ProductModification::class,
                 'product_modification',
-                'product_modification.id = ord_product.modification OR product_modification.id IS NULL '
+                'product_modification.id = ord_product.modification OR product_modification.id IS NULL ',
             );
 
         /** Modification Barcode */
@@ -262,7 +262,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_modification',
                 ProductModificationBarcode::class,
                 'product_modification_barcode',
-                'product_modification_barcode.modification = product_modification.id'
+                'product_modification_barcode.modification = product_modification.id',
             );
 
         /* Получаем тип модификации множественного варианта */
@@ -272,7 +272,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'product_modification',
                 CategoryProductModification::class,
                 'category_modification',
-                'category_modification.id = product_modification.category_modification'
+                'category_modification.id = product_modification.category_modification',
             );
 
         /* Получаем название типа модификации */
@@ -283,7 +283,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                 'category_modification',
                 CategoryProductModificationTrans::class,
                 'category_modification_trans',
-                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local'
+                'category_modification_trans.modification = category_modification.id AND category_modification_trans.local = :local',
             );
 
         /** Штрихкоды продукта */
@@ -308,7 +308,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
                         ELSE NULL
                     END
                     )
-                    AS barcodes"
+                    AS barcodes",
         );
 
         $dbal->addSelect('
@@ -326,21 +326,21 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'product_event',
             ProductPhoto::class,
             'product_photo',
-            'product_photo.event = product_event.id AND product_photo.root = true'
+            'product_photo.event = product_event.id AND product_photo.root = true',
         );
 
         $dbal->leftJoin(
             'product_offer',
             ProductModificationImage::class,
             'product_modification_image',
-            'product_modification_image.modification = product_modification.id AND product_modification_image.root = true'
+            'product_modification_image.modification = product_modification.id AND product_modification_image.root = true',
         );
 
         $dbal->leftJoin(
             'product_offer',
             ProductVariationImage::class,
             'product_variation_image',
-            'product_variation_image.variation = product_variation.id AND product_variation_image.root = true'
+            'product_variation_image.variation = product_variation.id AND product_variation_image.root = true',
         );
 
 
@@ -348,7 +348,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
             'product_offer',
             ProductOfferImage::class,
             'product_offer_images',
-            'product_offer_images.offer = product_offer.id AND product_offer_images.root = true'
+            'product_offer_images.offer = product_offer.id AND product_offer_images.root = true',
         );
 
 
@@ -365,7 +365,7 @@ final class PrintOrdersPackageSupplyRepository implements PrintOrdersPackageSupp
 					CONCAT ( '/upload/".$dbal->table(ProductPhoto::class)."' , '/', product_photo.name)
 			   ELSE NULL
 			END AS product_image
-		"
+		",
         );
 
         /* Флаг загрузки файла CDN */

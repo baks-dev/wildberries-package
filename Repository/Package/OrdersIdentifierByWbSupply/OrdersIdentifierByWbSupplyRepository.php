@@ -104,7 +104,7 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
             ->setParameter(
                 key: 'supply',
                 value: $this->supply,
-                type: WbSupplyUid::TYPE
+                type: WbSupplyUid::TYPE,
             );
 
         if($this->print)
@@ -117,7 +117,7 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 'supply',
                 WbPackage::class,
                 'package',
-                'package.id = supply.main'
+                'package.id = supply.main',
             );
 
         $dbal
@@ -127,7 +127,7 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
                 'package',
                 WbPackageOrder::class,
                 'package_order',
-                'package_order.event = package.event '.($this->status ? ' AND package_order.status = :status' : '')
+                'package_order.event = package.event '.($this->status ? ' AND package_order.status = :status' : ''),
             );
 
         if($this->status !== false)
@@ -135,7 +135,7 @@ final class OrdersIdentifierByWbSupplyRepository implements OrdersIdentifierByWb
             $dbal->setParameter(
                 key: 'status',
                 value: $this->status,
-                type: WbPackageStatus::TYPE
+                type: WbPackageStatus::TYPE,
             );
         }
 

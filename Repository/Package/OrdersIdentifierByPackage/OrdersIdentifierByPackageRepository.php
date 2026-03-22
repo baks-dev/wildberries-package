@@ -105,7 +105,7 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
             ->setParameter(
                 key: 'event',
                 value: $this->event,
-                type: WbPackageEventUid::TYPE
+                type: WbPackageEventUid::TYPE,
             );
 
         $dbal
@@ -113,7 +113,7 @@ final class OrdersIdentifierByPackageRepository implements OrdersIdentifierByPac
             ->setParameter(
                 key: 'status',
                 value: $this->status,
-                type: WbPackageStatus::TYPE
+                type: WbPackageStatus::TYPE,
             );
 
 

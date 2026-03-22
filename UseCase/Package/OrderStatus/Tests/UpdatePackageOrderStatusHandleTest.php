@@ -45,6 +45,33 @@ use Symfony\Component\DependencyInjection\Attribute\When;
 final class UpdatePackageOrderStatusHandleTest extends KernelTestCase
 {
     #[DependsOnClass(NewPackageHandleTest::class)]
+    public static function tearDownAfterClass(): void
+    {
+        /** @var EntityManagerInterface $em */
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $WbPackage = $em->getRepository(WbPackage::class)
+            ->find(WbPackageUid::TEST);
+
+        if($WbPackage)
+        {
+            $em->remove($WbPackage);
+        }
+
+        $WbPackageEventCollection = $em->getRepository(WbPackageEvent::class)
+            ->findBy(['main' => WbPackageUid::TEST]);
+
+        foreach($WbPackageEventCollection as $remove)
+        {
+            $em->remove($remove);
+        }
+
+        $em->flush();
+        $em->clear();
+        //$em->close();
+    }
+
+    #[DependsOnClass(NewPackageHandleTest::class)]
     public function testUseCase(): void
     {
 
@@ -74,33 +101,6 @@ final class UpdatePackageOrderStatusHandleTest extends KernelTestCase
             ->find(WbPackageUid::TEST);
         self::assertNotNull($WbPackage);
 
-        $em->clear();
-        //$em->close();
-    }
-
-    #[DependsOnClass(NewPackageHandleTest::class)]
-    public static function tearDownAfterClass(): void
-    {
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get(EntityManagerInterface::class);
-
-        $WbPackage = $em->getRepository(WbPackage::class)
-            ->find(WbPackageUid::TEST);
-
-        if($WbPackage)
-        {
-            $em->remove($WbPackage);
-        }
-
-        $WbPackageEventCollection = $em->getRepository(WbPackageEvent::class)
-            ->findBy(['main' => WbPackageUid::TEST]);
-
-        foreach($WbPackageEventCollection as $remove)
-        {
-            $em->remove($remove);
-        }
-
-        $em->flush();
         $em->clear();
         //$em->close();
     }

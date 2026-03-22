@@ -103,7 +103,7 @@ final readonly class DeleteWbSupplyHandler
 
         $this->logger->info(
             sprintf('%s: Удалили поставку с нулевыми заказами', $UserProfileUid->getAttr()),
-            [self::class.':'.__LINE__]
+            [self::class.':'.__LINE__],
         );
     }
 

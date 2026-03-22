@@ -68,7 +68,7 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: SearchForm::class,
                 data: $search,
-                options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')],
             )
             ->handleRequest($request);
 
@@ -88,7 +88,7 @@ final class IndexController extends AbstractController
             ->createForm(
                 type: ProductFilterForm::class,
                 data: $filter,
-                options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')]
+                options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')],
             )
             ->handleRequest($request);
 
@@ -111,7 +111,7 @@ final class IndexController extends AbstractController
                 //'profile' => $profileForm->createView(),
                 'filter' => $filterForm->createView(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
-            ]
+            ],
         );
     }
 }

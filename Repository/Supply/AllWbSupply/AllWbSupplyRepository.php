@@ -83,7 +83,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
                 'supply_const',
                 WbSupply::class,
                 'supply',
-                'supply.id = supply_const.main'
+                'supply.id = supply_const.main',
             );
 
 
@@ -93,7 +93,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
                 'supply',
                 WbSupplyEvent::class,
                 'event',
-                'event.id = supply.event'
+                'event.id = supply.event',
             );
 
         $qb
@@ -102,7 +102,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
                 'supply',
                 WbSupplyModify::class,
                 'modify',
-                'modify.event = supply.event'
+                'modify.event = supply.event',
             );
 
 
@@ -133,7 +133,7 @@ final class AllWbSupplyRepository implements AllWbSupplyInterface
                 'supply',
                 WbSupplyWildberries::class,
                 'wb',
-                'wb.main = supply.id'
+                'wb.main = supply.id',
             );
 
 

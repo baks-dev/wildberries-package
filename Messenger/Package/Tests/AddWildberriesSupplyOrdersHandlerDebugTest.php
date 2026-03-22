@@ -54,7 +54,7 @@ class AddWildberriesSupplyOrdersHandlerDebugTest extends KernelTestCase
 
         $ManufacturePartMessage = new WbPackageMessage(
             new WbPackageUid(),
-            new WbPackageEventUid()
+            new WbPackageEventUid(),
         );
 
         $AddWildberriesSupplyOrdersHandler($ManufacturePartMessage);

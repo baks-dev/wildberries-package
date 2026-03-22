@@ -72,7 +72,7 @@ final class WbSupplyCurrentEventRepository implements WbSupplyCurrentEventInterf
             ->setParameter(
                 'supply',
                 $this->supply,
-                WbSupplyUid::TYPE
+                WbSupplyUid::TYPE,
             );
 
         $orm
@@ -81,7 +81,7 @@ final class WbSupplyCurrentEventRepository implements WbSupplyCurrentEventInterf
                 WbSupplyEvent::class,
                 'event',
                 'WITH',
-                'event.id = supply.event'
+                'event.id = supply.event',
             );
 
         return $orm->getOneOrNullResult() ?: false;

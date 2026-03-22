@@ -56,11 +56,6 @@ class WbSupply
         return (string) $this->id;
     }
 
-    public function getId(): WbSupplyUid
-    {
-        return $this->id;
-    }
-
     public function getEvent(): WbSupplyEventUid
     {
         return $this->event;
@@ -69,5 +64,10 @@ class WbSupply
     public function setEvent(WbSupplyEventUid|WbSupplyEvent $event): void
     {
         $this->event = $event instanceof WbSupplyEvent ? $event->getId() : $event;
+    }
+
+    public function getId(): WbSupplyUid
+    {
+        return $this->id;
     }
 }

@@ -76,7 +76,7 @@ final class ExistOrderPackageRepository implements ExistOrderPackageInterface
             ->setParameter(
                 key: 'order',
                 value: $this->order,
-                type: OrderUid::TYPE
+                type: OrderUid::TYPE,
             );
 
         $dbal
@@ -84,14 +84,14 @@ final class ExistOrderPackageRepository implements ExistOrderPackageInterface
             ->setParameter(
                 key: 'status',
                 value: new WbPackageStatus(WbPackageStatusError::class),
-                type: WbPackageStatus::TYPE
+                type: WbPackageStatus::TYPE,
             );
 
         $dbal->join(
             'wb_order',
             WbPackage::class,
             'package',
-            'package.event = wb_order.event'
+            'package.event = wb_order.event',
         );
 
         return $dbal->fetchExist();

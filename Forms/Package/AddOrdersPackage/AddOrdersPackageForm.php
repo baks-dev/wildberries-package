@@ -54,8 +54,8 @@ final class AddOrdersPackageForm extends AbstractType
                 },
                 function($product) {
                     return $product ? new ProductEventUid($product) : null;
-                }
-            )
+                },
+            ),
         );
 
 
@@ -68,8 +68,8 @@ final class AddOrdersPackageForm extends AbstractType
                 },
                 function($offer) {
                     return $offer ? new ProductOfferUid($offer) : null;
-                }
-            )
+                },
+            ),
         );
 
 
@@ -82,8 +82,8 @@ final class AddOrdersPackageForm extends AbstractType
                 },
                 function($variation) {
                     return $variation ? new ProductVariationUid($variation) : null;
-                }
-            )
+                },
+            ),
         );
 
 
@@ -96,8 +96,8 @@ final class AddOrdersPackageForm extends AbstractType
                 },
                 function($modification) {
                     return $modification ? new ProductModificationUid($modification) : null;
-                }
-            )
+                },
+            ),
         );
 
 
@@ -123,7 +123,7 @@ final class AddOrdersPackageForm extends AbstractType
         $builder->add(
             'package_orders',
             SubmitType::class,
-            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary text-nowrap']]
+            ['label' => 'Save', 'label_html' => true, 'attr' => ['class' => 'btn-primary text-nowrap']],
         );
     }
 

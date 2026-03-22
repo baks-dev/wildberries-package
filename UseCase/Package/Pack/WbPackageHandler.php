@@ -51,9 +51,9 @@ final class WbPackageHandler extends AbstractHandler
         $this->messageDispatch
             ->addClearCacheOther('wildberries-package')
             ->dispatch(
-            message: new WbPackageMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
-            transport: (string) $command->getProfile(),
-        );
+                message: new WbPackageMessage($this->main->getId(), $this->main->getEvent(), $command->getEvent()),
+                transport: (string) $command->getProfile(),
+            );
 
         return $this->main;
     }

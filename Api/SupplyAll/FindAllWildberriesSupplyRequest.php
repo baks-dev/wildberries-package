@@ -59,7 +59,7 @@ final class FindAllWildberriesSupplyRequest extends Wildberries
     {
         $data = [
             "limit" => 100,
-            "next" => $next
+            "next" => $next,
         ];
 
         $response = $this->marketplace()->TokenHttpClient()->request(
@@ -74,7 +74,7 @@ final class FindAllWildberriesSupplyRequest extends Wildberries
         {
             throw new DomainException(
                 message: $response->getStatusCode().': '.$content['message'] ?? self::class,
-                code: $response->getStatusCode()
+                code: $response->getStatusCode(),
             );
         }
 

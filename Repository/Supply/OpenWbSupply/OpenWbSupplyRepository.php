@@ -77,7 +77,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
             ->setParameter(
                 key: 'supply',
                 value: $this->supply,
-                type: WbSupplyUid::TYPE
+                type: WbSupplyUid::TYPE,
             );
 
         $dbal
@@ -86,7 +86,7 @@ final class OpenWbSupplyRepository implements OpenWbSupplyInterface
                 'invariable',
                 WbSupplyWildberries::class,
                 'wildberries',
-                'wildberries.main = invariable.main'
+                'wildberries.main = invariable.main',
             );
 
 

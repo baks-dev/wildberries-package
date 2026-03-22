@@ -77,7 +77,7 @@ final  class WbSupplyRepository implements WbSupplyInterface
             ->setParameter(
                 key: 'supply',
                 value: $this->supply,
-                type: WbSupplyUid::TYPE
+                type: WbSupplyUid::TYPE,
             );
 
 
@@ -88,7 +88,7 @@ final  class WbSupplyRepository implements WbSupplyInterface
                 'supply',
                 WbSupplyInvariable::class,
                 'supply_const',
-                'supply_const.main = supply.id'
+                'supply_const.main = supply.id',
             );
 
 
@@ -98,7 +98,7 @@ final  class WbSupplyRepository implements WbSupplyInterface
                 'supply',
                 WbSupplyEvent::class,
                 'event',
-                'event.id = supply.event'
+                'event.id = supply.event',
             );
 
         $dbal
@@ -107,7 +107,7 @@ final  class WbSupplyRepository implements WbSupplyInterface
                 'supply',
                 WbSupplyModify::class,
                 'modify',
-                'modify.event = supply.event'
+                'modify.event = supply.event',
             );
 
 
@@ -117,7 +117,7 @@ final  class WbSupplyRepository implements WbSupplyInterface
                 'supply',
                 WbSupplyWildberries::class,
                 'wb',
-                'wb.main = supply.id'
+                'wb.main = supply.id',
             );
 
         $dbal->setMaxResults(1);

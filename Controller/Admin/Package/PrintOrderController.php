@@ -86,7 +86,7 @@ final class PrintOrderController extends AbstractController
         {
             $logger->critical(
                 'wildberries-package: Продукция в упаковке не найдена',
-                [$WbPackageOrderResult, self::class.':'.__LINE__]
+                [$WbPackageOrderResult, self::class.':'.__LINE__],
             );
 
             return new Response('Продукция в упаковке не найдена', Response::HTTP_NOT_FOUND);
@@ -96,7 +96,7 @@ final class PrintOrderController extends AbstractController
         {
             $logger->critical(
                 'wildberries-package: В продукции не указан артикул либо штрихкод',
-                [$Product, self::class.':'.__LINE__]
+                [$Product, self::class.':'.__LINE__],
             );
 
             return new Response('В продукции не указан артикул либо штрихкод', Response::HTTP_NOT_FOUND);
@@ -194,11 +194,11 @@ final class PrintOrderController extends AbstractController
                 'stickers' => $stickers,
                 'matrix' => $matrix,
                 'barcodes' => $barcodes,
-                'products' => [$WbPackageUid => $Product]
+                'products' => [$WbPackageUid => $Product],
 
             ],
             dir: 'admin.package',
-            file: '/print/print.html.twig'
+            file: '/print/print.html.twig',
         );
     }
 }

@@ -85,7 +85,7 @@ final class WbPackageOrderRepository implements WbPackageOrderInterface
             ->setParameter(
                 key: 'order',
                 value: $this->order,
-                type: OrderUid::TYPE
+                type: OrderUid::TYPE,
             );
 
         $dbal
@@ -94,7 +94,7 @@ final class WbPackageOrderRepository implements WbPackageOrderInterface
                 'package_order',
                 WbPackage::class,
                 'package',
-                'package.event = package_order.event'
+                'package.event = package_order.event',
             );
 
         $dbal
@@ -102,7 +102,7 @@ final class WbPackageOrderRepository implements WbPackageOrderInterface
                 'package_order',
                 Order::class,
                 'ord',
-                'ord.id = package_order.id'
+                'ord.id = package_order.id',
             );
 
         /*$dbal
@@ -134,7 +134,7 @@ final class WbPackageOrderRepository implements WbPackageOrderInterface
                 'ord',
                 OrderProduct::class,
                 'ord_product',
-                'ord_product.event = ord.event'
+                'ord_product.event = ord.event',
             );
 
 
@@ -159,7 +159,7 @@ final class WbPackageOrderRepository implements WbPackageOrderInterface
                    THEN CONCAT ( '/upload/".$dbal->table(MaterialSignCode::class)."' , '/', code.name)
                    ELSE NULL
                 END AS code_image
-            "
+            ",
                 )
                 ->addSelect("code.ext AS code_ext")
                 ->addSelect("code.cdn AS code_cdn")
@@ -169,7 +169,7 @@ final class WbPackageOrderRepository implements WbPackageOrderInterface
                     'sign_event',
                     MaterialSignCode::class,
                     'code',
-                    'code.main = sign_event.main'
+                    'code.main = sign_event.main',
                 );
         }
 

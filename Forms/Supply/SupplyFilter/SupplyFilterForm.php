@@ -65,21 +65,21 @@ final class SupplyFilterForm extends AbstractType
                 $data = $event->getData();
 
                 $this->request->getSession()->set(SupplyFilterDTO::date, $data->getDate());
-            }
+            },
         );
 
 
         $builder->add(
             'back',
             SubmitType::class,
-            ['label' => 'Back', 'label_html' => true, 'attr' => ['class' => 'btn-light']]
+            ['label' => 'Back', 'label_html' => true, 'attr' => ['class' => 'btn-light']],
         );
 
 
         $builder->add(
             'next',
             SubmitType::class,
-            ['label' => 'next', 'label_html' => true, 'attr' => ['class' => 'btn-light']]
+            ['label' => 'next', 'label_html' => true, 'attr' => ['class' => 'btn-light']],
         );
     }
 
@@ -89,7 +89,7 @@ final class SupplyFilterForm extends AbstractType
             [
                 'data_class' => SupplyFilterDTO::class,
                 'method' => 'POST',
-            ]
+            ],
         );
     }
 }

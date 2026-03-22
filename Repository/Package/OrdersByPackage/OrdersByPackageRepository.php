@@ -65,6 +65,13 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
         return $this;
     }
 
+    /** @return array{int, OrdersByPackageResult}|false */
+    public function toArray(): array|false
+    {
+        $Generator = $this->findAll();
+
+        return (false === $Generator || false === $Generator->valid()) ? false : iterator_to_array($Generator);
+    }
 
     /**
      * Метод получает все заказы в упаковке со стикерами
@@ -92,7 +99,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
             ->setParameter(
                 key: 'event',
                 value: $this->event,
-                type: WbPackageEventUid::TYPE
+                type: WbPackageEventUid::TYPE,
             );
 
         $dbal
@@ -101,7 +108,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'package_order',
                 WbPackageEvent::class,
                 'package_event',
-                'package_event.id = package_order.event'
+                'package_event.id = package_order.event',
             );
 
 
@@ -110,7 +117,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'package_event',
                 WbPackageSupply::class,
                 'package_supply',
-                'package_supply.main = package_event.main'
+                'package_supply.main = package_event.main',
             );
 
 
@@ -120,7 +127,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'package_supply',
                 WbSupplyWildberries::class,
                 'supply',
-                'supply.main = package_supply.supply'
+                'supply.main = package_supply.supply',
             );
 
 
@@ -129,7 +136,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'package_order',
                 Order::class,
                 'ord',
-                'ord.id = package_order.id'
+                'ord.id = package_order.id',
             );
 
         //        $dbal
@@ -161,7 +168,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 'ord',
                 OrderProduct::class,
                 'ord_product',
-                'ord_product.event = ord.event'
+                'ord_product.event = ord.event',
             );
 
 
@@ -186,7 +193,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                    THEN CONCAT ( '/upload/".$dbal->table(MaterialSignCode::class)."' , '/', code.name)
                    ELSE NULL
                 END AS code_image
-            "
+            ",
                 )
                 ->addSelect("code.ext AS code_ext")
                 ->addSelect("code.cdn AS code_cdn")
@@ -195,21 +202,13 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                     'sign_event',
                     MaterialSignCode::class,
                     'code',
-                    'code.main = sign_event.main'
+                    'code.main = sign_event.main',
                 );
         }
 
         return $dbal
             ->enableCache('wildberries-package')
             ->fetchAllHydrate(OrdersByPackageResult::class);
-    }
-
-    /** @return array{int, OrdersByPackageResult}|false */
-    public function toArray(): array|false
-    {
-        $Generator = $this->findAll();
-
-        return (false === $Generator || false === $Generator->valid()) ? false : iterator_to_array($Generator);
     }
 
 }

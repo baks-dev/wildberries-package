@@ -56,7 +56,7 @@ final class DeleteOrderController extends AbstractController
             ->createForm(WbPackageOrderDeleteForm::class, $DeletePackageOrderDTO, [
                 'action' => $this->generateUrl('wildberries-package:admin.package.delete.order', [
                     'id' => $DeletePackageOrderDTO->getId(),
-                    'event' => $DeletePackageOrderDTO->getEvent()
+                    'event' => $DeletePackageOrderDTO->getEvent(),
                 ]),
             ])
             ->handleRequest($request);
@@ -72,7 +72,7 @@ final class DeleteOrderController extends AbstractController
                 'page.order.delete',
                 $handle instanceof WbPackageOrder ? 'success.order.delete' : 'danger.delete',
                 'wildberries-package.package',
-                $handle
+                $handle,
             );
 
             return $this->redirectToReferer();

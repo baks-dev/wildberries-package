@@ -40,12 +40,14 @@ final class WbPackageOrderResult
 {
     /**
      * Идентификатор упаковки
+     *
      * @see WbPackageUid
      */
     private string $package;
 
     /**
      * Идентификатор заказа
+     *
      * @see OrderUid
      */
     private string $order;
@@ -67,12 +69,14 @@ final class WbPackageOrderResult
 
     /**
      * Событие честного знака
+     *
      * @see MaterialSignEventUid
      */
     private ?string $sign;
 
     /**
      * Статус честного знака
+     *
      * @see MaterialSignStatus
      */
     private ?string $status;
@@ -104,7 +108,7 @@ final class WbPackageOrderResult
 
         $this->code_image = $data['code_image'] ?? null;
         $this->code_ext = $data['code_ext'] ?? null;
-        $this->code_cdn = isset($data['code_cdn']) ?  $data['code_cdn'] === true : false;
+        $this->code_cdn = isset($data['code_cdn']) ? $data['code_cdn'] === true : false;
 
     }
 
@@ -180,11 +184,6 @@ final class WbPackageOrderResult
         return $this->status ? new MaterialSignStatus($this->status) : false;
     }
 
-    public function isExistCode(): bool
-    {
-        return empty($this->code) === false;
-    }
-
     /**
      * Code
      */
@@ -198,6 +197,11 @@ final class WbPackageOrderResult
         }
 
         return false;
+    }
+
+    public function isExistCode(): bool
+    {
+        return empty($this->code) === false;
     }
 
     /**

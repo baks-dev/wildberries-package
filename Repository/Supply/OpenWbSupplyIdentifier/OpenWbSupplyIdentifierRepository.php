@@ -87,7 +87,7 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
                 'invariable',
                 WbSupply::class,
                 'supply',
-                'supply.id = invariable.main'
+                'supply.id = invariable.main',
             );
 
         $dbal
@@ -96,7 +96,7 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
                 'supply',
                 WbSupplyEvent::class,
                 'event',
-                'event.id = supply.event AND (event.status = :new OR event.status = :open) '
+                'event.id = supply.event AND (event.status = :new OR event.status = :open) ',
             )
             ->setParameter('new', WbSupplyStatusNew::class, WbSupplyStatus::TYPE)
             ->setParameter('open', WbSupplyStatusOpen::class, WbSupplyStatus::TYPE);

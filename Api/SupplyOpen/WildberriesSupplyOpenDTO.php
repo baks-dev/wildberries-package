@@ -33,6 +33,7 @@ final class WildberriesSupplyOpenDTO
 
     /**
      * Идентификатор поставки
+     *
      * @example "WB-GI-1234567"
      */
     private string $identifier;

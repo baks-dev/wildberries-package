@@ -67,7 +67,7 @@ final class PostWildberriesSupplyClosedRequest extends Wildberries
         if($this->supply === null)
         {
             throw new InvalidArgumentException(
-                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")'
+                'Не указан идентификатор поставки через вызов метода withSupply: ->withSupply("WB-GI-1234567")',
             );
         }
 
@@ -85,7 +85,7 @@ final class PostWildberriesSupplyClosedRequest extends Wildberries
         {
             $this->logger->critical(
                 sprintf('wildberries-package: Ошибка при закрытии поставки %s', $this->supply),
-                [$response->toArray(false), self::class.':'.__LINE__]
+                [$response->toArray(false), self::class.':'.__LINE__],
             );
 
             return false;

@@ -76,7 +76,7 @@ final class CountOrdersSupplyRepository implements CountOrdersSupplyInterface
             'package_supply',
             WbPackageOrder::class,
             'package_order',
-            'package_order.event = package_supply.event'
+            'package_order.event = package_supply.event',
         );
 
         return $dbal->count();

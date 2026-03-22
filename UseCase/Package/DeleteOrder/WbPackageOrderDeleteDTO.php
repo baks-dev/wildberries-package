@@ -46,7 +46,8 @@ final class WbPackageOrderDeleteDTO
     private ?WbPackageEventUid $event;
 
 
-    public function __construct(?OrderUid $id, WbPackageEventUid $event) {
+    public function __construct(?OrderUid $id, WbPackageEventUid $event)
+    {
         $this->id = $id;
         $this->event = $event;
     }

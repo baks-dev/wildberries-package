@@ -116,7 +116,7 @@ final readonly class CloseWbSupplyHandler
             $this->MessageDispatch->dispatch(
                 message: $message,
                 stamps: [new MessageDelay('3 seconds')],
-                transport: (string) $UserProfileUid
+                transport: (string) $UserProfileUid,
             );
 
             return;
@@ -126,7 +126,7 @@ final readonly class CloseWbSupplyHandler
 
         $this->logger->info(
             sprintf('%s: Закрыли поставку Wildberries', $UserProfileUid->getAttr()),
-            [self::class.':'.__LINE__,]
+            [self::class.':'.__LINE__,],
         );
 
         /**

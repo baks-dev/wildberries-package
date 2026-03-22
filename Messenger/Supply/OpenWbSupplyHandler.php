@@ -136,7 +136,7 @@ final readonly class OpenWbSupplyHandler
         {
             $this->logger->critical(
                 sprintf('wildberries-package: %s: Ошибка при обновлении поставки идентификатором', $handle),
-                [self::class.':'.__LINE__]
+                [self::class.':'.__LINE__],
             );
 
             return;

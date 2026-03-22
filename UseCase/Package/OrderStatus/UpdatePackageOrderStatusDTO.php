@@ -62,6 +62,11 @@ final class UpdatePackageOrderStatusDTO implements WbPackageOrderInterface
         return $this->id;
     }
 
+    public function getStatus(): WbPackageStatus
+    {
+        return $this->status;
+    }
+
     /**
      * Status
      */
@@ -75,11 +80,6 @@ final class UpdatePackageOrderStatusDTO implements WbPackageOrderInterface
         $this->status = $status instanceof WbPackageStatusInterface ? new WbPackageStatus($status) : $status;
 
         return $this;
-    }
-
-    public function getStatus(): WbPackageStatus
-    {
-        return $this->status;
     }
 
 }

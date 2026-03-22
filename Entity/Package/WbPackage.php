@@ -66,12 +66,6 @@ class WbPackage
         return (string) $this->id;
     }
 
-
-    public function getId(): WbPackageUid
-    {
-        return $this->id;
-    }
-
     public function getEvent(): WbPackageEventUid
     {
         return $this->event;
@@ -80,5 +74,10 @@ class WbPackage
     public function setEvent(WbPackageEventUid|WbPackageEvent $event): void
     {
         $this->event = $event instanceof WbPackageEvent ? $event->getId() : $event;
+    }
+
+    public function getId(): WbPackageUid
+    {
+        return $this->id;
     }
 }

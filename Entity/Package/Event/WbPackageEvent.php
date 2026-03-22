@@ -126,11 +126,6 @@ class WbPackageEvent extends EntityEvent
         throw new InvalidArgumentException(sprintf('Class %s interface error', $dto::class));
     }
 
-    public function getId(): WbPackageEventUid
-    {
-        return $this->id;
-    }
-
     public function getMain(): ?WbPackageUid
     {
         return $this->main;
@@ -139,6 +134,11 @@ class WbPackageEvent extends EntityEvent
     public function setMain(WbPackageUid|WbPackage $main): void
     {
         $this->main = $main instanceof WbPackage ? $main->getId() : $main;
+    }
+
+    public function getId(): WbPackageEventUid
+    {
+        return $this->id;
     }
 
 }

@@ -47,8 +47,8 @@ final class PrintOrderPackageForm extends AbstractType
                 },
                 function($order) {
                     return $order ? new OrderUid($order) : null;
-                }
-            )
+                },
+            ),
         );
 
     }

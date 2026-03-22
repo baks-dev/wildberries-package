@@ -72,7 +72,7 @@ final class PostWildberriesSupplyOpenRequest extends Wildberries
 
             $this->logger->critical(
                 'wildberries-package: Ошибка при открытии новой поставки',
-                [$content, self::class.':'.__LINE__]
+                [$content, self::class.':'.__LINE__],
             );
 
             return false;

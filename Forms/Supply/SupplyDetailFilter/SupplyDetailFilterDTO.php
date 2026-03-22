@@ -65,6 +65,16 @@ final class SupplyDetailFilterDTO
 
     }
 
+    public function getCategory(bool $readonly = false): ?CategoryProductUid
+    {
+        if($readonly)
+        {
+            return $this->category;
+        }
+
+        return $this->category ?: $this->request->getSession()->get(self::category);
+    }
+
     /**
      * Категория
      */
@@ -81,17 +91,6 @@ final class SupplyDetailFilterDTO
         }
 
         $this->category = $category;
-    }
-
-
-    public function getCategory(bool $readonly = false): ?CategoryProductUid
-    {
-        if($readonly)
-        {
-            return $this->category;
-        }
-
-        return $this->category ?: $this->request->getSession()->get(self::category);
     }
 
     /** Торговое предложение */

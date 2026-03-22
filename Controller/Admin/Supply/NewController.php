@@ -62,7 +62,7 @@ final class NewController extends AbstractController
             $this->addFlash(
                 'danger',
                 'danger.new',
-                'wildberries-package.supply'
+                'wildberries-package.supply',
             );
             return $this->redirectToReferer();
         }
@@ -74,7 +74,7 @@ final class NewController extends AbstractController
             'page.new',
             $handle instanceof WbSupply ? 'success.new' : 'danger.new',
             'wildberries-package.supply',
-            $handle
+            $handle,
         );
 
         return $this->redirectToReferer();

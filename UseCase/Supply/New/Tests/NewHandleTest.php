@@ -47,6 +47,7 @@ final class NewHandleTest extends KernelTestCase
     {
         /**
          * Инициируем статус для итератора тегов
+         *
          * @var WbSupplyStatusCollection $WbSupplyStatus
          */
         $WbSupplyStatus = self::getContainer()->get(WbSupplyStatusCollection::class);

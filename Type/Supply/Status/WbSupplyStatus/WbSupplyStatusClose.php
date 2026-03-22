@@ -31,11 +31,18 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 /**
  * Статус Close «Закрыто»
  */
-
 #[AutoconfigureTag('baks.wb.supply.status')]
 final class WbSupplyStatusClose implements WbSupplyStatusInterface
 {
     public const string STATUS = 'close';
+
+    /**
+     * Проверяет, относится ли строка к данному объекту
+     */
+    public static function equals(string $status): bool
+    {
+        return mb_strtolower($status) === self::STATUS;
+    }
 
     public function __toString(): string
     {
@@ -48,13 +55,5 @@ final class WbSupplyStatusClose implements WbSupplyStatusInterface
     public function getValue(): string
     {
         return self::STATUS;
-    }
-
-    /**
-     * Проверяет, относится ли строка к данному объекту
-     */
-    public static function equals(string $status): bool
-    {
-        return mb_strtolower($status) === self::STATUS;
     }
 }

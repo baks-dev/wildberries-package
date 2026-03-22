@@ -73,23 +73,10 @@ final class WbSupplyStatus
 
     }
 
-    public function __toString(): string
-    {
-        return $this->status->getValue();
-    }
-
-
     public function getWbSupplyStatus(): WbSupplyStatusInterface
     {
         return $this->status;
     }
-
-
-    public function getWbSupplyStatusValue(): string
-    {
-        return $this->status->getValue();
-    }
-
 
     public static function getDeclared(): array
     {
@@ -97,7 +84,7 @@ final class WbSupplyStatus
             get_declared_classes(),
             static function($className) {
                 return in_array(WbSupplyStatusInterface::class, class_implements($className), true);
-            }
+            },
         );
     }
 
@@ -106,5 +93,15 @@ final class WbSupplyStatus
         $status = new self($status);
 
         return $this->getWbSupplyStatusValue() === $status->getWbSupplyStatusValue();
+    }
+
+    public function getWbSupplyStatusValue(): string
+    {
+        return $this->status->getValue();
+    }
+
+    public function __toString(): string
+    {
+        return $this->status->getValue();
     }
 }
