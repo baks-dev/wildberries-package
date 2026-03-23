@@ -47,7 +47,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 
 /**
- * Метод меняет статус системного заказа на "Передан в службу Маркетплейса"
+ * Метод меняет статус системного заказа на "Передан в службу Маркетплейса" после передачи в селлер
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]

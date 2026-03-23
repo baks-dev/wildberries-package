@@ -36,6 +36,7 @@ use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPackage;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusHandler;
 use BaksDev\Products\Sign\BaksDevProductsSignBundle;
@@ -129,7 +130,10 @@ final readonly class OrderWildberriesSignDispatcher
                 ->forOrder($message->getIdentifier())
                 ->find();
 
-            if($OrderEvent instanceof OrderEvent)
+            if(
+                $OrderEvent instanceof OrderEvent
+                && $OrderEvent->isStatusEquals(OrderStatusPackage::class)
+            )
             {
                 $OrderStatusDTO = new OrderStatusDTO(
                     status: OrderStatusExtradition::class,
@@ -150,6 +154,10 @@ final readonly class OrderWildberriesSignDispatcher
             }
         }
 
+
+        /**
+         * Если при передаче честного знака произошла ошибка - пробуем повторно отправить
+         */
 
         if(false === $isUpdate)
         {
@@ -180,7 +188,7 @@ final readonly class OrderWildberriesSignDispatcher
 
             $this->logger->warning(
                 sprintf(
-                    'wildberries-package: Пробуем повторно через минуту отправить честный знак по заказу %s',
+                    'wildberries-package: Пробуем повторно через время отправить честный знак по заказу %s',
                     $message->getPostingNumber(),
                 ),
                 [$message, self::class.':'.__LINE__],
