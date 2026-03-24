@@ -133,15 +133,8 @@ final class PrintPackageController extends AbstractController
         /** @var OrdersByPackageResult $order */
         foreach($orders as $order)
         {
-
-            if($isPrint === true && false === $order->getOrderStatus()->equals(WbPackageStatusAdd::class))
-            {
-                $isPrint = false;
-            }
-
             $OrderUid = (string) $order->getOrderId();
             $this->orders[$WbPackageUid][$order->getOrderNumber()] = $OrderUid;
-
 
             $WildberriesOrdersSticker = $WildberriesOrdersStickerRequest
                 ->profile($this->getProfileUid())
@@ -167,17 +160,17 @@ final class PrintPackageController extends AbstractController
                     ->getOrderSticker();
             }
 
+            $this->stickers[$OrderUid] = null;
 
-            if(!empty($WildberriesOrdersSticker) || $order->getOrderStatus()->equals(WbPackageStatusAdd::class))
+            if(
+                false === empty($WildberriesOrdersSticker)
+                || $order->getOrderStatus()->equals(WbPackageStatusAdd::class)
+            )
             {
                 $this->stickers[$OrderUid] = $WildberriesOrdersSticker;
             }
-            else
-            {
-                $this->stickers[$OrderUid] = null;
-            }
 
-            if($isPrint === true && !isset($this->stickers[$OrderUid]))
+            if($isPrint === true && false === isset($this->stickers[$OrderUid]))
             {
                 $isPrint = false;
             }
