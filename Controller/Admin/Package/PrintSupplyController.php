@@ -103,13 +103,14 @@ final class PrintSupplyController extends AbstractController
 
         foreach($packages as $PackageBySupplyResult)
         {
-            $WbPackageUid = (string) $PackageBySupplyResult->getId();
-            $this->packages[] = $WbPackageUid;
-
             /** Получаем все заказы в упаковке */
             $orders = $OrderByPackage
                 ->forPackageEvent($PackageBySupplyResult->getEvent())
                 ->findAll();
+
+            $WbPackageUid = (string) $PackageBySupplyResult->getId();
+            $sort = $orders->current()->getSort();
+            $this->packages[$sort] = $WbPackageUid;
 
             // сбрасываем на каждую упаковку продукт
             $Product = false;
@@ -118,7 +119,6 @@ final class PrintSupplyController extends AbstractController
             {
                 $OrderUid = (string) $order->getOrderId();
                 $this->orders[$WbPackageUid][$order->getOrderNumber()] = $OrderUid;
-
 
                 /**
                  * Получаем стикеры заказов Wildberries
@@ -252,6 +252,8 @@ final class PrintSupplyController extends AbstractController
             $printers[] = $WbPackageUid;
         }
 
+        /** Сортируем упаковки */
+        sort($this->packages);
 
         $render = $this->render(
             [

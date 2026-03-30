@@ -90,6 +90,7 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
             ->bindLocal();
 
         $dbal
+            ->addSelect('package_order.sort AS sort')
             ->addSelect('package_order.id AS order')
             ->addSelect('package_order.status AS order_status')
             ->from(WbPackageOrder::class, 'package_order');

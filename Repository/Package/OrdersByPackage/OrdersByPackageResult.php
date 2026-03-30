@@ -50,6 +50,7 @@ final readonly class OrdersByPackageResult
         private ?string $product_offer,
         private ?string $product_variation,
         private ?string $product_modification,
+        private ?int $sort,
 
         private ?string $code_event = null,
         private ?string $code_status = null,
@@ -141,6 +142,11 @@ final readonly class OrdersByPackageResult
     public function getCodeCdn(): bool
     {
         return $this->code_cdn === true;
+    }
+
+    public function getSort(): ?int
+    {
+        return $this->sort;
     }
 
     public function getCodeString(): string|false
