@@ -45,7 +45,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[RoleSecurity('ROLE_WB_SUPPLY')]
+#[RoleSecurity('ROLE_WB_PACKAGE')]
 final class DetailController extends AbstractController
 {
     /**
