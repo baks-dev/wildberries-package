@@ -253,7 +253,7 @@ final class PrintSupplyController extends AbstractController
         }
 
         /** Сортируем упаковки */
-        sort($this->packages);
+        ksort($this->packages);
 
         $render = $this->render(
             [
