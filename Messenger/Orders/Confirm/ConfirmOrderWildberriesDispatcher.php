@@ -33,11 +33,13 @@ use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusFbsRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\WildberriesSupplyInfoDTO;
+use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use BaksDev\Wildberries\Package\Messenger\Orders\OrderSticker\WildberriesOrdersStickerMessage;
 use BaksDev\Wildberries\Package\Messenger\Orders\Sign\OrderWildberriesSignMessage;
 use BaksDev\Wildberries\Package\Repository\Package\DeleteOrderPackage\DeleteOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\ExistOrdersByPackage\ExistOrdersByPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile\ExistOpenSupplyProfileInterface;
+use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusAdd;
 use BaksDev\Wildberries\Package\Type\Package\Status\WbPackageStatus\WbPackageStatusError;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusDTO;
 use BaksDev\Wildberries\Package\UseCase\Package\OrderStatus\UpdatePackageOrderStatusHandler;
@@ -188,20 +190,20 @@ final readonly class ConfirmOrderWildberriesDispatcher
         }
 
 
-        //        /**
-        //         * Обновляем статус заказа Wildberries в упаковке
-        //         */
-        //
-        //        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
-        //        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
-        //
-        //        if(false === ($WbPackageOrder instanceof WbPackageOrder))
-        //        {
-        //            $this->logger->critical(
-        //                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
-        //                [self::class.':'.__LINE__, var_export($message, true)],
-        //            );
-        //        }
+        /**
+         * Обновляем статус заказа Wildberries "в упаковке"
+         */
+
+        $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
+        $WbPackageOrder = $this->UpdatePackageOrderStatusHandler->handle($UpdateOrderStatusDTO);
+
+        if(false === ($WbPackageOrder instanceof WbPackageOrder))
+        {
+            $this->logger->critical(
+                sprintf('wildberries-package: Ошибка "%s" при обновлении заказа в упаковке', $WbPackageOrder),
+                [self::class.':'.__LINE__, var_export($message, true)],
+            );
+        }
 
         /**
          * Прогреваем кеш со стикерами
