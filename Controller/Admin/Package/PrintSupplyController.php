@@ -109,7 +109,7 @@ final class PrintSupplyController extends AbstractController
                 ->findAll();
 
             $WbPackageUid = (string) $PackageBySupplyResult->getId();
-            $sort = $orders->current()->getSort();
+            $sort = (int) $orders->current()->getSort();
             $this->packages[$sort] = $WbPackageUid;
 
             // сбрасываем на каждую упаковку продукт

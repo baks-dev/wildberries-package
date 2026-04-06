@@ -207,6 +207,8 @@ final class OrdersByPackageRepository implements OrdersByPackageInterface
                 );
         }
 
+        $dbal->orderBy('package_order.sort');
+
         return $dbal
             ->enableCache('wildberries-package')
             ->fetchAllHydrate(OrdersByPackageResult::class);
