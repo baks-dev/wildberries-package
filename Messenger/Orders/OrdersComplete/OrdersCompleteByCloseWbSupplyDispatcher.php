@@ -111,7 +111,15 @@ final readonly class OrdersCompleteByCloseWbSupplyDispatcher
 
                 return;
             }
+
+            $this->logger->info(
+                sprintf('%s: «Выдан по месту назначения» после закрытия поставки Wildberries',
+                    $ProductStockEvent->getNumber(),
+                ),
+                [self::class.':'.__LINE__],
+            );
         }
+
 
         $Deduplicator->save();
     }

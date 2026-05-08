@@ -144,8 +144,8 @@ final class PrintSelectedOrderController extends AbstractController
              * Получаем настройки бокового стикера
              */
 
-            $BarcodeSettings = $ProductDetailByUidResult->getProductMain() ? $barcodeSettings
-                ->forProduct($ProductDetailByUidResult->getProductMain())
+            $BarcodeSettings = $ProductDetailByUidResult->getProductId() ? $barcodeSettings
+                ->forProduct($ProductDetailByUidResult->getProductId())
                 ->find() : false;
 
             $print[$keyOrder]['settings'] = $BarcodeSettings;

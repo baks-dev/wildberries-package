@@ -238,8 +238,8 @@ final class PrintSupplyController extends AbstractController
 
                 if(false === isset($this->settings[$WbPackageUid]))
                 {
-                    $this->settings[$WbPackageUid] = $Product->getProductMain() ? $barcodeSettings
-                        ->forProduct($Product->getProductMain())
+                    $this->settings[$WbPackageUid] = $Product->getProductId() ? $barcodeSettings
+                        ->forProduct($Product->getProductId())
                         ->find() : false;
                 }
             }

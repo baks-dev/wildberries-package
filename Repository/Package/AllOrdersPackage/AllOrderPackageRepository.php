@@ -58,6 +58,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductM
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
+use BaksDev\Products\Product\Entity\ProductInvariable;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Stocks\Entity\Total\ProductStockTotal;
@@ -114,6 +115,8 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
 
     /**
      * Метод возвращает список заказов готовых для добавления в поставку
+     *
+     * @return PaginatorInterface<AllOrderPackageResult>
      */
     public function findPaginator(?DeliveryUid $complete = null): PaginatorInterface
     {
@@ -204,7 +207,6 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'product_event',
                 'product_event.id = order_product.product',
             );
-
 
         $dbal
             ->addSelect('product_info.article AS card_article')
@@ -488,6 +490,31 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
             ');
 
 
+        $dbal
+            ->addSelect('product_invariable.id AS invariable')
+            ->join(
+                'product_modification',
+                ProductInvariable::class,
+                'product_invariable',
+                '
+                    product_invariable.product = product_event.main AND
+                    (
+                        (product_offer.const IS NOT NULL AND product_invariable.offer = product_offer.const) OR
+                        (product_offer.const IS NULL AND product_invariable.offer IS NULL)
+                    )
+                    AND
+                    (
+                        (product_variation.const IS NOT NULL AND product_invariable.variation = product_variation.const) OR
+                        (product_variation.const IS NULL AND product_invariable.variation IS NULL)
+                    )
+                   AND
+                   (
+                        (product_modification.const IS NOT NULL AND product_invariable.modification = product_modification.const) OR
+                        (product_modification.const IS NULL AND product_invariable.modification IS NULL)
+                   )
+            ');
+
+
         if($complete)
         {
 
@@ -581,6 +608,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 ->addSearchLike('product_trans.name');
         }
 
-        return $this->paginator->fetchAllAssociative($dbal);
+        return $this->paginator
+            ->fetchAllHydrate($dbal, AllOrderPackageResult::class);
     }
 }

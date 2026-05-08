@@ -120,8 +120,8 @@ final class PrintOrderController extends AbstractController
          */
 
         // Получаем настройки бокового стикера
-        $BarcodeSettings = $Product->getProductMain() ? $barcodeSettings
-            ->forProduct($Product->getProductMain())
+        $BarcodeSettings = $Product->getProductId() ? $barcodeSettings
+            ->forProduct($Product->getProductId())
             ->find() : false;
 
         // Генерируем штрихкод в формате SVG

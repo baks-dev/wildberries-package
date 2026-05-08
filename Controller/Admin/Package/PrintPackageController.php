@@ -274,8 +274,8 @@ final class PrintPackageController extends AbstractController
          * Получаем настройки бокового стикера
          */
 
-        $this->settings[$WbPackageUid] = $Product->getProductMain() ? $barcodeSettings
-            ->forProduct($Product->getProductMain())
+        $this->settings[$WbPackageUid] = $Product->getProductId() ? $barcodeSettings
+            ->forProduct($Product->getProductId())
             ->find() : false;
 
 

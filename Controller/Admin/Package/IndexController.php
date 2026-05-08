@@ -99,7 +99,11 @@ final class IndexController extends AbstractController
         $WbOrders = $allWbOrdersGroup
             ->search($search)
             ->filter($filter)
-            ->findPaginator(class_exists(TypeDeliveryFbsWildberries::class) ? new DeliveryUid(TypeDeliveryFbsWildberries::class) : null);
+            ->findPaginator(
+                class_exists(TypeDeliveryFbsWildberries::class)
+                    ? new DeliveryUid(TypeDeliveryFbsWildberries::class)
+                    : null,
+            );
 
 
         return $this->render(
@@ -108,7 +112,6 @@ final class IndexController extends AbstractController
                 'print' => $print,
                 'query' => $WbOrders,
                 'search' => $searchForm->createView(),
-                //'profile' => $profileForm->createView(),
                 'filter' => $filterForm->createView(),
                 'token' => $tokenUserGenerator->generate($this->getUsr()),
             ],

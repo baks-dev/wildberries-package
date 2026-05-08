@@ -113,12 +113,17 @@ final readonly class OrdersCompleteByCloseWbSupplyHandler
             return;
         }
 
+        $this->logger->info(
+            sprintf('%s: Закрываем заказы при завершении поставки Wildberries', $WbSupplyEvent->getIdentifier()),
+            [self::class.':'.__LINE__],
+        );
+
         /** @var OrderUid $OrderUid */
         foreach($orders as $OrderUid)
         {
             $this->dispatch->dispatch(
                 message: new OrdersCompleteByCloseWbSupplyMessage($OrderUid),
-                transport: $UserProfileUid.'-low',
+                transport: 'orders-order-low',
             );
         }
 

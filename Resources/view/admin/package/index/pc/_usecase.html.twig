@@ -1,5 +1,8 @@
 {# Пользовательское меню #}
 
+{# @var item \BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage\AllOrderPackageResult #}
+
+
 {% set random = random() %}
 
 <button class="btn btn-link btn-sm p-0"
@@ -42,18 +45,18 @@ value="{{ item.event }}">
 					Добавить партию производства
 				</a> #}
 
-                <a href="{# {{ path('manufacture-part:admin.newedit.new', {
-                    product: item.wb_product_event,
-                    offer: item.wb_product_offer,
-                    variation: item.wb_product_variation,
-                    modification: item.wb_product_modification,
-                }) }} #}"
+                <a href="{{ path('manufacture-part:admin.newedit.new', {
+                    product: item.productEvent,
+                    offer: item.offerId,
+                    variation: item.variationId,
+                    modification: item.modificationId,
+                }) }}"
                    class="text-decoration-none text-dark w-100 modal-link disabled"
-                   title="На страницу товара WB"
+                   title="Добавить партию производства"
                    data-bs-toggle="modal"
                    data-bs-target="#modal"
                 >
-                    Добавить партию производства
+                    Добавить в партию производства
                 </a>
             </li>
 
