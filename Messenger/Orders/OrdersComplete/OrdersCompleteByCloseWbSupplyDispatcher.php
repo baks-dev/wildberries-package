@@ -28,9 +28,11 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\OrdersComplete;
 
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockDTO;
 use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\Products\Stocks\Entity\Stock\ProductStock;
+use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -47,6 +49,7 @@ final readonly class OrdersCompleteByCloseWbSupplyDispatcher
         private CompletedProductStockHandler $CompletedProductStockHandler,
         private CentrifugoPublishInterface $publish,
         private DeduplicatorInterface $deduplicator,
+        private MessageDispatchInterface $dispatch
     ) {}
 
     public function __invoke(OrdersCompleteByCloseWbSupplyMessage $message): void
@@ -89,34 +92,26 @@ final readonly class OrdersCompleteByCloseWbSupplyDispatcher
                 ])
                 ->send('remove');
 
-
             /**
-             * Обновляем складскую заявку
+             * Закрываем складскую заявку
              */
 
-            $CompletedProductStockDTO = new CompletedProductStockDTO();
-            $ProductStockEvent->getDto($CompletedProductStockDTO);
+            $MultiplyProductStocksCompletedMessage = new MultiplyProductStocksCompletedMessage(
+                $ProductStockEvent->getId(),
+                $ProductStockEvent->getInvariable()->getProfile(),
+                $ProductStockEvent->getModifyUser(),
+            );
 
-            $ProductStock = $this->CompletedProductStockHandler->handle($CompletedProductStockDTO);
-
-            if(false === ($ProductStock instanceof ProductStock))
-            {
-                $this->logger->critical(
-                    sprintf('products-stocks: Ошибка %s при обновлении складской заявки %s на статус Completed «Выдан по месту назначения»',
-                        $ProductStock,
-                        $ProductStockEvent->getNumber(),
-                    ),
-                    [self::class.':'.__LINE__, var_export($message, true)],
-                );
-
-                return;
-            }
+            $this->dispatch->dispatch(
+                message: $MultiplyProductStocksCompletedMessage,
+                transport: 'orders-order-low',
+            );
 
             $this->logger->info(
-                sprintf('%s: «Выдан по месту назначения» после закрытия поставки Wildberries',
+                sprintf(
+                    '%s: «Выдан по месту назначения» после закрытия поставки Wildberries',
                     $ProductStockEvent->getNumber(),
-                ),
-                [self::class.':'.__LINE__],
+                ), [self::class.':'.__LINE__],
             );
         }
 
