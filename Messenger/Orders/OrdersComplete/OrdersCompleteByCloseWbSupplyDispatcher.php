@@ -37,7 +37,7 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Метод меняет статус системного заказа на Completed «Выполнен» после закрытия поставки
+ * Метод меняет статус складской заявки на Completed «Выдан по месту назначения» после закрытия поставки
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]

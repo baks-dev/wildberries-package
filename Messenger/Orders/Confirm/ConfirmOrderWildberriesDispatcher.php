@@ -28,10 +28,8 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\Confirm;
 
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradition\MultiplyProductStocksExtraditionMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
-use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
 use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusFbsRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
@@ -53,7 +51,10 @@ use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Добавляет заказ Wildberries в открытую поставку в селлере и прогревает кеш стикера
+ * Добавляет заказ Wildberries в открытую поставку в селлере
+ * прогревает кеш стикера
+ * Обновляем складскую заявку со статусом Package «Упаковка» на Extradition «Укомплектована, готова к выдаче»
+ *
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
@@ -196,7 +197,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
 
         /**
-         * Обновляем статус заказа Wildberries "в упаковке"
+         * Обновляем флаг заказа в системной поставке на "Добавлен в поставку Wildberries"
          */
 
         $UpdateOrderStatusDTO->setStatus(WbPackageStatusAdd::class);
