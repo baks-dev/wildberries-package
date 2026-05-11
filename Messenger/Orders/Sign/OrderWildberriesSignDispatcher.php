@@ -35,6 +35,7 @@ use BaksDev\Materials\Sign\Repository\MaterialSignByOrder\MaterialSignByOrderRep
 use BaksDev\Orders\Order\Entity\Event\OrderEvent;
 use BaksDev\Orders\Order\Entity\Order;
 use BaksDev\Orders\Order\Repository\CurrentOrderEvent\CurrentOrderEventInterface;
+use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusCompleted;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusPackage;
 use BaksDev\Orders\Order\UseCase\Admin\Status\OrderStatusDTO;
@@ -61,7 +62,6 @@ final readonly class OrderWildberriesSignDispatcher
         private MessageDispatchInterface $MessageDispatch,
         private DeduplicatorInterface $Deduplicator,
         private CurrentOrderEventInterface $CurrentOrderEventRepository,
-        private OrderStatusHandler $OrderStatusHandler,
     ) {}
 
 
@@ -118,87 +118,63 @@ final readonly class OrderWildberriesSignDispatcher
             }
         }
 
+
+        /**
+         * Отсеиваем повторяющиеся запросы
+         */
+        $DeduplicatorExecuted = $this->Deduplicator
+            ->namespace('wildberries-package')
+            ->expiresAfter('5 minutes')
+            ->deduplication([$message, self::class]);
+
+        if($DeduplicatorExecuted->isExecuted())
+        {
+            return;
+        }
+
+
         $isUpdate = $this->PostWildberriesSgtinRequest->update();
 
-        if($isUpdate)
+        if(true === $isUpdate)
         {
-            /**
-             * Обновляем статус заказа на Extradition «Готов к выдаче»
-             */
-
-            $OrderEvent = $this->CurrentOrderEventRepository
-                ->forOrder($message->getIdentifier())
-                ->find();
-
-            if(
-                $OrderEvent instanceof OrderEvent
-                && $OrderEvent->isStatusEquals(OrderStatusPackage::class)
-            )
-            {
-                $OrderStatusDTO = new OrderStatusDTO(
-                    status: OrderStatusExtradition::class,
-                    id: $OrderEvent->getId(),
-                );
-
-                $Order = $this->OrderStatusHandler->handle($OrderStatusDTO);
-
-                if(false === ($Order instanceof Order))
-                {
-                    /** Если повтор не сработал - следовательно честного знака не нашлось */
-                    $this->logger->critical(
-                        sprintf('wildberries-package: Ошибка "%s" при обновлении заказа %s на статус «Готов к выдаче» после передачи честного знака маркетплейсу.',
-                            $Order, $message->getPostingNumber()),
-                        [self::class.':'.__LINE__, var_export($message->getIdentifier(), true)],
-                    );
-                }
-            }
+            $DeduplicatorExecuted->save();
+            return;
         }
 
 
         /**
-         * Если при передаче честного знака произошла ошибка - пробуем повторно отправить
+         * Если ошибка обновление честного знака, но заказ Completed «Выполнен» - завершаем обработчик
          */
 
-        if(false === $isUpdate)
+        $OrderEvent = $this->CurrentOrderEventRepository
+            ->forOrder($message->getIdentifier())
+            ->find();
+
+        if(true === $OrderEvent->isStatusEquals(OrderStatusCompleted::class))
         {
-            $Deduplicator = $this->Deduplicator
-                ->namespace('wildberries-package')
-                ->expiresAfter('5 minutes')
-                ->deduplication([$message, self::class]);
-
-            if($Deduplicator->isExecuted())
-            {
-                /** Если повтор не сработал - следовательно честного знака не нашлось */
-                $this->logger->critical(
-                    sprintf(
-                        'wildberries-package: Ошибка при отправке честных знаков заказа %s. Пробуем отправить позже',
-                        $message->getPostingNumber(),
-                    ),
-                    [$message, self::class.':'.__LINE__],
-                );
-
-                return;
-            }
-
-            $Deduplicator->save();
-
-            /**
-             * Пробуем повторно отправить сообщение через минуту
-             */
-
-            $this->logger->warning(
-                sprintf(
-                    'wildberries-package: Пробуем повторно через время отправить честный знак по заказу %s',
-                    $message->getPostingNumber(),
-                ),
-                [$message, self::class.':'.__LINE__],
-            );
-
-            $this->MessageDispatch->dispatch(
-                message: $message,
-                stamps: [new MessageDelay('1 minute')],
-                transport: (string) $message->getProfile(),
-            );
+            return;
         }
+
+
+        /**
+         * Пробуем повторно отправить сообщение, если при передаче честного знака произошла ошибка
+         * - если честных знаков не найдено
+         * - если произошла ошибка API
+         */
+
+        $this->logger->warning(
+            sprintf(
+                'wildberries-package: Пробуем повторно через время отправить честный знак по заказу %s',
+                $message->getPostingNumber(),
+            ),
+            [$message, self::class.':'.__LINE__],
+        );
+
+        $this->MessageDispatch->dispatch(
+            message: $message,
+            stamps: [new MessageDelay('1 minute')],
+            transport: (string) $message->getProfile(),
+        );
+
     }
 }

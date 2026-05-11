@@ -29,7 +29,6 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\OrdersComplete;
 use BaksDev\Centrifugo\Server\Publish\CentrifugoPublishInterface;
 use BaksDev\Core\Deduplicator\DeduplicatorInterface;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
-use BaksDev\DeliveryTransport\UseCase\Admin\Package\Completed\ProductStock\CompletedProductStockHandler;
 use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksCompleted\MultiplyProductStocksCompletedMessage;
 use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
 use Psr\Log\LoggerInterface;
@@ -37,6 +36,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Метод меняет статус системного заказа на Completed «Выполнен» после закрытия поставки
+ */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class OrdersCompleteByCloseWbSupplyDispatcher
@@ -44,7 +46,6 @@ final readonly class OrdersCompleteByCloseWbSupplyDispatcher
     public function __construct(
         #[Target('wildberriesPackageLogger')] private LoggerInterface $logger,
         private ProductStocksByOrderInterface $ProductStocksByOrderRepository,
-        private CompletedProductStockHandler $CompletedProductStockHandler,
         private CentrifugoPublishInterface $publish,
         private DeduplicatorInterface $deduplicator,
         private MessageDispatchInterface $dispatch

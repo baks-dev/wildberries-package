@@ -29,6 +29,10 @@ namespace BaksDev\Wildberries\Package\Messenger\Orders\Confirm;
 use BaksDev\Core\Messenger\MessageDelay;
 use BaksDev\Core\Messenger\MessageDispatchInterface;
 use BaksDev\Orders\Order\Type\Status\OrderStatus\Collection\OrderStatusExtradition;
+use BaksDev\Products\Stocks\Messenger\Stocks\MultiplyProductStocksExtradition\MultiplyProductStocksExtraditionMessage;
+use BaksDev\Products\Stocks\Repository\ProductStocksByOrder\ProductStocksByOrderInterface;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusExtradition;
+use BaksDev\Products\Stocks\Type\Status\ProductStockStatus\ProductStockStatusPackage;
 use BaksDev\Wildberries\Orders\Api\FindAllWildberriesOrdersStatusFbsRequest;
 use BaksDev\Wildberries\Orders\Api\PostWildberriesAddOrderToSupplyRequest;
 use BaksDev\Wildberries\Package\Api\SupplyInfo\FindWildberriesSupplyInfoRequest;
@@ -65,6 +69,7 @@ final readonly class ConfirmOrderWildberriesDispatcher
         private FindAllWildberriesOrdersStatusFbsRequest $FindAllWildberriesOrdersStatusFbsRequest,
         private DeleteOrderPackageInterface $DeleteOrderPackage,
         private ExistOpenSupplyProfileInterface $ExistOpenSupplyProfile,
+        private ProductStocksByOrderInterface $ProductStocksByOrderRepository,
     ) {}
 
     public function __invoke(ConfirmOrderWildberriesMessage $message): void
@@ -233,8 +238,38 @@ final readonly class ConfirmOrderWildberriesDispatcher
 
         $this->MessageDispatch->dispatch(
             message: $OrderWildberriesSignMessage,
-            stamps: [new MessageDelay('1 minutes')],
+            stamps: [new MessageDelay('30 seconds')],
             transport: (string) $message->getProfile(),
         );
+
+        /**
+         * Обновляем складскую заявку со статусом Package «Упаковка» на Extradition «Укомплектована, готова к выдаче»
+         */
+
+        $stocks = $this->ProductStocksByOrderRepository
+            ->onOrder($message->getIdentifier())
+            ->onStatus(ProductStockStatusPackage::class)
+            ->findAll();
+
+        if(empty($stocks))
+        {
+            return;
+        }
+
+        foreach($stocks as $ProductStockEvent)
+        {
+            /** Добавляем к комментарию идентификатор поставки */
+            $MultiplyProductStocksExtraditionMessage = new MultiplyProductStocksExtraditionMessage(
+                $ProductStockEvent->getId(),
+                $message->getProfile(),
+                $ProductStockEvent->getModifyUser(),
+                trim($message->getSupply().', '.$ProductStockEvent->getComment()),
+            );
+
+            $this->MessageDispatch->dispatch(
+                message: $MultiplyProductStocksExtraditionMessage,
+                transport: 'orders-order-low',
+            );
+        }
     }
 }
