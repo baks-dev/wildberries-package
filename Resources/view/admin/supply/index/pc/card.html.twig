@@ -26,7 +26,7 @@
                 title='{{ item.status == 'close' ? 'QR поставки' : 'close'|trans }}'
         >
                 <button
-                        data-href="{{ item.status == 'close' ? path('wildberries-package:admin.supply.print', { id : item.id, print: true }) }}"
+                        data-href="{{ item.status == 'close' ? path('wildberries-package:admin.supply.print.sticker', { id : item.id, print: true }) }}"
                         class="btn-link btn p-0 icon {{ item.status == 'close' ? 'modal-link prnt': 'text-muted' }}"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"

@@ -1,0 +1,17 @@
+<table class="table table-borderless">
+    <thead>
+    <tr>
+        <th class="text-center">Изображение</th>
+        <th class="text-start w-100">Наименование</th>
+        <th class="text-center">Размер</th>
+        <th class="text-center">Количество</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for item in data %}
+        {{ include(_self|replace({ "content.html.twig": "card.html.twig" })) }}
+    {% endfor %}
+
+    </tbody>
+</table>

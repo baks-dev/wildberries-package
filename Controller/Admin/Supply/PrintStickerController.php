@@ -37,12 +37,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_SUPPLY_PRINT')]
-final class PrintController extends AbstractController
+final class PrintStickerController extends AbstractController
 {
     /**
-     * QR код поставки Wildberries
+     * Сборочный лист поставки Wildberries
      */
-    #[Route('/admin/wb/supply/print/{id}', name: 'admin.supply.print', methods: ['GET', 'POST'])]
+    #[Route('/admin/wb/supply/print/sticker/{id}', name: 'admin.supply.print.sticker', methods: ['GET', 'POST'])]
     public function printer(
         Request $request,
         #[MapEntity] WbSupplyWildberries $WbSupplyWildberries,

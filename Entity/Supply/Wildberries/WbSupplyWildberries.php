@@ -74,6 +74,11 @@ class WbSupplyWildberries extends EntityReadonly
         return (string) $this->main;
     }
 
+    public function getMain(): WbSupplyUid
+    {
+        return $this->main;
+    }
+
     public function getDto($dto): mixed
     {
         $dto = is_string($dto) && class_exists($dto) ? new $dto() : $dto;

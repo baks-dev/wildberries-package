@@ -118,7 +118,6 @@ final class AddController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid() && $form->has('package_orders'))
         {
-
             $this->refreshTokenForm($form);
 
             /* Скрываем у всех продукт */

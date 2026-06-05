@@ -34,7 +34,7 @@
                         title='{{ supply.status == 'close' ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'>
                 <button
                         id="supply-{{ supply.id }}"
-                        data-href="{{ path('wildberries-package:admin.supply.print', { id : supply.id, print: true }) }}"
+                        data-href="{{ path('wildberries-package:admin.supply.print.sticker', { id : supply.id, print: true }) }}"
                         {% if supply.status != 'close' %}
                             disabled="disabled"
                         {% endif %}
