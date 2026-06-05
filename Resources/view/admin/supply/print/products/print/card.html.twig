@@ -6,14 +6,14 @@
     <td class="vertical-middle">
         <img
                 src="{{ cdn_image_path(item.productImage, item.productImageExt, item.productImageCdn) }}"
-                style="height: 100%; width: 100px;"
+                style="height: 100%; width: 35px;"
         />
     </td>
 
     {# Наименование #}
     <td class="vertical-middle">
 
-        <div class="d-flex flex-column w-100 p-4">
+        <div class="d-flex flex-column w-100">
             <strong>
                 {{ item.productName }}
             </strong>
@@ -25,27 +25,24 @@
 
     {# Размер #}
     <td class="vertical-middle text-nowrap">
-        <div class="py-5">
-            {# Значение множественного варианта ТП #}
-            {{ item.productVariationValue|call_twig_func(item.productVariationReference~'_render') ~
-            item.productModificationValue|call_twig_func(item.productModificationReference~'_render') }}
+        {# Значение множественного варианта ТП #}
+        {{ item.productVariationValue|call_twig_func(item.productVariationReference~'_render') ~
+        item.productModificationValue|call_twig_func(item.productModificationReference~'_render') }}
 
-            {# Значение торгового предложения #}
-            {{ item.productOfferValue|call_twig_func(item.productOfferReference~'_render') }}
+        {# Значение торгового предложения #}
+        {{ item.productOfferValue|call_twig_func(item.productOfferReference~'_render') }}
 
-            {# Постфикс торгового предложения #}
-            {{ item.productOfferPostfix }}
-            {# Постфикс множественного варианта #}
-            {{ item.productVariationPostfix }}
-            {# Постфикс модификации #}
-            {{ item.productModificationPostfix }}
-
-        </div>
+        {# Постфикс торгового предложения #}
+        {{ item.productOfferPostfix }}
+        {# Постфикс множественного варианта #}
+        {{ item.productVariationPostfix }}
+        {# Постфикс модификации #}
+        {{ item.productModificationPostfix }}
     </td>
 
     {# Количество #}
     <td class="vertical-middle">
-        <div class="py-5 text-center">
+        <div class="text-center">
             <strong>{{ item.orderTotal }}</strong> &nbsp; шт.
         </div>
     </td>

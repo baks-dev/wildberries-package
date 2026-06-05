@@ -42,9 +42,9 @@ final class AllWbSupplyProductsGroupResult
 
     public function __construct(
         private readonly string $wb_product_event, // " => "019a7e5a-3fcf-7467-add9-b21b988c52b4"
-        private readonly string $wb_product_offer, // " => "019a7e5a-3fd1-7c0f-8933-2f0ea1ae6075"
-        private readonly string $wb_product_variation, // " => "019a7e5a-3fd1-7c0f-8933-2f0ea21d2c07"
-        private readonly string $wb_product_modification, // " => "019a7e5a-3fd1-7c0f-8933-2f0ea2f70501"
+        private readonly ?string $wb_product_offer, // " => "019a7e5a-3fd1-7c0f-8933-2f0ea1ae6075"
+        private readonly ?string $wb_product_variation, // " => "019a7e5a-3fd1-7c0f-8933-2f0ea21d2c07"
+        private readonly ?string $wb_product_modification, // " => "019a7e5a-3fd1-7c0f-8933-2f0ea2f70501"
 
         private readonly string $product_name, // " => "Triangle AdvanteX TC101"
         private readonly string $card_article, // " => "TC101"
