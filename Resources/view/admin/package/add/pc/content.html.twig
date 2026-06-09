@@ -1,25 +1,25 @@
 {% trans_default_domain 'wildberries-package.package' %}
 
+{# @var card \BaksDev\Products\Product\Repository\ProductDetail\ProductDetailByEventResult #}
 
-{% set arr_property = card.category_section_field|json_decode %}
+{% set arr_property = card.categorySectionField %}
 
 <div class="modal-dialog modal-dialog-centered" style="max-width: 700px;">
 
     <div class="modal-content p-3 border-bottom border-5 border-primary">
+        
         {{ form_start(form) }}
         <div class="modal-header border-0">
 
             <div class='d-flex gap-3'>
                 <h5 class='lh-1'>
                     {{ 'page.add'|trans }}
-
-
                 </h5>
 
                 <div class='d-flex gap-2 align-items-center'>
 
                     {# Свойства, учавствующие в превью карточки #}
-                    {% for name_property in  arr_property | filter(props => props.field_card is defined and props.field_card == true) %}
+                    {% for name_property in arr_property | filter(props => props.field_card is defined and props.field_card == true) %}
                         {{ name_property.field_value|call_twig_func(name_property.field_type~'_render') }}
                     {% endfor %}
 
@@ -37,10 +37,10 @@
                 {# Обложка #}
                 {% set image_path = '/assets/'~version~'/img/blank.svg' %}
 
-                {% if card.product_image_ext is defined and card.product_image_ext is not null %}
-                    {% set img_host =  card.product_image_cdn == true  ? CDN_HOST : '' %}
-                    {% set img_dir = card.product_image %}
-                    {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ card.product_image_ext %}
+                {% if card.productImageExt is defined and card.productImageExt is not null %}
+                    {% set img_host =  card.productImageCdn == true  ? CDN_HOST : '' %}
+                    {% set img_dir = card.productImage %}
+                    {% set img_file = (img_host is empty ? '/image.' : '/small.') ~ card.productImageExt %}
                     {% set image_path = img_host ~ img_dir ~ img_file %}
                 {% endif %}
 
@@ -59,30 +59,29 @@
                          role="tooltip"
                          data-bs-toggle="tooltip"
                          data-bs-placement="top"
-                         title="{{ card.product_name }}"
-                    >
+                         title="{{ card.productName }}">
                         <a href="{# /admin/product/edit/06420615-8809-4662-9a2c-e3643dc95c48 #}"
                            class="fw-bolder mb-1 text-dark text-decoration-none">
-                            {{ card.product_name|capitalize }}
+                            {{ card.productName|capitalize }}
                         </a>
                     </div>
 
                     <div>
-                        {% if card.product_offer_name %}
-                            <small class="opacity-50">{{ card.product_offer_name }}:</small>&nbsp;
-                            <strong>{{ card.product_offer_value|call_twig_func(card.product_offer_reference) }} {{ card.product_offer_postfix }}</strong>
+                        {% if card.productOfferName %}
+                            <small class="opacity-50">{{ card.productOfferName }}:</small>&nbsp;
+                            <strong>{{ card.productOfferValue|call_twig_func(card.productOfferReference) }} {{ card.productOfferPostfix }}</strong>
                         {% endif %}
                     </div>
                     <div>
-                        {% if card.product_variation_name %}
-                            <small class="opacity-50">{{ card.product_variation_name }}:</small>&nbsp;
-                            <strong>{{ card.product_variation_value|call_twig_func(card.product_variation_reference) }} {{ card.product_variation_postfix }}</strong>
+                        {% if card.productVariationName %}
+                            <small class="opacity-50">{{ card.productVariationName }}:</small>&nbsp;
+                            <strong>{{ card.productVariationValue|call_twig_func(card.productVariationReference) }} {{ card.productVariationPostfix }}</strong>
                         {% endif %}
                     </div>
                     <div>
-                        {% if card.product_modification_name %}
-                            <small class="opacity-50">{{ card.product_modification_name }}:</small>&nbsp;
-                            <strong>{{ card.product_modification_value|call_twig_func(card.product_modification_reference) }} {{ card.product_modification_postfix }}</strong>
+                        {% if card.productModificationName %}
+                            <small class="opacity-50">{{ card.productModificationName }}:</small>&nbsp;
+                            <strong>{{ card.productModificationValue|call_twig_func(card.productModificationReference) }} {{ card.productModificationPostfix }}</strong>
                         {% endif %}
                     </div>
 
@@ -91,41 +90,34 @@
                 <div class="d-flex justify-content-center align-items-center text-center w-50">
 
                     <button type='button' class="btn btn-lg btn-link text-decoration-none"
-                            aria-label="Отнять количество" id="minus"
-                    >
+                            aria-label="Отнять количество" id="minus">
                         <span class="h4 text-muted opacity-50">-</span>
                     </button>
 
-                    <span
+                        <span role="tooltip"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="bottom"
+                              data-bs-delay='{"show":600,"hide":100}'
+                              title="Количество выполненных заказов">
 
-                            role="tooltip"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            data-bs-delay='{"show":600,"hide":100}'
-                            title="Количество выполненных заказов"
-                    >
+                            {{ form_widget(form.total, {
 
+                                attr: {
 
-                    {{ form_widget(form.total, {
-
-                        attr: {
-
-                            value : form.total.vars.data ?:1,
-                            class : 'form-control-lg mx-1 rounded-3 total',
-                            style: 'width: 60px;',
-                            'data-max' : form.total.vars.data ?: 1,
-                        }
-                    }) }}
- </span>
+                                    value : form.total.vars.data ?:1,
+                                    class : 'form-control-lg mx-1 rounded-3 total',
+                                    style: 'width: 60px;',
+                                    'data-max' : form.total.vars.data ?: 1,
+                                }
+                            }) }}
+                         </span>
 
                     <button type='button' class="btn btn-lg btn-link text-decoration-none"
-                            aria-label="Добавить количество" id="plus"
-                    >
+                            aria-label="Добавить количество" id="plus">
                         <span class="h5 text-muted opacity-50">+</span>
                     </button>
 
                 </div>
-
 
                 <div class="w-50">
                     {{ form_widget(form.package_orders, { label: '

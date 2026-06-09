@@ -23,7 +23,7 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupplyIdentifier;
+namespace BaksDev\Wildberries\Package\Repository\Supply\NewOrOpenWbSupply;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Type\UidType\UidType;
@@ -41,16 +41,32 @@ use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatus
 use BaksDev\Wildberries\Type\id\WbTokenUid;
 use Symfony\Component\Uid\Uuid;
 
-final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierInterface
+/**
+ * Возвращает внутренний идентификатор поставки Wildberries с доп полями в атрибутах
+ */
+final class NewOrOpenWbSupplyRepository //implements LastWbSupplyInterface
 {
-    private Uuid|false $token = false;
-
     private UserProfileUid|false $profile = false;
+
+    private Uuid|false $token = false;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
         private readonly UserProfileTokenStorageInterface $UserProfileTokenStorage
     ) {}
+
+    /** Профиль пользователя */
+    public function forProfile(UserProfile|UserProfileUid $profile): self
+    {
+        if($profile instanceof UserProfile)
+        {
+            $profile = $profile->getId();
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
 
     /** Идентификатор токена маркетплейса */
     public function forToken(Uuid|WbTokenUid|null $token): self
@@ -69,55 +85,39 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
         return $this;
     }
 
-    public function forProfile(UserProfile|UserProfileUid|string $profile): self
-    {
-        if(is_string($profile))
-        {
-            $profile = new UserProfileUid($profile);
-        }
-
-        if($profile instanceof UserProfile)
-        {
-            $profile = $profile->getId();
-        }
-
-        $this->profile = $profile;
-
-        return $this;
-    }
-
-
-    /**
-     * Получаем идентификатор ОТКРЫТОЙ поставки профиля пользователя
-     */
     public function find(): WbSupplyUid|false
     {
         $dbal = $this->DBALQueryBuilder->createQueryBuilder(self::class);
 
-        $dbal
-            ->from(WbSupplyInvariable::class, 'invariable')
-            ->where('invariable.profile = :profile')
-            ->setParameter(
-                key: 'profile',
-                value: $this->profile ?: $this->UserProfileTokenStorage->getProfile(),
-                type: UserProfileUid::TYPE);
+        $profile = ($this->profile instanceof UserProfileUid) ? $this->profile : $this->UserProfileTokenStorage->getProfile();
 
         $dbal
-            ->addSelect('supply.id')
-            ->join(
-                'invariable',
-                WbSupply::class,
-                'supply',
-                'supply.id = invariable.main',
+            ->from(WbSupplyInvariable::class, 'wb_supply_invariable')
+            ->where('wb_supply_invariable.profile = :profile')
+            ->setParameter(
+                key: 'profile',
+                value: $profile,
+                type: UserProfileUid::TYPE,
             );
 
         $dbal
-            ->addSelect('event.status')
+            ->select('wb_supply.id AS value')
             ->join(
-                'supply',
+                'wb_supply_invariable',
+                WbSupply::class,
+                'wb_supply',
+                'wb_supply.id = wb_supply_invariable.main',
+            );
+
+        $dbal
+            ->addSelect('wb_supply_event.status AS property')
+            ->join(
+                'wb_supply_invariable',
                 WbSupplyEvent::class,
-                'event',
-                'event.id = supply.event AND (event.status = :new OR event.status = :open) ',
+                'wb_supply_event',
+                '
+                    wb_supply_event.id = wb_supply_invariable.event AND 
+                    (wb_supply_event.status = :new OR wb_supply_event.status = :open)',
             )
             ->setParameter('new', WbSupplyStatusNew::class, WbSupplyStatus::TYPE)
             ->setParameter('open', WbSupplyStatusOpen::class, WbSupplyStatus::TYPE);
@@ -126,12 +126,12 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
         {
             $dbal
                 ->leftJoin(
-                    'invariable',
+                    'wb_supply_invariable',
                     WbSupplyToken::class,
-                    'token',
-                    'token.main = invariable.main',
+                    'wb_supply_token',
+                    'wb_supply_token.main = wb_supply_invariable.main',
                 )
-                ->andWhere('token.value = :token')
+                ->andWhere('wb_supply_token.value = :token')
                 ->setParameter(
                     key: 'token',
                     value: $this->token,
@@ -141,8 +141,8 @@ final class OpenWbSupplyIdentifierRepository implements OpenWbSupplyIdentifierIn
 
         $dbal->setMaxResults(1);
 
-        $result = $dbal->fetchOne();
-
-        return $result ? new WbSupplyUid($result) : false;
+        return $dbal
+            ->enableCache('wildberries-package')
+            ->fetchHydrate(WbSupplyUid::class);
     }
 }

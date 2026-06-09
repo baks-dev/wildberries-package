@@ -32,7 +32,7 @@ use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
 use DateTimeImmutable;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Uid\Uuid;
 
 final class AllOrderPackageResult
 {
@@ -72,6 +72,8 @@ final class AllOrderPackageResult
         private ?int $stock_available, //" => 11720
 
         private ?string $exist_manufacture, //" => "176.332.455.327"
+
+        private readonly ?string $token = null,
     ) {}
 
     public function getProductInvariable(): ProductInvariableUid
@@ -217,5 +219,10 @@ final class AllOrderPackageResult
     public function getManufactureExist(): ?string
     {
         return $this->exist_manufacture;
+    }
+
+    public function getToken(): ?Uuid
+    {
+        return null !== $this->token ? new Uuid($this->token) : null;
     }
 }

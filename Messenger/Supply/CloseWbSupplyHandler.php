@@ -41,6 +41,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Закрывает поставку Wildberries если системная поставка со статусом Close (Закрыта)
+ */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 99)] // высокий приоритет - выполняется первым
 final readonly class CloseWbSupplyHandler
@@ -55,9 +58,6 @@ final readonly class CloseWbSupplyHandler
         private GetWildberriesSupplyStickerRequest $GetWildberriesSupplyStickerRequest,
     ) {}
 
-    /**
-     * Метод закрывает поставку Wildberries если системная поставка со статусом Close (Закрыта)
-     */
     public function __invoke(WbSupplyMessage $message): void
     {
         $Deduplicator = $this->deduplicator

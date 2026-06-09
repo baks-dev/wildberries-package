@@ -36,6 +36,7 @@ use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyType;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatusType;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
 use Symfony\Config\DoctrineConfig;
 
 return static function(ContainerConfigurator $container, DoctrineConfig $doctrine) {
@@ -54,6 +55,7 @@ return static function(ContainerConfigurator $container, DoctrineConfig $doctrin
 
     $doctrine->dbal()->type(WbSupplyUid::TYPE)->class(WbSupplyType::class);
     $services->set(WbSupplyUid::class)->class(WbSupplyUid::class);
+    $services->set(WbTokenUid::class)->class(WbTokenUid::class);
 
     $doctrine->dbal()->type(WbSupplyEventUid::TYPE)->class(WbSupplyEventType::class);
     $doctrine->dbal()->type(WbSupplyStatus::TYPE)->class(WbSupplyStatusType::class);

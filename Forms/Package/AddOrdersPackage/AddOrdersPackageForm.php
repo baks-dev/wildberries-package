@@ -29,6 +29,7 @@ use BaksDev\Products\Product\Type\Event\ProductEventUid;
 use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -99,6 +100,21 @@ final class AddOrdersPackageForm extends AbstractType
                 },
             ),
         );
+
+
+        $builder->add('token', HiddenType::class);
+
+        $builder->get('token')->addModelTransformer(
+            new CallbackTransformer(
+                function($token) {
+                    return $token instanceof WbTokenUid ? $token->getValue() : $token;
+                },
+                function($token) {
+                    return $token ? new WbTokenUid($token) : null;
+                },
+            ),
+        );
+
 
 
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {

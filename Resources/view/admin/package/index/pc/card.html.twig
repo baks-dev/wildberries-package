@@ -1,34 +1,21 @@
 {# @var item \BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage\AllOrderPackageResult #}
 
-
-{# {% set product_offers = item.product_offers|json_decode %} #}
-{# {% set product_offers = [] %} #}
-
 {% set dedline = item.orderData|date_modify("+24 hours") %}
 {% set difference = dedline.diff(date("now")) %}
 {% set hour = difference.d * 24 + difference.h %}
 
-
 <div class="col-2 p-1" id="{{ item.productInvariable }}">
 
-    <div class="border-bottom border-4 rounded-4 bg-primary border-primary">
+    <div class="border-bottom border-4 rounded-4 bg-primary border-secondary">
 
         <div class="card bg-light-primary rounded-4">
-
             <div class="card-body small p-2">
+
                 <div class="d-flex justify-content-between align-items-center small">
 
                     <div class="text-muted d-flex justify-content-between w-100">
 
                         {% if (dedline < date("now")) or (hour < 8) %}
-
-                            {# {% if item.orders_alarms %}
-                                    <div class="small text-danger fw-bolder">
-                                        Срочные: #}{# {{ item.orders_alarms }} #}{#
-                        </div>
-                    {% else %}
-                        <div>&nbsp;</div>
-                    {% endif %} #}
 
                             {% if dedline < date("now") %}
                                 <span class="badge bg-danger small p-1">Просрочен</span>
@@ -38,7 +25,7 @@
                             {% else %}
                                 <span class="badge bg-warning text-dark small p-1">
                                         Опоздание
-                                    </span>
+                                </span>
 
                                 <strong class="text-danger">
                                     {{ hour }} ч. {{ difference.i }} м.
@@ -46,10 +33,6 @@
                             {% endif %}
 
                         {% else %}
-
-                            {# {% if not item.orders_alarms %}
-            <div>&nbsp;</div>
-        {% endif %} #}
 
                             <strong>Время на доставку:</strong>
                             <strong class="text-success">
@@ -60,61 +43,29 @@
                     </div>
                 </div>
 
-                {# <div class="d-flex justify-content-between align-items-end">
-                    <span class="h5 mb-0"> #}{# {{ money(item.order_price, item.order_currency) }} #}{# </span>
-                    <span class="small text-muted">1 шт</span>
-                </div> #}
             </div>
 
             {# Обложка  #}
 
             <div class="d-flex flex-column small gap-1 p-2 bg-cover lazy col-2 w-100 position-relative"
                  style="height: 200px;"
-                 data-bg="{{ cdn_image_path(item.productImage, item.productImageExt, item.productImageCdn, 'medium') }}"
-            >
-                <div
-                        class="icon rounded-circle bg-contain p-1 mb-2 shadow position-absolute"
-                        style="width: 25px; height: 25px;"
-                >
+                 data-bg="{{ cdn_image_path(item.productImage, item.productImageExt, item.productImageCdn, 'medium') }}">
+
+                <div class="icon rounded-circle bg-contain p-1 mb-2 shadow position-absolute"
+                     style="width: 25px; height: 25px;">
                     {{ include(_self|replace({ "card.html.twig": "_usecase.html.twig" })) }}
                 </div>
-
-                {# {% set offer_count = product_offers|length %} #}
-
-                {# {% if item.offer_count > 0 %} #}
-                {# <form method="post" action="{{ path('products-product:admin.index') }}"
-                          class="position-absolute bottom-0 end-0 p-1">
-
-                        <input type="hidden" name="search_form[query]" value="{{ item.card_article }}">
-
-                        <div class="btn-group p-0" role="group">
-
-                            <button type="submit" class="btn btn-primary btn-sm py-0"
-                                    role="tooltip"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom"
-                                    data-bs-delay='{"show":600,"hide":100}'
-                                    title='Общее количество аналогичных заказов'
-                            >
-                                 {{ item.card_article }}
-                            </button>
-                        </div>
-                    </form> #}
-                {# {% endif %} #}
-
 
                 <form method="post" class="position-absolute bottom-0 end-0 p-1 d-flex gap-1">
                     <input type="hidden" name="search_form[query]" value="{{ item.cardArticle }}">
 
                     <button type="submit"
                             class="btn btn-primary btn-sm small m-0  text-decoration-none text-nowrap lh-normal fw-normal"
-                            value="{{ item.cardArticle }}"
-                    >
+                            value="{{ item.cardArticle }}">
                         <small>{{ item.cardArticle }}</small>
                     </button>
 
                     <div class="btn-group p-0" role="group">
-
                         {% if item.stockAvailable %}
                             <a href="{{ path('products-stocks:admin.total.index') }}"
                                class="btn btn-success btn-sm small"
@@ -123,15 +74,13 @@
                                data-bs-toggle="tooltip"
                                data-bs-placement="bottom"
                                data-bs-delay='{"show":600,"hide":100}'
-                               title='Незарезервированное количество на складе'
-                            >
+                               title='Не зарезервированное количество на складе'>
                                 {{ item.stockAvailable }}
                             </a>
                         {% endif %}
-
                     </div>
-
                 </form>
+
             </div>
 
 
@@ -142,15 +91,13 @@
                      data-bs-toggle="tooltip"
                      data-bs-placement="top"
                      data-bs-delay='{"show":600,"hide":100}'
-                     title="{{ item.productName }}"
-                >
+                     title="{{ item.productName }}">
+
                     <a href="{# {{ (is_granted(ROLE~'_EDIT') or is_granted('ROLE_ADMIN')) ? path('products-product:admin.newedit.edit', { id: item.event }) }} #}"
-                       class="fw-bolder mb-1 text-dark text-decoration-none"
-                    >
+                       class="fw-bolder mb-1 text-dark text-decoration-none">
                         {{ item.productName|capitalize }}
                     </a>
                 </div>
-
 
                 <div class="text-muted fw-bolder">
 
@@ -191,11 +138,9 @@
                         <strong>{{ item.orderTotal }}</strong> шт.
                     </div>
 
-
                     {% if is_granted('ROLE_MANUFACTURE_PART_ADD') or  is_granted('ROLE_ADMIN') %}
 
-
-                        {% if opens %}
+                        {% if last %}
 
                             {% set btn_title = 'Добавить поставку' %}
                             {% set btn_class = 'btn-primary' %}
@@ -214,49 +159,48 @@
                                 {# {% set disabled = 'disabled="disabled"' %} #}
                             {% endif %}
 
-                            <span
-                                    role="tooltip"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom"
-                                    data-bs-delay='{"show":600,"hide":100}'
-                                    title='{{ btn_title }}'
-                            >
+                            <span role="tooltip"
+                                  data-bs-toggle="tooltip"
+                                  data-bs-placement="bottom"
+                                  data-bs-delay='{"show":600,"hide":100}'
+                                  title='{{ btn_title }}'>
 
+                                <button {% if item.manufactureExist %} id="manufacture-{{ item.productInvariable }} }"{% endif %}
+                                        class="btn btn-sm modal-link disabled {{ btn_class }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modal"
+                                        {{ disabled }}
 
-                            <button data-href="{{ disabled ?: path('wildberries-package:admin.package.add', {
-                                product: item.productEvent,
-                                offer: item.offerId,
-                                variation: item.variationId,
-                                modification: item.modificationId,
-                                total: item.orderTotal
-                            }) }}"
+                                        data-href="{{ disabled ?: path('wildberries-package:admin.package.add', {
+                                            product: item.productEvent,
+                                            offer: item.offerId,
+                                            variation: item.variationId,
+                                            modification: item.modificationId,
+                                            total: item.orderTotal,
+                                            token: item.token,
+                                        }) }}">
 
-                                    class="btn btn-sm modal-link disabled {{ btn_class }}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modal"
-                                    {{ disabled }}
-                                    {% if item.manufactureExist %} id="manufacture-{{ item.productInvariable }} }"{% endif %}
-                                >
-                                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                                        class="bi bi-folder-plus" viewBox="0 0 16 16">
-                                      <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672Z"/>
-                                      <path d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 0 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z"/>
-                                    </svg>
-                                </button>
-
-                    </span>
-
+                                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                                            class="bi bi-folder-plus" viewBox="0 0 16 16">
+                                          <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672Z"/>
+                                          <path d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 0 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z"/>
+                                        </svg>
+                                    </button>
+                            </span>
 
                         {% else %}
 
                             {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_MANUFACTURE_PART_NEW') %}
-                                <span
-                                        role="tooltip"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="bottom"
-                                        title='Открыть новую поставку Wildberries'
-                                >
-                                    <a href="{{ path('wildberries-package:admin.supply.new') }}" class="btn btn-sm">
+                                <span role="tooltip"
+                                      data-bs-toggle="tooltip"
+                                      data-bs-placement="bottom"
+                                      title='Открыть новую поставку Wildberries'>
+
+                                    <a href="{{ path('wildberries-package:admin.supply.new') }}"
+                                       class="btn btn-sm text-nowrap modal-link"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#modal"
+                                    >
                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                                             fill="currentColor"
                                             class="bi bi-folder-plus" viewBox="0 0 16 16">
@@ -271,8 +215,10 @@
 
                     {% endif %}
                 </div>
+
             </div>
         </div>
+
     </div>
 
 </div>

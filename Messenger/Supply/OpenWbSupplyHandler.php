@@ -42,6 +42,10 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Открывает поставку Wildberries если статус системной поставки New (Новая)
+ * и присваивает идентификатор системной
+ */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]
 final readonly class OpenWbSupplyHandler
@@ -57,10 +61,6 @@ final readonly class OpenWbSupplyHandler
         private DeduplicatorInterface $deduplicator
     ) {}
 
-    /**
-     * Метод открывает поставку Wildberries если статус системной поставки New (Новая)
-     * и присваивает идентификатор системной
-     */
     public function __invoke(WbSupplyMessage $message): void
     {
         $Deduplicator = $this->deduplicator
@@ -82,7 +82,7 @@ final readonly class OpenWbSupplyHandler
             return;
         }
 
-        /** Получаем профиль пользователя и идентификатор системной поставки в качестве аттрибута */
+        /** Получаем профиль пользователя и идентификатор системной поставки в качестве атрибута */
         $UserProfileUid = $this->OpenWbSupply
             ->forSupply($message->getId())
             ->find();
@@ -99,6 +99,8 @@ final readonly class OpenWbSupplyHandler
         {
             return;
         }
+
+        $this->logger->warning('Пробуем открыть поставку по Wildberries Api');
 
         /**
          * Открываем поставку Wildberries и получаем идентификатор (API)

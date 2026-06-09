@@ -25,13 +25,20 @@ namespace BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply;
 
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
+use Symfony\Component\Uid\Uuid;
 
 interface LastWbSupplyInterface
 {
-    public function forProfile(UserProfile|UserProfileUid|string $profile): self;
+    public function forSupply(WbSupply|WbSupplyUid|null $supply): self;
+
+
+    public function forToken(Uuid|WbTokenUid|null $token): self;
 
     /**
      * Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
      */
-    public function find(): array|false;
+    public function find(): LustWbSupplyResult|false;
 }

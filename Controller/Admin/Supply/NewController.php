@@ -25,13 +25,15 @@ declare(strict_types=1);
 
 namespace BaksDev\Wildberries\Package\Controller\Admin\Supply;
 
-
 use BaksDev\Core\Controller\AbstractController;
 use BaksDev\Core\Listeners\Event\Security\RoleSecurity;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
+use BaksDev\Wildberries\Package\Forms\Supply\TokenForWbSupply\TokenForWbSupplyDTO;
+use BaksDev\Wildberries\Package\Forms\Supply\TokenForWbSupply\TokenForWbSupplyForm;
 use BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile\ExistOpenSupplyProfileInterface;
 use BaksDev\Wildberries\Package\UseCase\Supply\New\WbSupplyNewDTO;
 use BaksDev\Wildberries\Package\UseCase\Supply\New\WbSupplyNewHandler;
+use BaksDev\Wildberries\Repository\AllWbTokensByProfile\AllWbTokensByProfileInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -44,40 +46,82 @@ final class NewController extends AbstractController
     /**
      * Открыть поставку
      */
-    #[Route('/admin/wb/supply/new', name: 'admin.supply.new', methods: ['GET', 'POST'])]
+    #[Route(path: '/admin/wb/supply/new', name: 'admin.supply.new', methods: ['GET', 'POST'])]
     public function controller(
+        Request $request,
+        ExistOpenSupplyProfileInterface $existOpenSupplyProfileRepository,
+        AllWbTokensByProfileInterface $allWbTokensByProfileRepository,
         WbSupplyNewHandler $WbSupplyNewHandler,
-        ExistOpenSupplyProfileInterface $existOpenSupplyProfile,
     ): Response
     {
-        $WbSupplyNewDTO = new WbSupplyNewDTO($this->getProfileUid());
 
-        $exist = $existOpenSupplyProfile
+        $WbTokens = $allWbTokensByProfileRepository
             ->forProfile($this->getProfileUid())
-            ->isExistNewOrOpenSupply();
+            ->findAll();
 
-        /* Проверяем, имеется ли открытая поставка у профиля */
-        if($exist)
+        if(false === $WbTokens || false === $WbTokens->valid())
         {
             $this->addFlash(
                 'danger',
-                'danger.new',
+                'Не найдено ни одного токена Wildberries',
                 'wildberries-package.supply',
             );
+
             return $this->redirectToReferer();
         }
 
-        $handle = $WbSupplyNewHandler->handle($WbSupplyNewDTO);
+        /**
+         * Выбор только тех токенов, на которые нет новой или открытой поставки Wildberries
+         */
+        $WbTokensForOpen = [];
 
-        $this->addFlash
-        (
-            'page.new',
-            $handle instanceof WbSupply ? 'success.new' : 'danger.new',
-            'wildberries-package.supply',
-            $handle,
+        foreach($WbTokens as $WbTokenUid)
+        {
+            $exist = $existOpenSupplyProfileRepository
+                ->forProfile($this->getProfileUid())
+                ->forToken($WbTokenUid)
+                ->isExistNewOrOpenSupply();
+
+            if(false === $exist)
+            {
+                $WbTokensForOpen[] = $WbTokenUid;
+            }
+        }
+
+        $TokenForWbSupplyDTO = new TokenForWbSupplyDTO(
+            profile: $this->getProfileUid(),
+            tokens: $WbTokensForOpen
         );
 
-        return $this->redirectToReferer();
+        $form = $this->createForm(
+            type: TokenForWbSupplyForm::class,
+            data: $TokenForWbSupplyDTO,
+            options: ['action' => $this->generateUrl('wildberries-package:admin.supply.new'),
+            ])
+            ->handleRequest($request);
 
+        if($form->isSubmitted() && $form->isValid() && $form->has('new_wb_supply'))
+        {
+            $this->refreshTokenForm($form);
+
+            $WbSupplyNewDTO = new WbSupplyNewDTO(
+                profile: $this->getProfileUid(),
+                token: $TokenForWbSupplyDTO->getToken()
+            );
+
+            $handle = $WbSupplyNewHandler->handle($WbSupplyNewDTO);
+
+            $this->addFlash
+            (
+                'page.new',
+                $handle instanceof WbSupply ? 'success.new' : 'danger.new',
+                'wildberries-package.supply',
+                $handle,
+            );
+
+            return $this->redirectToRoute('wildberries-package:admin.package.index', ['token' => $TokenForWbSupplyDTO->getToken()]);
+        }
+
+        return $this->render(['form' => $form->createView()]);
     }
 }

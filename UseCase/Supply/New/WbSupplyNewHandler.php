@@ -26,17 +26,54 @@ declare(strict_types=1);
 namespace BaksDev\Wildberries\Package\UseCase\Supply\New;
 
 use BaksDev\Core\Entity\AbstractHandler;
+use BaksDev\Core\Messenger\MessageDispatchInterface;
+use BaksDev\Core\Validator\ValidatorCollectionInterface;
+use BaksDev\Files\Resources\Upload\File\FileUploadInterface;
+use BaksDev\Files\Resources\Upload\Image\ImageUploadInterface;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Messenger\Supply\WbSupplyMessage;
+use BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile\ExistOpenSupplyProfileInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class WbSupplyNewHandler extends AbstractHandler
 {
+    public function __construct(
+        private ExistOpenSupplyProfileInterface $existOpenSupplyProfileRepository,
+
+        EntityManagerInterface $entityManager,
+        MessageDispatchInterface $messageDispatch,
+        ValidatorCollectionInterface $validatorCollection,
+        ImageUploadInterface $imageUpload,
+        FileUploadInterface $fileUpload
+    )
+    {
+        parent::__construct($entityManager, $messageDispatch, $validatorCollection, $imageUpload, $fileUpload);
+    }
+
     public function handle(WbSupplyNewDTO $command): string|WbSupply
     {
-        $this->setCommand($command);
+        $exist = $this->existOpenSupplyProfileRepository
+            ->forProfile($command->getProfile())
+            ->forToken($command->getToken()->getValue())
+            ->isExistNewOrOpenSupply();
 
-        $this->preEventPersistOrUpdate(WbSupply::class, WbSupplyEvent::class);
+        /** Проверяем, имеется ли открытая поставка у профиля */
+        if(true === $exist)
+        {
+            $this->validatorCollection->error(
+                message: 'Поставка на указанный профиль и токен уже открыта',
+                context: [
+                    'profile' => $command->getProfile(),
+                    'token' => $command->getToken()->getValue(),
+                ]);
+
+            return $this->validatorCollection->getErrorUniqid();
+        }
+
+        $this
+            ->setCommand($command)
+            ->preEventPersistOrUpdate(WbSupply::class, WbSupplyEvent::class);
 
         /** Валидация всех объектов */
         if($this->validatorCollection->isInvalid())
@@ -46,7 +83,7 @@ final class WbSupplyNewHandler extends AbstractHandler
 
         $this->flush();
 
-        /* Отправляем сообщение в шину */
+        /** Отправляем сообщение в шину */
         $this->messageDispatch
             ->addClearCacheOther('wildberries-package')
             ->dispatch(

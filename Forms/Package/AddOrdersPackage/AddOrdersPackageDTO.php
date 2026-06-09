@@ -31,6 +31,7 @@ use BaksDev\Products\Product\Type\Offers\Id\ProductOfferUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Id\ProductVariationUid;
 use BaksDev\Products\Product\Type\Offers\Variation\Modification\Id\ProductModificationUid;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class AddOrdersPackageDTO
@@ -74,6 +75,8 @@ final class AddOrdersPackageDTO
     #[Assert\Range(min: 1)]
     private ?int $total = null;
 
+    #[Assert\Uuid]
+    private ?WbTokenUid $token = null;
 
     public function __construct(UserProfileUid $profile)
     {
@@ -183,6 +186,20 @@ final class AddOrdersPackageDTO
     public function getProfile(): UserProfileUid
     {
         return $this->profile;
+    }
+
+    /**
+     * Token
+     */
+    public function getToken(): ?WbTokenUid
+    {
+        return $this->token;
+    }
+
+    public function setToken(?WbTokenUid $token): AddOrdersPackageDTO
+    {
+        $this->token = $token;
+        return $this;
     }
 
 }

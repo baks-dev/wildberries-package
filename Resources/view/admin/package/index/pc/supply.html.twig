@@ -1,110 +1,71 @@
 {% trans_default_domain('wildberries-package.package') %}
 
+{# @var last \BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LustWbSupplyResult #}
 
-<section
-        class="card card-flush alert {{ opens.status == 'close' ? 'alert-success' : 'alert-warning' }} p-0 w-100 "
-        style="background-image: var(--bs-gradient);"
->
+<section class="card card-flush alert {{ last.status == 'close' ? 'alert-success' : 'alert-warning' }} p-0 w-100 "
+         style="background-image: var(--bs-gradient);">
 
     <div class="card-body d-flex gap-3 justify-content-between">
 
-        <div class="w-25 d-flex gap-3 ">
+        <div class="w-25 d-flex gap-3">
 
+            {# QR code #}
             <div>
-
-                <span
-                        role="tooltip"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-delay='{"show":600,"hide":100}'
-                        title='Печать сборочного листа поставки'
-                >
-                    <button
-                            id="supply-{{ opens.id }}"
-                            data-href="{{ path('wildberries-package:admin.supply.print.products', { id : opens.id, print: true }) }}"
-
-                            class="btn-link btn p-1 icon disabled prnt"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                            style="width: 40px; height: 40px;"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                             class="bi bi-printer" viewBox="0 0 16 16">
-                          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
-                          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
-                        </svg>
-                    </button>
+                <span role="tooltip"
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      data-bs-delay='{"show":600,"hide":100}'
+                      title='{{ last.status == 'close' ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'>
+                <button id="supply-{{ last.id }}"
+                        data-href="{{ path('wildberries-package:admin.supply.print', { id : last.id, print: true }) }}"
+                        {% if last.status != 'close' %}
+                            disabled="disabled"
+                        {% endif %}
+                        class="btn-link btn p-1 icon disabled prnt"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                        style="width: 40px; height: 40px;">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         width="45" height="45" fill="currentColor"
+                         class="bi bi-qr-code" viewBox="0 0 16 16">
+                        <path d="M2 2h2v2H2V2Z"></path>
+                        <path d="M6 0v6H0V0h6ZM5 1H1v4h4V1ZM4 12H2v2h2v-2Z"></path>
+                        <path d="M6 10v6H0v-6h6Zm-5 1v4h4v-4H1Zm11-9h2v2h-2V2Z"></path>
+                        <path d="M10 0v6h6V0h-6Zm5 1v4h-4V1h4ZM8 1V0h1v2H8v2H7V1h1Zm0 5V4h1v2H8ZM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8H6Zm0 0v1H2V8H1v1H0V7h3v1h3Zm10 1h-1V7h1v2Zm-1 0h-1v2h2v-1h-1V9Zm-4 0h2v1h-1v1h-1V9Zm2 3v-1h-1v1h-1v1H9v1h3v-2h1Zm0 0h3v1h-2v1h-1v-2Zm-4-1v1h1v-2H7v1h2Z"></path>
+                        <path d="M7 12h1v3h4v1H7v-4Zm9 2v2h-3v-1h2v-1h1Z"></path>
+                    </svg>
+                </button>
                 </span>
 
             </div>
 
             <div>
-
-                <span
-                        role="tooltip"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-delay='{"show":600,"hide":100}'
-                        title='{{ opens.status == 'close' ? 'QR поставки' : 'close'|trans({}, 'wildberries-package.supply') }}'
-                >
-                    <button
-                            id="supply-{{ opens.id }}"
-                            data-href="{{ path('wildberries-package:admin.supply.print.sticker', { id : opens.id, print: true }) }}"
-                            {% if opens.status != 'close' %}
-                                disabled="disabled"
-                            {% endif %}
-                            class="btn-link btn p-1 icon disabled prnt"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                            style="width: 40px; height: 40px;"
-                    >
-                        <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="45" height="45" fill="currentColor"
-                                class="bi bi-qr-code" viewBox="0 0 16 16"
-                        >
-                            <path d="M2 2h2v2H2V2Z"></path>
-                            <path d="M6 0v6H0V0h6ZM5 1H1v4h4V1ZM4 12H2v2h2v-2Z"></path>
-                            <path d="M6 10v6H0v-6h6Zm-5 1v4h4v-4H1Zm11-9h2v2h-2V2Z"></path>
-                            <path d="M10 0v6h6V0h-6Zm5 1v4h-4V1h4ZM8 1V0h1v2H8v2H7V1h1Zm0 5V4h1v2H8ZM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8H6Zm0 0v1H2V8H1v1H0V7h3v1h3Zm10 1h-1V7h1v2Zm-1 0h-1v2h2v-1h-1V9Zm-4 0h2v1h-1v1h-1V9Zm2 3v-1h-1v1h-1v1H9v1h3v-2h1Zm0 0h3v1h-2v1h-1v-2Zm-4-1v1h1v-2H7v1h2Z"></path>
-                            <path d="M7 12h1v3h4v1H7v-4Zm9 2v2h-3v-1h2v-1h1Z"></path>
-                        </svg>
-                    </button>
-                </span>
-
-            </div>
-
-            <div>
-
                 <div class="text-nowrap">
                     <small class="opacity-50">Номер:</small> &nbsp;
-                    <a
-                            {% if opens.identifier is empty %}
-                                id="number-{{ opens.id }}"
-                            {% endif %}
-                            href="{{ path('wildberries-package:admin.supply.detail', { id: opens.id}) }}"
-                            class="fw-bolder text-decoration-none text-nowrap"
-                    >
-                        {{ opens.identifier ?: 'Ожидается ...' }}
+                    <a {% if last.identifier is empty %}
+                        id="number-{{ last.id }}"
+                    {% endif %}
+                            href="{{ path('wildberries-package:admin.supply.detail', { id: last.id}) }}"
+                            class="fw-bolder text-decoration-none text-nowrap">
+                        {{ last.identifier ?: 'Ожидается ...' }}
                     </a>
                 </div>
 
                 <div>
                     <small class="opacity-50">Всего заказов:</small> &nbsp;
-                    <strong id="total-{{ opens.id }}">{{ opens.total }}</strong> шт.
+                    <strong id="total-{{ last.id }}">{{ last.total }}</strong> шт.
                 </div>
-
             </div>
         </div>
 
 
         {# Упаковки заказов #}
 
-
         <div class="w-100">
 
             {% if print is not empty %}
                 <div class="w-100 d-flex mb-3 gap-3">
+
                     <div class="w-100 d-flex gap-3">
                         <div class="position-absolute" id="reset_filter">
                             <button class="btn btn-link text-muted">
@@ -116,12 +77,10 @@
                             </button>
                         </div>
 
-
                         <input type="text"
                                id="package_filter"
                                class="border-light w-100 ps-5 form-control" placeholder="Поиск" autocomplete="off"
-                                {# style="min-width: 100%;" #}
-                        >
+                                {# style="min-width: 100%;" #}>
                     </div>
 
                     <div class="w-25"
@@ -129,14 +88,12 @@
                          data-bs-toggle="tooltip"
                          data-bs-placement="bottom"
                          data-bs-delay='{"show":600,"hide":100}'
-                         title="Печать всех стикеров поставки"
-                    >
-                        <button
-                                class="btn btn-light disabled prnt"
-                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: opens.id, print: true }) }}"
+                         title="Печать всех стикеров поставки">
+
+                        <button class="btn btn-light disabled prnt"
+                                data-href="{{ path('wildberries-package:admin.package.print.supply', { id: last.id, print: true }) }}"
                                 data-bs-toggle="modal"
-                                data-bs-target="#modal"
-                        >
+                                data-bs-target="#modal">
 
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                  class="bi bi-printer-fill" viewBox="0 0 16 16">
@@ -152,7 +109,8 @@
                 </div>
             {% endif %}
 
-            <div id="package-{{ opens.id }}" class="w-100 overflow-auto" style="max-height: 400px;">
+            <div id="package-{{ last.id }}" class="w-100 overflow-auto" style="max-height: 400px;">
+
                 {# Список продукции для печати #}
                 {% for card in print %}
                     {{ include('@wildberries-package/admin/package/add/pc/product.html.twig') }}
@@ -162,53 +120,39 @@
 
 
         <div class="text-end">
-            {% if is_granted('ROLE_WB_SUPPLY_CLOSE') and opens.status == 'open' %}
+            {% if is_granted('ROLE_WB_SUPPLY_CLOSE') and last.status.equals('open') %}
 
-                <div
-                        role="tooltip"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-delay='{"show":600,"hide":100}'
-                        title="Отправить поставку на склад Wildberries"
-                >
+                <div role="tooltip"
+                     data-bs-toggle="tooltip"
+                     data-bs-placement="bottom"
+                     data-bs-delay='{"show":600,"hide":100}'
+                     title="Отправить поставку на склад Wildberries">
 
-                    <button
-                            data-href="{{ path('wildberries-package:admin.supply.close', { id: opens.id }) }}"
+                    <button data-href="{{ path('wildberries-package:admin.supply.close', { id: last.id }) }}"
                             id="close_supply_btn"
                             class="btn modal-btn btn-danger modal-link disabled text-nowrap"
                             data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                    >
+                            data-bs-target="#modal">
                         Закрыть поставку
                     </button>
                 </div>
 
+{#            {% elseif last.status != 'new' %}#}
+            {% elseif false === last.status.equals('new') %}
 
-            {% elseif opens.status != 'new' %}
-
-                <a
-                        href="{{ path('wildberries-package:admin.supply.new') }}"
-                        class="btn btn-primary text-nowrap"
-                        role="tooltip"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="bottom"
-                        data-bs-delay='{"show":600,"hide":100}'
-                        title="Открыть новую поставку Wildberries"
-                >
+                <a href="{{ path('wildberries-package:admin.supply.new') }}"
+                   class="btn btn-primary text-nowrap modal-link"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modal"
+                   role="tooltip"
+                   data-bs-placement="bottom"
+                   data-bs-delay='{"show":600,"hide":100}'
+                   title="Открыть новую поставку Wildberries">
                     Открыть поставку
                 </a>
 
             {% endif %}
         </div>
-
-
-        {# <div class="text-end w-25">
-            <a href="#"
-               class="btn modal-btn modal-link disabled btn-primary" data-bs-toggle="modal" data-bs-target="#modal"
-               title="Открыть поставку">
-                Открыть партию
-            </a>
-        </div> #}
 
     </div>
 </section>

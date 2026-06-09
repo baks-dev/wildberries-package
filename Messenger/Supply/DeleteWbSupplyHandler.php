@@ -38,6 +38,10 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * Удаляет поставку Wildberries если системная поставка со статусом Close (Закрыта),
+ * но в ней отсутствуют заказы!
+ */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 99)] // высокий приоритет - выполняется первым
 final readonly class DeleteWbSupplyHandler
@@ -50,10 +54,6 @@ final readonly class DeleteWbSupplyHandler
         private ORMQueryBuilder $ORMQueryBuilder
     ) {}
 
-    /**
-     * Метод удаляет поставку Wildberries если системная поставка со статусом Close (Закрыта),
-     * но в ней отсутствуют заказы!
-     */
     public function __invoke(WbSupplyMessage $message): void
     {
         /**

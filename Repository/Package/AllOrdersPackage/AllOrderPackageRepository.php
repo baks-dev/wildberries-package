@@ -29,6 +29,7 @@ namespace BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage;
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
 use BaksDev\Core\Form\Search\SearchDTO;
 use BaksDev\Core\Services\Paginator\PaginatorInterface;
+use BaksDev\Core\Type\UidType\UidType;
 use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\Manufacture\Part\Entity\Event\ManufacturePartEvent;
 use BaksDev\Manufacture\Part\Entity\Invariable\ManufacturePartInvariable;
@@ -58,6 +59,7 @@ use BaksDev\Products\Product\Entity\Offers\Variation\Modification\Image\ProductM
 use BaksDev\Products\Product\Entity\Offers\Variation\Modification\ProductModification;
 use BaksDev\Products\Product\Entity\Offers\Variation\ProductVariation;
 use BaksDev\Products\Product\Entity\Photo\ProductPhoto;
+use BaksDev\Products\Product\Entity\Product;
 use BaksDev\Products\Product\Entity\ProductInvariable;
 use BaksDev\Products\Product\Entity\Trans\ProductTrans;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
@@ -69,6 +71,7 @@ use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryDbsWildberries;
 use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
 use BaksDev\Wildberries\Package\Entity\Package\Orders\WbPackageOrder;
 use Doctrine\DBAL\ArrayParameterType;
+use Symfony\Component\Uid\Uuid;
 
 final class AllOrderPackageRepository implements AllOrderPackageInterface
 {
@@ -77,6 +80,8 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
     private ?SearchDTO $search = null;
 
     private UserProfileUid|false $profile = false;
+
+    private Uuid|false $token = false;
 
     public function __construct(
         private readonly DBALQueryBuilder $DBALQueryBuilder,
@@ -113,6 +118,13 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
         return $this;
     }
 
+    /** Идентификатор токена маркетплейса */
+    public function forToken(?Uuid $token): self
+    {
+        $this->token = $token instanceof Uuid ? $token : false;
+        return $this;
+    }
+
     /**
      * Метод возвращает список заказов готовых для добавления в поставку
      *
@@ -125,6 +137,7 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
             ->bindLocal();
 
         $dbal
+            ->select('invariable.token')
             ->from(OrderInvariable::class, 'invariable')
             ->where('invariable.profile = :profile')
             ->setParameter(
@@ -132,6 +145,17 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 value: $this->profile ?: $this->UserProfileTokenStorage->getProfile(),
                 type: UserProfileUid::TYPE,
             );
+
+        if(true === ($this->token instanceof Uuid))
+        {
+            $dbal
+                ->andWhere('invariable.token = :token')
+                ->setParameter(
+                    key: 'token',
+                    value: $this->token,
+                    type: UidType::TYPE,
+                );
+        }
 
         $dbal
             ->join(
@@ -168,16 +192,23 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
                 'order_user',
                 OrderDelivery::class,
                 'order_delivery',
-                'order_delivery.usr = order_user.id AND 
+                '
+                    order_delivery.usr = order_user.id AND
                     order_delivery.delivery IN (:delivery)
                 ',
-            )->setParameter(
+            )
+            ->setParameter(
                 'delivery',
                 [TypeDeliveryDbsWildberries::TYPE, TypeDeliveryFbsWildberries::TYPE],
                 ArrayParameterType::STRING,
             );
 
+
         $dbal
+            ->addSelect('order_product.product')
+            ->addSelect('order_product.offer')
+            ->addSelect('order_product.variation')
+            ->addSelect('order_product.modification')
             ->leftJoin(
                 'orders',
                 OrderProduct::class,
@@ -188,10 +219,6 @@ final class AllOrderPackageRepository implements AllOrderPackageInterface
 
         $dbal
             ->addSelect('SUM(order_product_price.total) AS order_total')
-            ->addSelect('order_product.product')
-            ->addSelect('order_product.offer')
-            ->addSelect('order_product.variation')
-            ->addSelect('order_product.modification')
             ->leftJoin(
                 'order_product',
                 OrderPrice::class,

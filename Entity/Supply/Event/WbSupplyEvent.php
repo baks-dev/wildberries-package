@@ -28,6 +28,7 @@ namespace BaksDev\Wildberries\Package\Entity\Supply\Event;
 use BaksDev\Core\Entity\EntityEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
 use BaksDev\Wildberries\Package\Entity\Supply\Modify\WbSupplyModify;
+use BaksDev\Wildberries\Package\Entity\Supply\Token\WbSupplyToken;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Event\WbSupplyEventUid;
@@ -90,6 +91,12 @@ class WbSupplyEvent extends EntityEvent
     #[ORM\OneToOne(targetEntity: WbSupplyWildberries::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     private ?WbSupplyWildberries $wildberries = null;
 
+    /**
+     * Токен маркетплейса
+     */
+    #[Assert\Valid]
+    #[ORM\OneToOne(targetEntity: WbSupplyToken::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
+    private ?WbSupplyToken $token = null;
 
     public function __construct()
     {
