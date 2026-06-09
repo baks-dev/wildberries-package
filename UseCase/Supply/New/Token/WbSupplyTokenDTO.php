@@ -1,6 +1,6 @@
 <?php
 /*
- *  Copyright 2024.  Baks.dev <admin@baks.dev>
+ *  Copyright 2025.  Baks.dev <admin@baks.dev>
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,41 @@
 
 declare(strict_types=1);
 
-namespace BaksDev\Wildberries\Package\Type\Supply\Id;
+namespace BaksDev\Wildberries\Package\UseCase\Supply\New\Token;
 
-use BaksDev\Core\Type\UidType\Uid;
-use Symfony\Component\Uid\AbstractUid;
+use BaksDev\Wildberries\Package\Entity\Supply\Token\WbSupplyTokenInterface;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
-final class WbSupplyUid extends Uid
+/** @see WbSupplyToken */
+final class WbSupplyTokenDTO implements WbSupplyTokenInterface
 {
-    public const string TEST = '018af209-73b1-79e6-96bb-3f014942e632';
 
-    public const string TYPE = 'wb_supply';
+    /**
+     * Профиль пользователя (владелец)
+     */
+    #[Assert\Uuid]
+    #[Assert\NotBlank]
+    private ?Uuid $value = null;
 
-    private ?string $property;
-
-    public function __construct(
-        AbstractUid|self|string|null $value = null,
-        ?string $property = null
-    )
+    public function getValue(): ?Uuid
     {
-        parent::__construct($value);
-
-        $this->property = $property;
+        return $this->value;
     }
 
-    public function getProperty(): ?string
+    public function setValue(Uuid|string|null $value): WbSupplyTokenDTO
     {
-        return $this->property;
+        if(true === empty($value))
+        {
+            return $this;
+        }
+
+        if(true === is_string($value))
+        {
+            $value = new Uuid($value);
+        }
+
+        $this->value = $value;
+        return $this;
     }
 }

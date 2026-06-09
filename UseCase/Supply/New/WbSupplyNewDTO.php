@@ -29,6 +29,10 @@ use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEventInterface;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusNew;
+use BaksDev\Wildberries\Package\UseCase\Supply\New\Invariable\WbSupplyInvariableDTO;
+use BaksDev\Wildberries\Package\UseCase\Supply\New\Token\WbSupplyTokenDTO;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** @see WbSupplyEvent */
@@ -51,14 +55,21 @@ final class WbSupplyNewDTO implements WbSupplyEventInterface
      * Константа
      */
     #[Assert\Valid]
-    private Invariable\WbSupplyInvariableDTO $invariable;
+    private WbSupplyInvariableDTO $invariable;
 
+    #[Assert\Valid]
+    private WbSupplyTokenDTO $token;
 
-    public function __construct(UserProfileUid $profile)
+    public function __construct(UserProfileUid $profile, Uuid|WbTokenUid|null $token = null)
     {
         $this->status = new WbSupplyStatus(WbSupplyStatusNew::class);
-        $this->invariable = new Invariable\WbSupplyInvariableDTO()
-            ->setProfile($profile);
+
+        $this->invariable = new WbSupplyInvariableDTO()->setProfile($profile);
+
+        if(null !== $token)
+        {
+            $this->token = new WbSupplyTokenDTO()->setValue((string) $token);
+        }
     }
 
     /**
@@ -69,7 +80,6 @@ final class WbSupplyNewDTO implements WbSupplyEventInterface
         return $this->id;
     }
 
-
     /**
      * Status
      */
@@ -78,11 +88,10 @@ final class WbSupplyNewDTO implements WbSupplyEventInterface
         return $this->status;
     }
 
-
     /**
      * Invariable
      */
-    public function getInvariable(): Invariable\WbSupplyInvariableDTO
+    public function getInvariable(): WbSupplyInvariableDTO
     {
         return $this->invariable;
     }
@@ -95,4 +104,11 @@ final class WbSupplyNewDTO implements WbSupplyEventInterface
         return $this->invariable->getProfile();
     }
 
+    /**
+     * Token
+     */
+    public function getToken(): WbSupplyTokenDTO
+    {
+        return $this->token;
+    }
 }

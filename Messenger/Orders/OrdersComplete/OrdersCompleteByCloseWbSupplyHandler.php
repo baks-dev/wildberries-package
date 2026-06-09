@@ -49,7 +49,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 
 /**
- * Метод меняет статус системного заказа на Completed «Выполнен» после закрытия поставки
+ * Меняет статус системного заказа на Completed «Выполнен» после закрытия поставки
  */
 #[Autoconfigure(shared: false)]
 #[AsMessageHandler(priority: 0)]

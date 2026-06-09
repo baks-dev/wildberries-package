@@ -26,9 +26,14 @@ namespace BaksDev\Wildberries\Package\Repository\Supply\OpenWbSupplyIdentifier;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
+use Symfony\Component\Uid\Uuid;
 
 interface OpenWbSupplyIdentifierInterface
 {
+    /** Идентификатор токена маркетплейса */
+    public function forToken(Uuid|WbTokenUid|null $token): self;
+
     public function forProfile(UserProfile|UserProfileUid|string $profile): self;
 
     /**

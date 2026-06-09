@@ -34,14 +34,22 @@ use BaksDev\Delivery\Type\Id\DeliveryUid;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterDTO;
 use BaksDev\Products\Product\Forms\ProductFilter\Admin\ProductFilterForm;
 use BaksDev\Wildberries\Orders\Type\DeliveryType\TypeDeliveryFbsWildberries;
+use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Repository\Package\AllOrdersPackage\AllOrderPackageInterface;
 use BaksDev\Wildberries\Package\Repository\Package\PrintOrdersPackageSupply\PrintOrdersPackageSupplyInterface;
 use BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LastWbSupplyInterface;
+use BaksDev\Wildberries\Package\Repository\Supply\LastWbSupply\LustWbSupplyResult;
 use BaksDev\Wildberries\Package\Type\Supply\Id\WbSupplyUid;
+use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusClose;
+use BaksDev\Wildberries\Repository\AllWbTokensByProfile\AllWbTokensByProfileInterface;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Uuid;
 
 #[AsController]
 #[RoleSecurity('ROLE_WB_PACKAGE')]
@@ -50,34 +58,63 @@ final class IndexController extends AbstractController
     /**
      * Упаковка заказов
      */
-    #[Route('/admin/wb/packages/{page<\d+>}', name: 'admin.package.index', methods: ['GET', 'POST'])]
+    #[Route('/admin/wb/packages/{id?}/{page<\d+>?0}', name: 'admin.package.index', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
-        PrintOrdersPackageSupplyInterface $printOrdersPackageSupply,
         TokenUserGenerator $tokenUserGenerator,
-        AllOrderPackageInterface $allWbOrdersGroup,
-        LastWbSupplyInterface $LastWbSupply,
+        LastWbSupplyInterface $lastWbSupplyRepository,
+        AllOrderPackageInterface $allWbOrdersGroupRepository,
+        AllWbTokensByProfileInterface $allWbTokensByProfileRepository,
+        PrintOrdersPackageSupplyInterface $printOrdersPackageSupplyRepository,
         int $page = 0,
+        #[MapEntity(id: 'id')] ?WbSupply $WbSupply = null,
+        #[MapQueryParameter] ?Uuid $token = null,
     ): Response
     {
-
-        // Поиск
-        $search = new SearchDTO();
-
+        /** Поиск */
         $searchForm = $this
             ->createForm(
                 type: SearchForm::class,
-                data: $search,
+                data: $search = new SearchDTO(),
                 options: ['action' => $this->generateUrl('wildberries-package:admin.package.index')],
             )
             ->handleRequest($request);
 
-        // Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом
-        $opens = $LastWbSupply->find();
+        $WbTokens = $allWbTokensByProfileRepository
+            ->forProfile($this->getProfileUid())
+            ->findAll();
+
+        /**
+         * Поставки на каждый токену и идентификатор (если передан)
+         * @var array<int, LustWbSupplyResult> $supplys
+         */
+        $supplys = [];
+
+        if(false !== $WbTokens && true === $WbTokens->valid())
+        {
+            $WbTokens = iterator_to_array($WbTokens);
+
+            /** @var WbTokenUid $WbTokenUid */
+            foreach($WbTokens as $WbTokenUid)
+            {
+                /** Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом */
+                $supplys[(string) $WbTokenUid] = $lastWbSupplyRepository
+                    //                    ->forSupply($WbSupply)
+                    ->forToken($WbTokenUid)
+                    ->find();
+            }
+        }
+
+        /** Получаем ПОСЛЕДНЮЮ поставку профиля пользователя с любым статусом */
+        $last = $lastWbSupplyRepository
+            ->forToken($token)
+            ->forSupply($WbSupply)
+            ->find();
 
         /** Получаем заказы, которые не были напечатаны  */
-        $print = isset($opens['status']) && $opens['status'] !== 'close' ? $printOrdersPackageSupply->fetchAllPrintOrdersPackageSupplyAssociative(new WbSupplyUid($opens['id'])) : null;
-
+        $print = $last instanceof LustWbSupplyResult && false === $last->getStatus()->equals(WbSupplyStatusClose::STATUS)
+            ? $printOrdersPackageSupplyRepository->fetchAllPrintOrdersPackageSupplyAssociative(new WbSupplyUid($last->getId()))
+            : null;
 
         /**
          * Фильтр продукции
@@ -96,19 +133,50 @@ final class IndexController extends AbstractController
          * Получаем список заказов
          */
 
-        $WbOrders = $allWbOrdersGroup
+        /** По умолчанию ищем продукты по токену из последней найденной поставки */
+        if(true === ($last instanceof LustWbSupplyResult))
+        {
+            $allWbOrdersGroupRepository->forToken($last->getToken());
+        }
+
+        /** Если передали токен параметром запроса - ищем продукты по переданному токену */
+        if(true === ($token instanceof Uuid))
+        {
+            $allWbOrdersGroupRepository->forToken($token);
+        }
+
+        $TypeDeliveryFbsWildberries = class_exists(TypeDeliveryFbsWildberries::class)
+            ? new DeliveryUid(TypeDeliveryFbsWildberries::class)
+            : null;
+
+        $WbOrders = $allWbOrdersGroupRepository
             ->search($search)
             ->filter($filter)
-            ->findPaginator(
-                class_exists(TypeDeliveryFbsWildberries::class)
-                    ? new DeliveryUid(TypeDeliveryFbsWildberries::class)
-                    : null,
-            );
+            ->findPaginator($TypeDeliveryFbsWildberries);
 
+
+        if(empty($WbOrders->getData()) && true === ($last instanceof LustWbSupplyResult))
+        {
+            $newLust = array_find($supplys, function(LustWbSupplyResult $wbSupply) use ($last) {
+                return false === $wbSupply->getId()->equals($last->getId());
+            });
+
+            if($newLust instanceof LustWbSupplyResult)
+            {
+                $WbOrders = $allWbOrdersGroupRepository
+                    ->search($search)
+                    ->filter($filter)
+                    ->forToken($newLust->getToken())
+                    ->findPaginator($TypeDeliveryFbsWildberries);
+            }
+        }
 
         return $this->render(
             [
-                'opens' => $opens,
+                'tokens' => $WbTokens,
+                'supplys' => $supplys,
+
+                'last' => $last,
                 'print' => $print,
                 'query' => $WbOrders,
                 'search' => $searchForm->createView(),

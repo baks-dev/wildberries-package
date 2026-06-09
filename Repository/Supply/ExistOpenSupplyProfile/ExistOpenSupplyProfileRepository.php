@@ -24,16 +24,20 @@
 namespace BaksDev\Wildberries\Package\Repository\Supply\ExistOpenSupplyProfile;
 
 use BaksDev\Core\Doctrine\DBALQueryBuilder;
+use BaksDev\Core\Type\UidType\UidType;
 use BaksDev\Users\Profile\UserProfile\Entity\UserProfile;
 use BaksDev\Users\Profile\UserProfile\Type\Id\UserProfileUid;
 use BaksDev\Wildberries\Package\Entity\Supply\Event\WbSupplyEvent;
 use BaksDev\Wildberries\Package\Entity\Supply\Invariable\WbSupplyInvariable;
+use BaksDev\Wildberries\Package\Entity\Supply\Token\WbSupplyToken;
 use BaksDev\Wildberries\Package\Entity\Supply\WbSupply;
 use BaksDev\Wildberries\Package\Entity\Supply\Wildberries\WbSupplyWildberries;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusNew;
 use BaksDev\Wildberries\Package\Type\Supply\Status\WbSupplyStatus\WbSupplyStatusOpen;
+use BaksDev\Wildberries\Type\id\WbTokenUid;
 use Doctrine\DBAL\ArrayParameterType;
 use InvalidArgumentException;
+use Symfony\Component\Uid\Uuid;
 
 
 final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileInterface
@@ -42,7 +46,11 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
 
     private string|false $identifier = false;
 
-    public function __construct(private readonly DBALQueryBuilder $DBALQueryBuilder) {}
+    private Uuid|false $token = false;
+
+    public function __construct(
+        private readonly DBALQueryBuilder $DBALQueryBuilder
+    ) {}
 
     public function forProfile(UserProfile|UserProfileUid|string $profile): self
     {
@@ -66,6 +74,23 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
 
         $this->identifier = $identifier;
 
+        return $this;
+    }
+
+    /** Идентификатор токена маркетплейса */
+    public function forToken(Uuid|WbTokenUid|null $token): self
+    {
+        if(null === $token)
+        {
+            return $this;
+        }
+
+        if(true === ($token instanceof WbTokenUid))
+        {
+            $token = new Uuid((string) $token);
+        }
+
+        $this->token = $token;
         return $this;
     }
 
@@ -134,6 +159,23 @@ final class ExistOpenSupplyProfileRepository implements ExistOpenSupplyProfileIn
                 ->setParameter(
                     key: 'identifier',
                     value: $this->identifier,
+                );
+        }
+
+        if($this->token instanceof Uuid)
+        {
+            $dbal
+                ->leftJoin(
+                    'invariable',
+                    WbSupplyToken::class,
+                    'wb_supply_token',
+                    'wb_supply_token.main = invariable.main',
+                )
+                ->andWhere('wb_supply_token.value = :token')
+                ->setParameter(
+                    key: 'token',
+                    value: $this->token,
+                    type: UidType::TYPE,
                 );
         }
 
